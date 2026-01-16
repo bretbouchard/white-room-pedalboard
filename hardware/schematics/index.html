@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>White Room Hardware - File Sharing</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .header {
+            background: #007AFF;
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        .file-list {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .file {
+            padding: 15px;
+            margin: 10px 0;
+            background: #f9f9f9;
+            border-radius: 5px;
+            border-left: 4px solid #007AFF;
+        }
+        .file a {
+            color: #007AFF;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        .file a:hover {
+            text-decoration: underline;
+        }
+        .info {
+            color: #666;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+        .timestamp {
+            color: #999;
+            font-size: 12px;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>📱 White Room Hardware</h1>
+        <p>File Sharing Server - Access from Phone</p>
+    </div>
+
+    <div class="file-list">
+        <h2>📄 Available Files</h2>
+
+        <div class="file">
+            <a href="pb86_8button_schematic.pdf">pb86_8button_schematic.pdf</a>
+            <div class="info">
+                PB86 8-Button Circuit Schematic (3.7 KB)<br>
+                SPICE validated, ready for prototyping
+            </div>
+            <div class="timestamp">
+                Generated: January 16, 2026
+            </div>
+        </div>
+
+        <div class="file">
+            <a href="pb86_schematic_diagram.txt">pb86_schematic_diagram.txt</a>
+            <div class="info">
+                Complete ASCII schematic diagram
+            </div>
+        </div>
+
+        <div class="file">
+            <a href="../kicad_library_mapping.md">KiCad Library Mapping Guide</a>
+            <div class="info">
+                Component symbols and footprints reference
+            </div>
+        </div>
+
+    </div>
+
+    <div style="text-align: center; margin-top: 30px; color: #666;">
+        <p>Generated with Claude Code via Happy Engineering</p>
+    </div>
+</body>
+</html>
