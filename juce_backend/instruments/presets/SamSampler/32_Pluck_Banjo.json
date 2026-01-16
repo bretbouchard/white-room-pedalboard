@@ -1,0 +1,33 @@
+{
+  "version": "1.0.0",
+  "name": "Banjo",
+  "author": "Bret Bouchard",
+  "description": "5-string banjo with driving attack and sharp decay.",
+  "category": "Pluck",
+  "tags": ["pluck", "banjo", "5-string", "driving", "sharp"],
+  "creationDate": "2025-12-27",
+  "parameters": {
+    "sample.file": "banjo_C4.wav",
+    "sample.loop_mode": 0.0,
+    "sample.loop.start": 0.0,
+    "sample.loop.end": 1.0,
+    "pitch.transpose": 0.5,
+    "pitch.detune": 0.5,
+    "pitch.bend": 0.5,
+    "filter.type": 0.0,
+    "filter.cutoff": 0.8,
+    "filter.resonance": 0.2,
+    "env.adsr.a": 0.001,
+    "env.adsr.d": 0.3,
+    "env.adsr.s": 0.05,
+    "env.adsr.r": 0.2,
+    "fx.drive": 0.05,
+    "fx.chorus": 0.1,
+    "fx.delay": 0.0,
+    "fx.reverb": 0.2,
+    "output.level": 0.8,
+    "output.pan": 0.5
+  },
+  "macroMappings": {},
+  "modulationMatrix": {}
+}

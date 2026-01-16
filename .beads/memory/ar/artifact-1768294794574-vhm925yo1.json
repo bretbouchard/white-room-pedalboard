@@ -1,0 +1,18 @@
+{
+  "id": "artifact-1768294794574-vhm925yo1",
+  "type": "pattern",
+  "content": "## Pattern: ParameterStore Implementation with FFI Integration\n\n### Problem\nParameterStore was a stub returning 0.0 for all parameters, blocking all Swift telemetry work.\n\n### Solution\nImplemented full ParameterStore with:\n1. **FFI Integration**: Direct JUCEEngine integration via `sch_engine_get_parameter_value()` and `sch_engine_submit_edit()`\n2. **Four-Scope ParameterID Resolution**: song:, section:, role:, roleInSection:\n3. **Thread-Safe Caching**: NSLock-protected value cache for fast access without FFI calls\n4. **Combine Publishers**: PassthroughSubject for change notifications,CurrentValueSubject for per-parameter streams\n5. **60 FPS Polling**: Timer-based polling to sync with JUCE backend changes (preset loading, MIDI CC, transport, AI)\n6. **Focus Context**: Context-aware projections based on current focus\n\n### Key Implementation Details\n\n**ParameterID Resolution**:\n```swift\nprivate func resolveParameterID(_ parameterID: String) -> String {\n    // Already scoped - return as-is\n    if parameterID.contains(\":\") { return parameterID }\n    \n    // Apply scope based on focus context\n    switch focusContext {\n    case .song: return \"song:\\(parameterID)\"\n    case .section(let id): return \"section:\\(id):\\(parameterID)\"\n    case .role(let id): return \"role:\\(id):\\(parameterID)\"\n    case .roleInSection(let rid, let sid): return \"roleInSection:\\(rid):\\(sid):\\(parameterID)\"\n    }\n}\n```\n\n**Async Init Pattern for SwiftUI Views**:\n- SwiftUI `body` property cannot be async\n- Use `.task { await initialize() }` modifier\n- Show LoadingView during initialization\n- Handle errors gracefully with error state\n\n**Observable vs Published**:\n- `@Observable` (Swift 6 macro) is incompatible with `@Published` (ObservableObject)\n- Use only `@Observable` - it automatically makes properties observable without `@Published`\n- Mixing both causes \"_focusContext redeclaration\" errors\n\n### Files Modified\n- `swift_frontend/src/SwiftFrontendCore/Stores/ParameterStore.swift` (344 lines)\n- `swift_frontend/src/SwiftFrontendUI/MusicalContinuum/ConsoleX/ConsoleTypes.swift` (219 lines, NEW)\n- `swift_frontend/src/SwiftFrontendCore/Surface/SurfaceRootView.swift` (async init pattern)\n\n### Dependencies\n- Requires JUCEEngine instance\n- Unblocks: white_room-177 (UIInteractionTracker), white_room-178 (gesture telemetry)\n\n### Confidence: 0.95\n### Type: pattern\n",
+  "metadata": {
+    "scope": "repository",
+    "tags": [
+      "ffi",
+      "parameter-store",
+      "swiftui",
+      "async-init",
+      "observable",
+      "combine"
+    ],
+    "confidence": 0.5
+  },
+  "timestamp": "2026-01-13T08:59:54.574Z"
+}

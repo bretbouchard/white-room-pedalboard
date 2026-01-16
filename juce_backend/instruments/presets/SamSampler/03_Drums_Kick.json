@@ -1,0 +1,48 @@
+{
+  "version": "1.0.0",
+  "name": "Drums Kick",
+  "author": "Bret Bouchard",
+  "description": "Punchy kick drum sample with tight envelope and low-pass filter for solid low-end.",
+  "category": "Drums",
+  "tags": ["kick", "drums", "punchy", "low-end"],
+  "creationDate": "2025-12-26",
+  "parameters": {
+    "sample.file": "samples/kick_drum.wav",
+    "sample.loop_mode": 0.0,
+    "sample.loop.start": 0.0,
+    "sample.loop.end": 1.0,
+    "pitch.transpose": 0.45,
+    "pitch.detune": 0.5,
+    "pitch.bend": 0.5,
+    "filter.type": 0.0,
+    "filter.cutoff": 0.5,
+    "filter.resonance": 0.3,
+    "env.adsr.a": 0.0,
+    "env.adsr.d": 0.3,
+    "env.adsr.s": 0.0,
+    "env.adsr.r": 0.2,
+    "fx.drive": 0.2,
+    "fx.chorus": 0.0,
+    "fx.delay": 0.0,
+    "fx.reverb": 0.05,
+    "output.level": 0.9,
+    "output.pan": 0.5
+  },
+  "macroMappings": {
+    "macro_0": {
+      "name": "Punch",
+      "destination": "fx.drive",
+      "amount": 1.0,
+      "minValue": 0.0,
+      "maxValue": 0.5
+    },
+    "macro_1": {
+      "name": "Decay",
+      "destination": "env.adsr.d",
+      "amount": 1.0,
+      "minValue": 0.1,
+      "maxValue": 0.6
+    }
+  },
+  "modulationMatrix": {}
+}

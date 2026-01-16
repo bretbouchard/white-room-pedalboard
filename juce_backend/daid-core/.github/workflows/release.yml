@@ -1,0 +1,88 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_type:
+        description: 'Release type'
+        required: true
+        default: 'patch'
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+
+jobs:
+  release:
+    name: Create Release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      packages: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.SUBMODULES || github.token }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          registry-url: 'https://npm.pkg.github.com'
+          scope: '@bretbouchard'
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Python dependencies
+        run: |
+          cd python
+          pip install -r requirements.txt || true
+
+      - name: Run tests
+        run: npm test
+
+      - name: Run Python tests
+        run: |
+          cd python
+          python -m pytest ../tests/test_daid_core.py -v || true
+
+      - name: Build packages
+        run: npm run build
+
+      - name: Configure Git
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+
+      - name: Create release
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Run the release script with the specified type
+          npm run release:${{ github.event.inputs.release_type }}
+
+      - name: Create GitHub release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: v$(node -p "require('./package.json').version")
+          release_name: Release v$(node -p "require('./package.json').version")
+          body: |
+            ## Changes in this release
+            - Automated release ${{ github.event.inputs.release_type }}
+            - Version: v$(node -p "require('./package.json').version")
+          draft: false
+          prerelease: false

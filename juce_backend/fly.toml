@@ -1,0 +1,59 @@
+# Fly.io configuration for Audio Agent
+app = "audio-agent"
+primary_region = "ord"
+
+[build]
+  dockerfile = "Dockerfile"
+
+[env]
+  HOST = "0.0.0.0"
+  PORT = "8081"
+  ENVIRONMENT = "production"
+  PYTHONPATH = "/app/src:/app/backend/src"
+
+[http_service]
+  internal_port = 8081
+  force_https = true
+  auto_stop_machines = false
+  auto_start_machines = true
+  min_machines_running = 1
+  processes = ["app"]
+
+  [[http_service.checks]]
+    grace_period = "10s"
+    interval = "30s"
+    method = "GET"
+    timeout = "5s"
+    path = "/health"
+
+[machine]
+  memory = "2gb"
+  cpu_kind = "shared"
+  cpus = 2
+
+[[mounts]]
+  source = "audio_agent_data"
+  destination = "/app/audio_files"
+
+[deploy]
+  release_command = "python -c 'print(\"Audio Agent deployment ready\")'"
+
+# WebSocket configuration
+[[services]]
+  protocol = "tcp"
+  internal_port = 8081
+
+  [[services.ports]]
+    port = 80
+    handlers = ["http"]
+    force_https = true
+
+  [[services.ports]]
+    port = 443
+    handlers = ["http", "tls"]
+
+  [[services.tcp_checks]]
+    grace_period = "10s"
+    interval = "30s"
+    restart_limit = 0
+    timeout = "5s"

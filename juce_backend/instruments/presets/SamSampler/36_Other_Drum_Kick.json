@@ -1,0 +1,33 @@
+{
+  "version": "1.0.0",
+  "name": "Kick Drum",
+  "author": "Bret Bouchard",
+  "description": "Acoustic kick drum with punchy attack and low-end thump.",
+  "category": "Drum",
+  "tags": ["drum", "kick", "acoustic", "punchy", "thump"],
+  "creationDate": "2025-12-27",
+  "parameters": {
+    "sample.file": "drum_kick.wav",
+    "sample.loop_mode": 0.0,
+    "sample.loop.start": 0.0,
+    "sample.loop.end": 1.0,
+    "pitch.transpose": 0.5,
+    "pitch.detune": 0.5,
+    "pitch.bend": 0.5,
+    "filter.type": 0.0,
+    "filter.cutoff": 0.5,
+    "filter.resonance": 0.15,
+    "env.adsr.a": 0.001,
+    "env.adsr.d": 0.15,
+    "env.adsr.s": 0.0,
+    "env.adsr.r": 0.15,
+    "fx.drive": 0.08,
+    "fx.chorus": 0.0,
+    "fx.delay": 0.0,
+    "fx.reverb": 0.05,
+    "output.level": 0.9,
+    "output.pan": 0.5
+  },
+  "macroMappings": {},
+  "modulationMatrix": {}
+}

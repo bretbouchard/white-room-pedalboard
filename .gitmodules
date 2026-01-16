@@ -1,0 +1,17 @@
+[submodule "juce_backend"]
+	path = juce_backend
+	url = https://github.com/bretbouchard/audio_agent_juce.git
+	branch = juce_backend_clean
+[submodule "sdk"]
+	path = sdk
+	url = https://github.com/bretbouchard/schillinger-sdk.git
+[submodule "swift_frontend"]
+	path = swift_frontend
+	url = https://github.com/bretbouchard/swift_frontend.git
+	branch = main
+[submodule "effects/biPhase"]
+	path = effects/biPhase
+	url = https://github.com/bretbouchard/biPhase.git
+[submodule "effects/filtergate"]
+	path = effects/filtergate
+	url = https://github.com/bretbouchard/FilterGate.git

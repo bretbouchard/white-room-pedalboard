@@ -1,0 +1,154 @@
+{
+  "test_id": "test_YYYYMMDD_HHMMSS",
+  "tester_name": "",
+  "test_date": "",
+  "test_duration_minutes": 0,
+
+  "system_info": {
+    "os": "macOS",
+    "os_version": "",
+    "architecture": "arm64",
+    "cpu_model": "",
+    "ram_gb": 0,
+    "audio_interface": "Built-in Audio"
+  },
+
+  "daw_info": {
+    "daw_name": "Reaper",
+    "daw_version": "",
+    "plugin_format": "VST3",
+    "sample_rate": 48000,
+    "buffer_size": 512
+  },
+
+  "plugin_tested": {
+    "plugin_name": "",
+    "plugin_version": "1.0.0",
+    "plugin_format": "VST3",
+    "plugin_path": ""
+  },
+
+  "test_results": {
+    "loading": {
+      "passed": false,
+      "notes": "",
+      "issues": [],
+      "memory_usage_mb": 0,
+      "load_time_seconds": 0
+    },
+
+    "ui": {
+      "passed": false,
+      "notes": "",
+      "issues": [],
+      "ui_responsive": false,
+      "graphical_glitches": false
+    },
+
+    "basic_functionality": {
+      "midi_input": {
+        "passed": false,
+        "notes": "",
+        "issues": []
+      },
+      "audio_output": {
+        "passed": false,
+        "notes": "",
+        "issues": []
+      },
+      "transport": {
+        "passed": false,
+        "notes": "",
+        "issues": []
+      },
+      "parameters": {
+        "passed": false,
+        "notes": "",
+        "issues": [],
+        "parameter_count": 0
+      },
+      "presets": {
+        "passed": false,
+        "notes": "",
+        "issues": [],
+        "preset_count": 0
+      }
+    },
+
+    "advanced_features": {
+      "automation": {
+        "passed": false,
+        "notes": "",
+        "issues": []
+      },
+      "state_persistence": {
+        "passed": false,
+        "notes": "",
+        "issues": []
+      },
+      "multiple_instances": {
+        "passed": false,
+        "notes": "",
+        "issues": [],
+        "max_instances_tested": 0
+      },
+      "sample_rate_change": {
+        "passed": false,
+        "notes": "",
+        "issues": [],
+        "tested_rates": [44100, 48000, 96000]
+      },
+      "buffer_size_change": {
+        "passed": false,
+        "notes": "",
+        "issues": [],
+        "tested_sizes": [64, 128, 256, 512, 1024]
+      }
+    },
+
+    "performance": {
+      "cpu_idle_percent": 0,
+      "cpu_1_note_percent": 0,
+      "cpu_10_notes_percent": 0,
+      "cpu_max_polyphony": 0,
+      "memory_initial_mb": 0,
+      "memory_steady_mb": 0,
+      "memory_leak_mb": 0,
+      "latency_samples": 0,
+      "latency_ms": 0
+    },
+
+    "format_specific": {
+      "vst3_automation": {
+        "passed": false,
+        "notes": "",
+        "issues": []
+      },
+      "vst3_state": {
+        "passed": false,
+        "notes": "",
+        "issues": []
+      },
+      "vst3_info": {
+        "vendor": "",
+        "category": "",
+        "version": ""
+      }
+    }
+  },
+
+  "issues": {
+    "critical": [],
+    "important": [],
+    "minor": []
+  },
+
+  "overall_assessment": {
+    "production_ready": false,
+    "blockers": [],
+    "workarounds": [],
+    "notes": ""
+  },
+
+  "tester_comments": ""
+}

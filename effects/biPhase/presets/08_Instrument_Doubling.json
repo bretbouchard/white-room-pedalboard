@@ -1,0 +1,21 @@
+{
+    "name": "Instrument Doubling",
+    "description": "Two very different phaser settings for instrument doubling effect",
+    "author": "Mu-Tron",
+    "category": "Special",
+    "parameters": {
+        "rateA": 0.15,
+        "depthA": 0.4,
+        "feedbackA": 0.0,
+        "shapeA": "sine",
+        "sourceA": "generator1",
+        "rateB": 4.0,
+        "depthB": 0.7,
+        "feedbackB": 0.8,
+        "shapeB": "square",
+        "sourceB": "generator2",
+        "routingMode": "inB",
+        "sweepSync": "normal"
+    },
+    "notes": "A is subtle clean, B is aggressive square - perfect for two different sounds"
+}

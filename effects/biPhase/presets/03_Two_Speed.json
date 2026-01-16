@@ -1,0 +1,14 @@
+{
+    "name": "Two Speed",
+    "description": "Complex dual-rate modulation - slow sweep with fast modulation",
+    "author": "Mu-Tron",
+    "category": "Complex",
+    "parameters": {
+        "rate": 0.2,
+        "depth": 0.8,
+        "feedback": 0.7,
+        "stereoPhase": 0.0,
+        "shape": "sine"
+    },
+    "notes": "Very slow rate creates evolving sweep, high feedback adds definition"
+}

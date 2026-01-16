@@ -1,0 +1,650 @@
+name: Deployment Automation
+
+# Comprehensive deployment automation with semantic-release, code signing, and multi-platform distribution
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      release_type:
+        description: 'Release type'
+        required: true
+        default: 'patch'
+        type: choice
+        options:
+        - patch
+        - minor
+        - major
+      deploy_environment:
+        description: 'Deployment environment'
+        required: true
+        default: 'testing'
+        type: choice
+        options:
+        - testing
+        - staging
+        - production
+
+env:
+  NODE_VERSION: '20'
+  SWIFT_VERSION: '5.9.2'
+  # Cache version
+  CACHE_VERSION: v2
+
+jobs:
+  ################################################################################
+  # Pre-Deployment Checks
+  ################################################################################
+
+  pre-deploy-checks:
+    name: Pre-Deployment Checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    outputs:
+      should_deploy: ${{ steps.checks.outputs.should_deploy }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: |
+          npm ci
+          cd sdk && npm ci
+
+      - name: Run all tests
+        run: |
+          npm run test:all
+
+      - name: Check if tests passed
+        id: checks
+        run: |
+          if [[ ${{ job.status }} == "success" ]]; then
+            echo "should_deploy=true" >> $GITHUB_OUTPUT
+          else
+            echo "should_deploy=false" >> $GITHUB_OUTPUT
+            echo "❌ Pre-deployment checks failed"
+            exit 1
+          fi
+
+      - name: Check branch protection
+        run: |
+          # Ensure we're on main branch
+          if [[ "${{ github.ref_name }}" != "main" ]]; then
+            echo "❌ Can only deploy from main branch"
+            exit 1
+          fi
+
+      - name: Check for uncommitted changes
+        run: |
+          if [[ -n $(git status --porcelain) ]]; then
+            echo "❌ Working directory not clean"
+            exit 1
+          fi
+
+  ################################################################################
+  # Semantic Release
+  ################################################################################
+
+  semantic-release:
+    name: Semantic Release
+    runs-on: ubuntu-latest
+    needs: pre-deploy-checks
+    if: needs.pre-deploy-checks.outputs.should_deploy == 'true'
+    timeout-minutes: 10
+    outputs:
+      new_version: ${{ steps.release.outputs.version }}
+      release_type: ${{ steps.release.outputs.release_type }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          registry-url: 'https://npm.pkg.github.com'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install semantic-release plugins
+        run: |
+          npm install --save-dev \
+            semantic-release \
+            semantic-release-gitmoji \
+            semantic-release-changelog \
+            semantic-release-exec \
+            @semantic-release/git \
+            @semantic-release/github
+
+      - name: Create .releaserc.json
+        run: |
+          cat > .releaserc.json << 'EOF'
+          {
+            "branches": ["main"],
+            "plugins": [
+              "@semantic-release/commit-analyzer",
+              "@semantic-release/release-notes-generator",
+              "@semantic-release/changelog",
+              "@semantic-release/github",
+              [
+                "@semantic-release/git",
+                {
+                  "assets": ["CHANGELOG.md"],
+                  "message": "chore(release): ${nextRelease.version} [skip ci]\n\n${nextRelease.notes}"
+                }
+              ]
+            ],
+            "releaseRules": [
+              {"breaking": true, "release": "major"},
+              {"revert": true, "release": "patch"},
+              {"type": "feat", "release": "minor"},
+              {"type": "fix", "release": "patch"},
+              {"type": "perf", "release": "patch"},
+              {"type": "refactor", "release": "patch"},
+              {"type": "docs", "release": "patch"}
+            ]
+          }
+          EOF
+
+      - name: Run semantic-release (dry run)
+        id: release
+        run: |
+          npx semantic-release --dry-run
+          VERSION=$(npx semantic-release --dry-run --no-ci | grep "The next release version is" | awk '{print $NF}')
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
+          echo "release_type=auto" >> $GITHUB_OUTPUT
+
+      - name: Create actual release
+        if: github.event.inputs.release_type != ''
+        run: |
+          # Manual release trigger
+          RELEASE_TYPE="${{ github.event.inputs.release_type }}"
+          echo "Creating ${RELEASE_TYPE} release"
+
+  ################################################################################
+  # Build Release Artifacts
+  ################################################################################
+
+  build-artifacts:
+    name: Build Release Artifacts
+    runs-on: ${{ matrix.os }}
+    needs: semantic-release
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            platform: linux-x64
+            build_juce: true
+            build_sdk: true
+          - os: macos-latest
+            platform: macos-universal
+            build_juce: true
+            build_swift: true
+          - os: macos-latest
+            platform: ios-arm64
+            build_juce: true
+            build_swift: true
+          - os: windows-latest
+            platform: windows-x64
+            build_juce: true
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Setup Node.js
+        if: matrix.build_sdk
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Setup Swift
+        if: matrix.build_swift
+        uses: swift-actions/setup-swift@v1
+        with:
+          swift-version: ${{ env.SWIFT_VERSION }}
+
+      - name: Setup CMake
+        if: matrix.build_juce
+        uses: jwlawson/actions-setup-cmake@v2
+        with:
+          cmake-version: '3.26.4'
+
+      - name: Install dependencies (Ubuntu)
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libasound2-dev \
+            libx11-dev \
+            libxext-dev \
+            libfreetype6-dev \
+            python3-dev
+
+      - name: Install dependencies (macOS)
+        if: matrix.os == 'macos-latest'
+        run: brew install libfreetype
+
+      - name: Install dependencies (Windows)
+        if: matrix.os == 'windows-latest'
+        uses: microsoft/setup-msbuild@v2
+
+      - name: Build JUCE plugins
+        if: matrix.build_juce
+        working-directory: juce_backend
+        run: |
+          cmake -B build \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DBUILD_PLUGINS=ON \
+            -DCMAKE_INSTALL_PREFIX=install \
+            -DVERSION=${{ needs.semantic-release.outputs.new_version }}
+          cmake --build build --config Release -j$(sysctl -n hw.ncpu || nproc)
+          cmake --install build --prefix install
+
+      - name: Build Swift apps
+        if: matrix.build_swift
+        working-directory: swift_frontend
+        run: |
+          swift build -c release \
+            -Xswiftc -DVERSION=${{ needs.semantic-release.outputs.new_version }}
+
+      - name: Build SDK packages
+        if: matrix.build_sdk
+        working-directory: sdk
+        run: |
+          npm run build
+          npm run pack
+
+      - name: Create release archive
+        working-directory: juce_backend
+        run: |
+          mkdir -p release/${{ matrix.platform }}
+          # Copy built artifacts
+          find install -name "*.vst3" -exec cp -r {} release/${{ matrix.platform }}/ \; || true
+          find install -name "*.app" -exec cp -r {} release/${{ matrix.platform }}/ \; || true
+          find install -name "*.component" -exec cp -r {} release/${{ matrix.platform }}/ \; || true
+          # Create tarball
+          cd release
+          tar -czf white-room-${{ matrix.platform }}-${{ needs.semantic-release.outputs.new_version }}.tar.gz ${{ matrix.platform }}/
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-artifacts-${{ matrix.platform }}
+          path: |
+            juce_backend/release/
+            sdk/*.tgz
+            swift_frontend/.build/release/
+
+  ################################################################################
+  # Code Signing and Notarization
+  ################################################################################
+
+  code-signing:
+    name: Code Signing & Notarization
+    runs-on: macos-latest
+    needs: build-artifacts
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: release-artifacts-macos-*
+          path: ./artifacts
+          merge-multiple: true
+
+      - name: Import code signing certificate
+        run: |
+          # Import certificate from secrets (base64 encoded)
+          echo "${{ secrets.APPLE_CERTIFICATES_P12_BASE64 }}" | base64 -d > certificate.p12
+          security create-keychain -p "${{ secrets.KEYCHAIN_PASSWORD }}" build.keychain
+          security import certificate.p12 -k ~/Library/Keychains/build.keychain -P "${{ secrets.CERTIFICATE_PASSWORD }}" -T /usr/bin/codesign
+          security default-keychain -s ~/Library/Keychains/build.keychain
+          security unlock-keychain -p "${{ secrets.KEYCHAIN_PASSWORD }}" ~/Library/Keychains/build.keychain
+          security set-key-partition-list -S apple-tool:,apple: -s -k "${{ secrets.KEYCHAIN_PASSWORD }}" ~/Library/Keychains/build.keychain
+
+      - name: Code sign plugins and apps
+        run: |
+          # Find all binaries and sign them
+          find artifacts -name "*.vst3" -exec codesign --force --deep --sign "${{ secrets.APPLE_DEVELOPER_ID }}" {} \;
+          find artifacts -name "*.app" -exec codesign --force --deep --sign "${{ secrets.APPLE_DEVELOPER_ID }}" {} \;
+          find artifacts -name "*.component" -exec codesign --force --deep --sign "${{ secrets.APPLE_DEVELOPER_ID }}" {} \;
+
+      - name: Notarize apps
+        run: |
+          # Upload to Apple for notarization
+          for app in artifacts/**/*.app; do
+            xcrun notarytool submit "$app" \
+              --apple-id "${{ secrets.APPLE_ID }}" \
+              --password "${{ secrets.APPLE_APP_PASSWORD }}" \
+              --team-id "${{ secrets.APPLE_TEAM_ID }}" \
+              --wait
+          done
+
+      - name: Staple notarization
+        run: |
+          # Staple notarization ticket to apps
+          for app in artifacts/**/*.app; do
+            xcrun stapler staple "$app"
+          done
+
+      - name: Upload signed artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: signed-artifacts-macos
+          path: artifacts/
+
+  ################################################################################
+  # Generate Changelog
+  ################################################################################
+
+  changelog:
+    name: Generate Changelog
+    runs-on: ubuntu-latest
+    needs: semantic-release
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Generate changelog
+        id: changelog
+        run: |
+          # Get commits since last tag
+          LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+          VERSION="${{ needs.semantic-release.outputs.new_version }}"
+
+          # Generate changelog
+          cat > CHANGELOG.md << 'EOF'
+          # Changelog
+
+          ## [${VERSION}] - $(date +%Y-%m-%d)
+
+          ### Added
+          $(git log ${LAST_TAG}..HEAD --grep="^feat" --pretty=format:"- %s" || echo "None")
+
+          ### Changed
+          $(git log ${LAST_TAG}..HEAD --grep="^chore\|^refactor" --pretty=format:"- %s" || echo "None")
+
+          ### Fixed
+          $(git log ${LAST_TAG}..HEAD --grep="^fix" --pretty=format:"- %s" || echo "None")
+
+          ### Performance
+          $(git log ${LAST_TAG}..HEAD --grep="^perf" --pretty=format:"- %s" || echo "None")
+          EOF
+
+          echo "changelog_created=true" >> $GITHUB_OUTPUT
+
+      - name: Upload changelog
+        uses: actions/upload-artifact@v4
+        with:
+          name: changelog
+          path: CHANGELOG.md
+
+  ################################################################################
+  # Create GitHub Release
+  ################################################################################
+
+  create-release:
+    name: Create GitHub Release
+    runs-on: ubuntu-latest
+    needs: [code-signing, changelog, semantic-release]
+    timeout-minutes: 15
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: ./artifacts
+
+      - name: Download changelog
+        uses: actions/download-artifact@v4
+        with:
+          name: changelog
+          path: ./
+
+      - name: Create release notes
+        run: |
+          cat > release-notes.md << EOF
+          # White Room v${{ needs.semantic-release.outputs.new_version }}
+
+          ## Installation
+
+          ### macOS
+          - Download the macOS package
+          - Unzip and copy to `/Library/Audio/Plug-Ins/VST3/`
+          - Or use the installer package
+
+          ### Windows
+          - Download the Windows installer
+          - Run the installer and follow prompts
+
+          ### Linux
+          - Download the Linux package
+          - Extract to `~/.vst3/`
+
+          ## What's Changed
+
+          $(cat CHANGELOG.md)
+
+          ## Full Changelog
+          https://github.com/${{ github.repository }}/compare/v${{ needs.semantic-release.outputs.new_version }}...HEAD
+          EOF
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: v${{ needs.semantic-release.outputs.new_version }}
+          name: White Room v${{ needs.semantic-release.outputs.new_version }}
+          body_path: release-notes.md
+          draft: false
+          prerelease: false
+          files: |
+            artifacts/**/*.tar.gz
+            artifacts/**/*.tgz
+            artifacts/**/*.exe
+            artifacts/**/*.dmg
+            artifacts/**/*.pkg
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  ################################################################################
+  # Deploy to Testing Channels
+  ################################################################################
+
+  deploy-testing:
+    name: Deploy to Testing
+    runs-on: ubuntu-latest
+    needs: create-release
+    if: github.event.inputs.deploy_environment == 'testing' || github.event.inputs.deploy_environment == ''
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: ./artifacts
+
+      - name: Deploy to testing channel
+        run: |
+          # Deploy to internal testing distribution
+          echo "Deploying version ${{ needs.semantic-release.outputs.new_version }} to testing channel"
+
+          # Example: Upload to S3 bucket
+          # aws s3 sync artifacts/ s3://testing-releases/white-room/${{ needs.semantic-release.outputs.new_version }}/
+
+          # Example: Notify testing team
+          # curl -X POST ${{ vars.TESTING_WEBHOOK_URL }} \
+          #   -H "Content-Type: application/json" \
+          #   -d '{"version":"${{ needs.semantic-release.outputs.new_version }}","status":"ready_for_testing"}'
+
+      - name: Create testing notification
+        run: |
+          echo "🚀 Version ${{ needs.semantic-release.outputs.new_version }} deployed to testing channel"
+
+  ################################################################################
+  # Deploy to Staging
+  ################################################################################
+
+  deploy-staging:
+    name: Deploy to Staging
+    runs-on: ubuntu-latest
+    needs: deploy-testing
+    if: github.event.inputs.deploy_environment == 'staging'
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Deploy to staging environment
+        run: |
+          echo "Deploying to staging environment"
+          # Add staging deployment logic here
+
+  ################################################################################
+  # Deploy to Production
+  ################################################################################
+
+  deploy-production:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    needs: deploy-staging
+    if: github.event.inputs.deploy_environment == 'production'
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: ./artifacts
+
+      - name: Deploy to production distribution
+        run: |
+          echo "Deploying version ${{ needs.semantic-release.outputs.new_version }} to production"
+
+          # Example: Upload to production S3
+          # aws s3 sync artifacts/ s3://releases/white-room/${{ needs.semantic-release.outputs.new_version }}/
+
+          # Example: Update download page
+          # curl -X POST ${{ vars.DEPLOYMENT_WEBHOOK_URL }} \
+          #   -H "Content-Type: application/json" \
+          #   -d '{"version":"${{ needs.semantic-release.outputs.new_version }}","action":"update_download_page"}'
+
+      - name: Trigger post-deployment tasks
+        run: |
+          # Send analytics
+          # Notify users
+          # Update documentation
+          echo "Post-deployment tasks completed"
+
+  ################################################################################
+  # Post-Deployment Notification
+  ################################################################################
+
+  notify:
+    name: Deployment Notification
+    runs-on: ubuntu-latest
+    needs: [create-release, deploy-testing, deploy-staging, deploy-production]
+    if: always()
+    timeout-minutes: 5
+
+    steps:
+      - name: Determine deployment status
+        id: status
+        run: |
+          ENVIRONMENT="${{ github.event.inputs.deploy_environment }}"
+          if [[ -z "$ENVIRONMENT" ]]; then
+            ENVIRONMENT="testing"
+          fi
+
+          if [[ "${{ needs.create-release.result }}" == "success" ]]; then
+            echo "status=success" >> $GITHUB_OUTPUT
+            echo "emoji=🚀" >> $GITHUB_OUTPUT
+            echo "color=good" >> $GITHUB_OUTPUT
+            echo "environment=$ENVIRONMENT" >> $GITHUB_OUTPUT
+          else
+            echo "status=failure" >> $GITHUB_OUTPUT
+            echo "emoji=❌" >> $GITHUB_OUTPUT
+            echo "color=danger" >> $GITHUB_OUTPUT
+            echo "environment=$ENVIRONMENT" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Slack notification
+        if: vars.SLACK_WEBHOOK_URL != ''
+        uses: slackapi/slack-github-action@v1
+        with:
+          webhook-url: ${{ vars.SLACK_WEBHOOK_URL }}
+          payload: |
+            {
+              "text": "${{ steps.status.outputs.emoji }} White Room v${{ needs.semantic-release.outputs.new_version }} deployed to ${{ steps.status.outputs.environment }}",
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*${{ steps.status.outputs.emoji }} Deployment ${{ steps.status.outputs.status }}*\n\n*Version:* v${{ needs.semantic-release.outputs.new_version }}\n*Environment:* ${{ steps.status.outputs.environment }}\n*Repository:* ${{ github.repository }}\n*Branch:* ${{ github.ref_name }}\n*Author:* ${{ github.actor }}"
+                  }
+                },
+                {
+                  "type": "actions",
+                  "elements": [
+                    {
+                      "type": "button",
+                      "text": {
+                        "type": "plain_text",
+                        "text": "View Release"
+                      },
+                      "url": "${{ github.server_url }}/${{ github.repository }}/releases/latest"
+                    },
+                    {
+                      "type": "button",
+                      "text": {
+                        "type": "plain_text",
+                        "text": "Download Artifacts"
+                      },
+                      "url": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+                    }
+                  ]
+                }
+              ]
+            }

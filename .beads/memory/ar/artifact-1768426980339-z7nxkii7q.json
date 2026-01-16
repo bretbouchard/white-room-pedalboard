@@ -1,0 +1,18 @@
+{
+  "id": "artifact-1768426980339-z7nxkii7q",
+  "type": "design_decision",
+  "content": "Harmony Processing Engine Implementation - TDD Approach\n\n**Implementation Summary:**\nImplemented complete Harmony Processing Engine for Schillinger music playback using Test-Driven Development (TDD).\n\n**Files Created:**\n\n1. **swift_frontend/tests/SwiftFrontendCoreTests/Harmony/HarmonyEngineTests.swift**\n   - Comprehensive test suite with 20+ test cases\n   - Tests for: triadic harmony, chord progressions, voice leading, scale constraints, voicing types\n   - Edge cases and performance tests included\n\n2. **swift_frontend/src/SwiftFrontendCore/Algorithms/MusicalModels.swift**\n   - HarmonyNoteEvent: Musical note with pitch, timing, velocity\n   - Chord: Root, type (major, minor, 7th, etc.), duration\n   - ChordProgression: Sequence of chords\n   - ScaleType: Major, minor, pentatonic, blues, etc.\n   - HarmonyEngineSystem: Configuration for harmony processing\n   - VoicingType: Root, open, closed, drop2, drop3, rootless\n   - VoiceLeadingStyle: Smooth, contrary, parallel, oblique\n   - HarmonyResult & VoiceLeadingResult: Processing results\n\n3. **swift_frontend/src/SwiftFrontendCore/Algorithms/HarmonyEngine.swift**\n   - applyHarmony(): Conform notes to scale constraints\n   - applyProgression(): Generate chord events from progressions\n   - generateVoiceLeading(): Create smooth voice transitions\n   - getChordTones(): Extract chord tones (major, minor, 7th)\n   - generateChord(): Create voicings (open, closed, drop2, etc.)\n   - conformToScale(): Map pitches to nearest scale degree\n\n4. **juce_backend/include/algorithms/HarmonyEngine.h**\n   - C++ header with complete API\n   - Matching Swift functionality\n   - JUCE integration ready\n\n5. **juce_backend/src/algorithms/HarmonyEngine.cpp**\n   - Full C++ implementation\n   - Identical algorithms to Swift version\n   - Ready for JUCE audio engine integration\n\n**Key Features:**\n- Scale constraint enforcement (major, minor, pentatonic, blues, chromatic)\n- Chord progression processing (I-IV-V-I and custom)\n- Voice leading with multiple styles (smooth minimizes movement)\n- Voicing generation (root position, open, closed, drop2, drop3, rootless)\n- Chord tone extraction for all chord types\n- Comprehensive test coverage (TDD approach)\n\n**Technical Notes:**\n- Uses HarmonyNoteEvent to avoid conflict with existing NoteEvent in SongStateV1.swift\n- All models are Sendable for thread safety\n- Supports both Swift and C++ implementations\n- Ready for integration with Schillinger playback system",
+  "metadata": {
+    "scope": "repository",
+    "tags": [
+      "harmony",
+      "schillinger",
+      "tdd",
+      "music-theory",
+      "chord-progressions",
+      "voice-leading"
+    ],
+    "confidence": 1
+  },
+  "timestamp": "2026-01-14T21:43:00.339Z"
+}

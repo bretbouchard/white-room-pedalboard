@@ -1,0 +1,43 @@
+version: "3.9"
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.backend
+    env_file:
+      - .env
+    ports:
+      - "8350:8350"
+    environment:
+      DEV_ALLOW_ALL_ORIGINS: "true"
+      PORT: "8350"
+      DAID_BASE_URL: "${DAID_BASE_URL:-http://localhost:8080/}"
+    volumes:
+      # Mount the source tree so code changes are reflected without rebuilding.
+      - .:/app
+    command: ["uvicorn", "backend.src.main:app", "--host", "0.0.0.0", "--port", "8350", "--reload"]
+
+  frontend:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.frontend
+    env_file:
+      - .env
+    environment:
+      VITE_CLERK_PUBLISHABLE_KEY: ${CLERK_PUBLISHABLE_KEY:-pk_test_placeholder}
+      VITE_WS_URL: ${VITE_WS_URL:-ws://backend:8350/ws}
+      VITE_BACKEND_ORIGIN: ${VITE_BACKEND_ORIGIN:-http://backend:8350}
+      VITE_HMR_CLIENT_PORT: ${VITE_HMR_CLIENT_PORT:-3000}
+      VITE_HMR_CLIENT_HOST: ${VITE_HMR_CLIENT_HOST:-localhost}
+      VITE_API_URL: ${VITE_API_URL:-http://backend:8350/api}
+      VITE_USE_LOCAL_STORAGE: "false"
+      CHOKIDAR_USEPOLLING: "true"
+    ports:
+      - "8053:3000"
+    depends_on:
+      - backend
+    volumes:
+      - ./frontend:/app/frontend
+      - /app/frontend/node_modules
+    command: ["pnpm", "run", "dev", "--", "--host", "0.0.0.0", "--port", "3000"]

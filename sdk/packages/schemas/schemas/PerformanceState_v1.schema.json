@@ -1,0 +1,138 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://whiteroom.dev/schemas/PerformanceState_v1.schema.json",
+  "title": "PerformanceState_v1",
+  "description": "Represents how a song is realized (solo piano, SATB, ambient techno, etc.) - one of many parallel performance universes for a single song",
+  "type": "object",
+  "required": [
+    "version",
+    "id",
+    "name",
+    "arrangementStyle"
+  ],
+  "properties": {
+    "version": {
+      "type": "string",
+      "const": "1",
+      "description": "Schema version"
+    },
+    "id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Unique identifier for this performance"
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256,
+      "description": "Human-readable name for this performance (e.g., 'Solo Piano', 'SATB', 'Ambient Techno')"
+    },
+    "arrangementStyle": {
+      "type": "string",
+      "enum": [
+        "SOLO_PIANO",
+        "SATB",
+        "CHAMBER_ENSEMBLE",
+        "FULL_ORCHESTRA",
+        "JAZZ_COMBO",
+        "JAZZ_TRIO",
+        "ROCK_BAND",
+        "AMBIENT_TECHNO",
+        "ELECTRONIC",
+        "ACAPPELLA",
+        "STRING_QUARTET",
+        "CUSTOM"
+      ],
+      "description": "Musical arrangement style for this performance"
+    },
+    "density": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1,
+      "default": 1,
+      "description": "Note density multiplier (0 = sparse, 1 = full density)"
+    },
+    "grooveProfileId": {
+      "type": "string",
+      "default": "default",
+      "description": "Reference to groove template (straight, swing, etc.)"
+    },
+    "instrumentationMap": {
+      "type": "object",
+      "description": "Maps roles or track IDs to instrument assignments",
+      "additionalProperties": {
+        "$ref": "#/definitions/InstrumentAssignment"
+      }
+    },
+    "consoleXProfileId": {
+      "type": "string",
+      "default": "default",
+      "description": "Reference to ConsoleX profile for mixing settings"
+    },
+    "mixTargets": {
+      "type": "object",
+      "description": "Per-role or per-track gain/pan targets",
+      "additionalProperties": {
+        "$ref": "#/definitions/MixTarget"
+      }
+    },
+    "createdAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 creation timestamp"
+    },
+    "modifiedAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 modification timestamp"
+    },
+    "metadata": {
+      "type": "object",
+      "description": "Custom metadata for this performance"
+    }
+  },
+  "definitions": {
+    "InstrumentAssignment": {
+      "type": "object",
+      "required": ["instrumentId"],
+      "properties": {
+        "instrumentId": {
+          "type": "string",
+          "description": "Instrument identifier (e.g., 'LocalGal', 'KaneMarco', etc.)"
+        },
+        "presetId": {
+          "type": "string",
+          "description": "Optional preset identifier for the instrument"
+        },
+        "parameters": {
+          "type": "object",
+          "description": "Custom instrument parameters",
+          "additionalProperties": {
+            "type": "number"
+          }
+        }
+      }
+    },
+    "MixTarget": {
+      "type": "object",
+      "required": ["gain", "pan"],
+      "properties": {
+        "gain": {
+          "type": "number",
+          "description": "Gain in decibels (-inf to 0 dB)"
+        },
+        "pan": {
+          "type": "number",
+          "minimum": -1,
+          "maximum": 1,
+          "description": "Pan position (-1 = left, 0 = center, 1 = right)"
+        },
+        "stereo": {
+          "type": "boolean",
+          "default": true,
+          "description": "Whether this target is stereo"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,251 @@
+# FilterGate LV2 Plugin Definition
+# Defines all ports and parameters for FilterGate effect
+
+@prefix lv2:  <http://lv2plug.in/ns/lv2core#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix units: <http://lv2plug.in/ns/extensions/units#> .
+@prefix pprop: <http://lv2plug.in/ns/ext/port-props#> .
+
+<http://schillinger-ecosystem/plugins/filtergate>
+    a lv2:Plugin ;
+    lv2:project <http://schillinger-ecosystem/> ;
+
+    #==========================================================================
+    # Audio Ports
+    #==========================================================================
+
+    # Input L
+    lv2:port [
+        a lv2:AudioPort, lv2:InputPort ;
+        lv2:index 0 ;
+        lv2:symbol "in_l" ;
+        lv2:name "Input L" ;
+        lv2:shortDesignation "In L" ;
+    ] ;
+
+    # Input R
+    lv2:port [
+        a lv2:AudioPort, lv2:InputPort ;
+        lv2:index 1 ;
+        lv2:symbol "in_r" ;
+        lv2:name "Input R" ;
+        lv2:shortDesignation "In R" ;
+    ] ;
+
+    # Output L
+    lv2:port [
+        a lv2:AudioPort, lv2:OutputPort ;
+        lv2:index 2 ;
+        lv2:symbol "out_l" ;
+        lv2:name "Output L" ;
+        lv2:shortDesignation "Out L" ;
+    ] ;
+
+    # Output R
+    lv2:port [
+        a lv2:AudioPort, lv2:OutputPort ;
+        lv2:index 3 ;
+        lv2:symbol "out_r" ;
+        lv2:name "Output R" ;
+        lv2:shortDesignation "Out R" ;
+    ] ;
+
+    #==========================================================================
+    # Control Ports - Filter Parameters
+    #==========================================================================
+
+    # Frequency
+    lv2:port [
+        a lv2:ControlPort, lv2:InputPort ;
+        lv2:index 4 ;
+        lv2:symbol "frequency" ;
+        lv2:name "Frequency" ;
+        lv2:default 1000.0 ;
+        lv2:minimum 20.0 ;
+        lv2:maximum 20000.0 ;
+        units:unit units:hz ;
+        pprop:hasStrictBounds true ;
+        lv2:portProperty pprop:logarithmic ;
+        rdfs:comment "Cutoff frequency of the filter"
+    ] ;
+
+    # Resonance
+    lv2:port [
+        a lv2:ControlPort, lv2:InputPort ;
+        lv2:index 5 ;
+        lv2:symbol "resonance" ;
+        lv2:name "Resonance" ;
+        lv2:default 1.0 ;
+        lv2:minimum 0.1 ;
+        lv2:maximum 20.0 ;
+        units:unit units:coef ;
+        pprop:hasStrictBounds true ;
+        rdfs:comment "Filter resonance/Q"
+    ] ;
+
+    # Gain
+    lv2:port [
+        a lv2:ControlPort, lv2:InputPort ;
+        lv2:index 6 ;
+        lv2:symbol "gain" ;
+        lv2:name "Gain" ;
+        lv2:default 0.0 ;
+        lv2:minimum -24.0 ;
+        lv2:maximum 24.0 ;
+        units:unit units:db ;
+        pprop:hasStrictBounds true ;
+        rdfs:comment "Filter gain in dB"
+    ] ;
+
+    # Filter Mode
+    lv2:port [
+        a lv2:ControlPort, lv2:InputPort ;
+        lv2:index 7 ;
+        lv2:symbol "filter_mode" ;
+        lv2:name "Filter Mode" ;
+        lv2:default 0.0 ;
+        lv2:minimum 0.0 ;
+        lv2:maximum 7.0 ;
+        lv2:portProperty lv2:integer, lv2:enumeration ;
+        lv2:scalePoint [ rdfs:label "Low Pass" ; rdf:value 0 ] ;
+        lv2:scalePoint [ rdfs:label "High Pass" ; rdf:value 1 ] ;
+        lv2:scalePoint [ rdfs:label "Band Pass" ; rdf:value 2 ] ;
+        lv2:scalePoint [ rdfs:label "Notch" ; rdf:value 3 ] ;
+        lv2:scalePoint [ rdfs:label "Peak" ; rdf:value 4 ] ;
+        lv2:scalePoint [ rdfs:label "Bell" ; rdf:value 5 ] ;
+        lv2:scalePoint [ rdfs:label "High Shelf" ; rdf:value 6 ] ;
+        lv2:scalePoint [ rdfs:label "Low Shelf" ; rdf:value 7 ] ;
+        rdfs:comment "Filter mode selection"
+    ] ;
+
+    #==========================================================================
+    # Control Ports - Gate Parameters
+    #==========================================================================
+
+    # Gate Threshold
+    lv2:port [
+        a lv2:ControlPort, lv2:InputPort ;
+        lv2:index 8 ;
+        lv2:symbol "gate_threshold" ;
+        lv2:name "Gate Threshold" ;
+        lv2:default 0.5 ;
+        lv2:minimum 0.0 ;
+        lv2:maximum 1.0 ;
+        units:unit units:coef ;
+        pprop:hasStrictBounds true ;
+        rdfs:comment "Gate opening threshold"
+    ] ;
+
+    # Gate Attack
+    lv2:port [
+        a lv2:ControlPort, lv2:InputPort ;
+        lv2:index 9 ;
+        lv2:symbol "gate_attack" ;
+        lv2:name "Gate Attack" ;
+        lv2:default 1.0 ;
+        lv2:minimum 0.1 ;
+        lv2:maximum 100.0 ;
+        units:unit units:ms ;
+        pprop:hasStrictBounds true ;
+        rdfs:comment "Gate attack time in milliseconds"
+    ] ;
+
+    # Gate Release
+    lv2:port [
+        a lv2:ControlPort, lv2:InputPort ;
+        lv2:index 10 ;
+        lv2:symbol "gate_release" ;
+        lv2:name "Gate Release" ;
+        lv2:default 50.0 ;
+        lv2:minimum 1.0 ;
+        lv2:maximum 500.0 ;
+        units:unit units:ms ;
+        pprop:hasStrictBounds true ;
+        rdfs:comment "Gate release time in milliseconds"
+    ] ;
+
+    # Gate Range
+    lv2:port [
+        a lv2:ControlPort, lv2:InputPort ;
+        lv2:index 11 ;
+        lv2:symbol "gate_range" ;
+        lv2:name "Gate Range" ;
+        lv2:default 24.0 ;
+        lv2:minimum 0.0 ;
+        lv2:maximum 96.0 ;
+        units:unit units:db ;
+        pprop:hasStrictBounds true ;
+        rdfs:comment "Gate attenuation range in dB"
+    ] ;
+
+    # Gate Trigger Mode
+    lv2:port [
+        a lv2:ControlPort, lv2:InputPort ;
+        lv2:index 12 ;
+        lv2:symbol "gate_trigger_mode" ;
+        lv2:name "Gate Trigger Mode" ;
+        lv2:default 1.0 ;
+        lv2:minimum 0.0 ;
+        lv2:maximum 4.0 ;
+        lv2:portProperty lv2:integer, lv2:enumeration ;
+        lv2:scalePoint [ rdfs:label "Sidechain" ; rdf:value 0 ] ;
+        lv2:scalePoint [ rdfs:label "ADSR" ; rdf:value 1 ] ;
+        lv2:scalePoint [ rdfs:label "LFO" ; rdf:value 2 ] ;
+        lv2:scalePoint [ rdfs:label "Velocity" ; rdf:value 3 ] ;
+        lv2:scalePoint [ rdfs:label "Manual" ; rdf:value 4 ] ;
+        rdfs:comment "Gate trigger source"
+    ] ;
+
+    #==========================================================================
+    # Control Ports - LFO Parameters
+    #==========================================================================
+
+    # LFO Frequency
+    lv2:port [
+        a lv2:ControlPort, lv2:InputPort ;
+        lv2:index 13 ;
+        lv2:symbol "lfo_frequency" ;
+        lv2:name "LFO Frequency" ;
+        lv2:default 1.0 ;
+        lv2:minimum 0.01 ;
+        lv2:maximum 20.0 ;
+        units:unit units:hz ;
+        pprop:hasStrictBounds true ;
+        rdfs:comment "LFO modulation rate"
+    ] ;
+
+    # LFO Depth
+    lv2:port [
+        a lv2:ControlPort, lv2:InputPort ;
+        lv2:index 14 ;
+        lv2:symbol "lfo_depth" ;
+        lv2:name "LFO Depth" ;
+        lv2:default 0.0 ;
+        lv2:minimum 0.0 ;
+        lv2:maximum 1.0 ;
+        units:unit units:coef ;
+        pprop:hasStrictBounds true ;
+        rdfs:comment "LFO modulation depth"
+    ] ;
+
+    # LFO Waveform
+    lv2:port [
+        a lv2:ControlPort, lv2:InputPort ;
+        lv2:index 15 ;
+        lv2:symbol "lfo_waveform" ;
+        lv2:name "LFO Waveform" ;
+        lv2:default 0.0 ;
+        lv2:minimum 0.0 ;
+        lv2:maximum 4.0 ;
+        lv2:portProperty lv2:integer, lv2:enumeration ;
+        lv2:scalePoint [ rdfs:label "Sine" ; rdf:value 0 ] ;
+        lv2:scalePoint [ rdfs:label "Triangle" ; rdf:value 1 ] ;
+        lv2:scalePoint [ rdfs:label "Sawtooth" ; rdf:value 2 ] ;
+        lv2:scalePoint [ rdfs:label "Square" ; rdf:value 3 ] ;
+        lv2:scalePoint [ rdfs:label "Sample & Hold" ; rdf:value 4 ] ;
+        rdfs:comment "LFO waveform shape"
+    ] .
+
+# Namespace corrections
+@prefix rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .

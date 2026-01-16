@@ -1,0 +1,23 @@
+cmake_minimum_required(VERSION 3.16)
+
+# Find JUCE
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/JUCE/cmake")
+find_package(JUCE CONFIG REQUIRED)
+
+# Add the executable
+add_executable(test_enhanced_plugin_scan test_plugin_scan_simple.cpp src/plugins/PluginLoader.cpp)
+
+# Link JUCE modules
+target_link_libraries(test_enhanced_plugin_scan
+    juce::juce_audio_processors_headless
+    juce::juce_audio_utils
+    juce::juce_audio_formats
+    juce::juce_dsp
+    juce::juce_core
+)
+
+# Add include directories
+target_include_directories(test_enhanced_plugin_scan PRIVATE src include JUCE/modules build/JUCE_modules)
+
+# Set compiler standard
+set_property(TARGET test_enhanced_plugin_scan PROPERTY CXX_STANDARD 17)

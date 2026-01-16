@@ -1,0 +1,9 @@
+{
+  "id": "test-init-001",
+  "ok": true,
+  "result": {
+    "sessionId": "session-1234567890",
+    "sdkBuildHash": "dev-build",
+    "schemaVersion": "1.0.0"
+  }
+}

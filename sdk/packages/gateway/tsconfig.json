@@ -1,0 +1,19 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": "src",
+    "outDir": "dist",
+    "declaration": true,
+    "baseUrl": ".",
+    "paths": {
+      "@schillinger-sdk/shared": ["../../shared/dist"],
+      "@schillinger-sdk/shared/*": ["../../shared/dist/*"],
+      "@schillinger-sdk/core": ["../../core/dist"],
+      "@schillinger-sdk/core/*": ["../../core/dist/*"],
+      "@schillinger-sdk/analysis": ["../../analysis/dist"],
+      "@schillinger-sdk/analysis/*": ["../../analysis/dist/*"]
+    }
+  },
+  "include": ["src/**/*.ts"],
+  "exclude": ["**/*.test.ts", "**/__tests__/**"]
+}

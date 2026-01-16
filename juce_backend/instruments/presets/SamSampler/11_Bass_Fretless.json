@@ -1,0 +1,33 @@
+{
+  "version": "1.0.0",
+  "name": "Fretless Bass",
+  "author": "Bret Bouchard",
+  "description": "Smooth fretless bass with singing sustain and expressive tone.",
+  "category": "Bass",
+  "tags": ["bass", "fretless", "smooth", "expressive", "singing"],
+  "creationDate": "2025-12-27",
+  "parameters": {
+    "sample.file": "bass_fretless_C2.wav",
+    "sample.loop_mode": 1.0,
+    "sample.loop.start": 0.15,
+    "sample.loop.end": 0.85,
+    "pitch.transpose": 0.5,
+    "pitch.detune": 0.5,
+    "pitch.bend": 0.6,
+    "filter.type": 0.0,
+    "filter.cutoff": 0.58,
+    "filter.resonance": 0.18,
+    "env.adsr.a": 0.012,
+    "env.adsr.d": 0.18,
+    "env.adsr.s": 0.55,
+    "env.adsr.r": 0.28,
+    "fx.drive": 0.05,
+    "fx.chorus": 0.25,
+    "fx.delay": 0.0,
+    "fx.reverb": 0.2,
+    "output.level": 0.8,
+    "output.pan": 0.5
+  },
+  "macroMappings": {},
+  "modulationMatrix": {}
+}

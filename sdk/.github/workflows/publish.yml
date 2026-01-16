@@ -1,0 +1,128 @@
+name: Publish SDK Packages
+
+on:
+  workflow_dispatch:
+    inputs:
+      platforms:
+        description: 'Platforms to publish (comma-separated: npm,pypi,swift,cpp)'
+        required: false
+        default: 'npm,pypi,swift,cpp'
+      dry_run:
+        description: 'Perform dry run'
+        required: false
+        default: 'false'
+        type: boolean
+
+jobs:
+  publish-npm:
+    if: contains(github.event.inputs.platforms || 'npm,pypi,swift,cpp', 'npm')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Install dependencies
+        run: npm ci
+        working-directory: sdk
+
+      - name: Build packages
+        run: npm run build
+        working-directory: sdk
+
+      - name: Run tests
+        run: npm run test
+        working-directory: sdk
+
+      - name: Publish to NPM
+        env:
+          DRY_RUN: ${{ github.event.inputs.dry_run }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          if [[ "$DRY_RUN" == "true" ]]; then
+            ./scripts/publish-npm.sh --dry-run
+          else
+            ./scripts/publish-npm.sh
+          fi
+        working-directory: sdk
+
+  publish-pypi:
+    if: contains(github.event.inputs.platforms || 'npm,pypi,swift,cpp', 'pypi')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install build tools
+        run: |
+          python -m pip install --upgrade pip
+          pip install build twine
+
+      - name: Publish to PyPI
+        env:
+          DRY_RUN: ${{ github.event.inputs.dry_run }}
+          TWINE_USERNAME: __token__
+          TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
+        run: |
+          if [[ "$DRY_RUN" == "true" ]]; then
+            ./scripts/publish-pypi.sh --dry-run
+          else
+            ./scripts/publish-pypi.sh
+          fi
+        working-directory: sdk
+
+  publish-swift:
+    if: contains(github.event.inputs.platforms || 'npm,pypi,swift,cpp', 'swift')
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Swift
+        # Pinning to full commit SHA is recommended for security; replace the tag below with a full SHA when available.
+        uses: swift-actions/setup-swift@v1
+        with:
+          swift-version: '5.9'
+
+      - name: Publish Swift Package
+        run: |
+          if [[ "${{ github.event.inputs.dry_run }}" == "true" ]]; then
+            ./scripts/publish-swift.sh --dry-run
+          else
+            ./scripts/publish-swift.sh
+          fi
+        working-directory: sdk
+
+  publish-cpp:
+    if: contains(github.event.inputs.platforms || 'npm,pypi,swift,cpp', 'cpp')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake build-essential
+
+      - name: Build and package C++
+        env:
+          DRY_RUN: ${{ github.event.inputs.dry_run }}
+        run: |
+          if [[ "$DRY_RUN" == "true" ]]; then
+            ./scripts/publish-cpp.sh --dry-run
+          else
+            ./scripts/publish-cpp.sh
+          fi
+        working-directory: sdk
+
+      - name: Upload C++ artifacts
+        if: github.event.inputs.dry_run != 'true'
+        uses: actions/upload-artifact@v3
+        with:
+          name: cpp-distribution
+          path: sdk/packages/juce-cpp/dist/*.tar.gz

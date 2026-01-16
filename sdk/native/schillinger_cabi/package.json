@@ -1,0 +1,42 @@
+{
+  "name": "@schillinger-sdk/native",
+  "version": "2.1.0",
+  "description": "Native C ABI wrapper for Schillinger SDK (Node.js bindings)",
+  "main": "index.js",
+  "types": "index.d.ts",
+  "scripts": {
+    "build": "cmake -B build -S . && cmake --build build",
+    "build:release": "cmake -DCMAKE_BUILD_TYPE=Release -B build -S . && cmake --build build",
+    "install": "cmake --install build --prefix ../",
+    "clean": "rm -rf build",
+    "test": "ctest --test-dir build"
+  },
+  "keywords": [
+    "schillinger",
+    "music",
+    "theory",
+    "ffi",
+    "native",
+    "c-abi"
+  ],
+  "author": "Schillinger SDK Team",
+  "license": "MIT",
+  "dependencies": {
+    "node-addon-api": "^7.0.0"
+  },
+  "devDependencies": {
+    "cmake-js": "^7.0.0"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "os": [
+    "darwin",
+    "linux",
+    "win32"
+  ],
+  "cpu": [
+    "x64",
+    "arm64"
+  ]
+}

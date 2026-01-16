@@ -1,0 +1,1281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebSocket Plugin System Demo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        header {
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        header p {
+            opacity: 0.9;
+            font-size: 1.1rem;
+        }
+
+        .status-bar {
+            background: #f8fafc;
+            border-bottom: 1px solid #e2e8f0;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .status-indicators {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-weight: 500;
+        }
+
+        .status.connected {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .status.disconnected {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .status-item .icon {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: currentColor;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 350px 1fr;
+            height: calc(100vh - 200px);
+        }
+
+        .sidebar {
+            background: #f8fafc;
+            border-right: 1px solid #e2e8f0;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .plugin-library {
+            margin-bottom: 30px;
+        }
+
+        .plugin-library h3 {
+            color: #1e293b;
+            margin-bottom: 15px;
+            font-size: 1.2rem;
+        }
+
+        .plugin-item {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .plugin-item:hover {
+            border-color: #4f46e5;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.1);
+        }
+
+        .plugin-item h4 {
+            color: #1e293b;
+            margin-bottom: 5px;
+        }
+
+        .plugin-item p {
+            color: #64748b;
+            font-size: 0.9rem;
+        }
+
+        .workspace {
+            padding: 30px;
+            overflow-y: auto;
+        }
+
+        .track-container {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .track-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .track-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #1e293b;
+        }
+
+        .track-controls {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.9rem;
+        }
+
+        .btn-primary {
+            background: #4f46e5;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #4338ca;
+        }
+
+        .btn-secondary {
+            background: #f1f5f9;
+            color: #475569;
+        }
+
+        .btn-secondary:hover {
+            background: #e2e8f0;
+        }
+
+        .btn-danger {
+            background: #ef4444;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #dc2626;
+        }
+
+        .plugins-chain {
+            display: flex;
+            gap: 15px;
+            align-items: flex-start;
+            flex-wrap: wrap;
+        }
+
+        .plugin-card {
+            background: #f8fafc;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 20px;
+            min-width: 250px;
+            transition: all 0.2s;
+        }
+
+        .plugin-card.active {
+            border-color: #4f46e5;
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.1);
+        }
+
+        .plugin-card.bypassed {
+            opacity: 0.6;
+            border-color: #94a3b8;
+        }
+
+        .plugin-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .plugin-name {
+            font-weight: 600;
+            color: #1e293b;
+        }
+
+        .plugin-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .plugin-actions button {
+            padding: 4px 8px;
+            font-size: 0.8rem;
+            border-radius: 4px;
+        }
+
+        .parameters {
+            margin-top: 15px;
+        }
+
+        .parameter {
+            margin-bottom: 15px;
+        }
+
+        .parameter label {
+            display: block;
+            font-size: 0.9rem;
+            color: #475569;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+
+        .parameter-control {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .parameter input[type="range"] {
+            flex: 1;
+            height: 6px;
+            border-radius: 3px;
+            background: #e2e8f0;
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        .parameter input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #4f46e5;
+            cursor: pointer;
+        }
+
+        .parameter input[type="range"]::-moz-range-thumb {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #4f46e5;
+            cursor: pointer;
+            border: none;
+        }
+
+        .parameter-value {
+            min-width: 50px;
+            text-align: right;
+            font-family: 'SF Mono', 'Monaco', 'Inconsolata', monospace;
+            font-size: 0.9rem;
+            color: #1e293b;
+            font-weight: 500;
+        }
+
+        .presets {
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .presets h4 {
+            font-size: 0.9rem;
+            color: #475569;
+            margin-bottom: 10px;
+            font-weight: 500;
+        }
+
+        .preset-buttons {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .preset-btn {
+            padding: 6px 12px;
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .preset-btn:hover {
+            background: #f8fafc;
+            border-color: #4f46e5;
+        }
+
+        .message-log {
+            background: #1e293b;
+            color: #e2e8f0;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'SF Mono', 'Monaco', 'Inconsolata', monospace;
+            font-size: 0.8rem;
+            height: 200px;
+            overflow-y: auto;
+            margin-top: 20px;
+        }
+
+        .message-log .timestamp {
+            color: #64748b;
+            margin-right: 8px;
+        }
+
+        .message-log .type {
+            color: #4ade80;
+            margin-right: 8px;
+        }
+
+        .message-log .error {
+            color: #f87171;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #64748b;
+        }
+
+        .empty-state h3 {
+            margin-bottom: 10px;
+            color: #475569;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            max-width: 500px;
+            width: 90%;
+        }
+
+        .modal-header {
+            margin-bottom: 20px;
+        }
+
+        .modal-header h3 {
+            color: #1e293b;
+            font-size: 1.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #475569;
+            font-weight: 500;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            font-size: 1rem;
+        }
+
+        .modal-footer {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid #e2e8f0;
+            border-top: 2px solid #4f46e5;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .metrics {
+            background: #f8fafc;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 20px;
+        }
+
+        .metrics h4 {
+            color: #1e293b;
+            margin-bottom: 10px;
+        }
+
+        .metric-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+            font-size: 0.9rem;
+        }
+
+        .metric-label {
+            color: #64748b;
+        }
+
+        .metric-value {
+            color: #1e293b;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎛️ WebSocket Plugin System Demo</h1>
+            <p>Real-time audio plugin control with DawDreamer integration</p>
+        </header>
+
+        <div class="status-bar">
+            <div class="status-indicators">
+                <div id="connectionStatus" class="status disconnected">
+                    <span class="icon"></span>
+                    <span>Disconnected</span>
+                </div>
+                <div id="sessionInfo" class="status-item">
+                    <span>Session: <strong id="sessionId">None</strong></span>
+                </div>
+                <div id="userDisplay" class="status-item">
+                    <span>User: <strong id="userId">Anonymous</strong></span>
+                </div>
+            </div>
+            <div class="status-indicators">
+                <button class="btn btn-primary" onclick="connect()">Connect</button>
+                <button class="btn btn-secondary" onclick="disconnect()">Disconnect</button>
+                <button class="btn btn-secondary" onclick="clearLog()">Clear Log</button>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <aside class="sidebar">
+                <div class="plugin-library">
+                    <h3>Available Plugins</h3>
+                    <div class="plugin-item" onclick="showAddPluginModal('reverb')">
+                        <h4>🌊 Reverb</h4>
+                        <p>Space and ambiance effects</p>
+                    </div>
+                    <div class="plugin-item" onclick="showAddPluginModal('compressor')">
+                        <h4>🎛️ Compressor</h4>
+                        <p>Dynamic range control</p>
+                    </div>
+                    <div class="plugin-item" onclick="showAddPluginModal('eq')">
+                        <h4>📊 Equalizer</h4>
+                        <p>Frequency shaping</p>
+                    </div>
+                    <div class="plugin-item" onclick="showAddPluginModal('delay')">
+                        <h4>⏱️ Delay</h4>
+                        <p>Time-based echo effects</p>
+                    </div>
+                    <div class="plugin-item" onclick="showAddPluginModal('distortion')">
+                        <h4>🔥 Distortion</h4>
+                        <p>Harmonic saturation</p>
+                    </div>
+                </div>
+
+                <div class="metrics">
+                    <h4>Connection Metrics</h4>
+                    <div class="metric-item">
+                        <span class="metric-label">Messages Sent:</span>
+                        <span class="metric-value" id="messagesSent">0</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">Messages Received:</span>
+                        <span class="metric-value" id="messagesReceived">0</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">Average Latency:</span>
+                        <span class="metric-value" id="avgLatency">0ms</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">Errors:</span>
+                        <span class="metric-value" id="errorCount">0</span>
+                    </div>
+                </div>
+            </aside>
+
+            <main class="workspace">
+                <div class="track-container">
+                    <div class="track-header">
+                        <h2 class="track-title">🎵 Track 1 - Master</h2>
+                        <div class="track-controls">
+                            <button class="btn btn-primary" onclick="showAddPluginModal()">+ Add Plugin</button>
+                            <button class="btn btn-secondary" onclick="refreshAllPlugins()">↻ Refresh</button>
+                        </div>
+                    </div>
+
+                    <div id="pluginsChain" class="plugins-chain">
+                        <div class="empty-state">
+                            <h3>No plugins loaded</h3>
+                            <p>Click "Add Plugin" or select from the sidebar to get started</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="message-log" id="messageLog">
+                    <div class="timestamp">00:00:00</div>
+                    <span class="type">INFO</span>
+                    WebSocket Plugin System Demo initialized. Click "Connect" to begin.
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Add Plugin Modal -->
+    <div id="addPluginModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Add Plugin</h3>
+            </div>
+            <div class="form-group">
+                <label for="pluginType">Plugin Type:</label>
+                <select id="pluginType">
+                    <option value="">Select Plugin</option>
+                    <option value="reverb">Reverb</option>
+                    <option value="compressor">Compressor</option>
+                    <option value="eq">Equalizer</option>
+                    <option value="delay">Delay</option>
+                    <option value="distortion">Distortion</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="pluginName">Custom Name (optional):</label>
+                <input type="text" id="pluginName" placeholder="My Plugin">
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="addPlugin()">Add Plugin</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // WebSocket Plugin System Demo
+        class WebSocketPluginDemo {
+            constructor() {
+                this.ws = null;
+                this.isConnected = false;
+                this.plugins = new Map();
+                this.sessionId = 'demo_session_' + Date.now();
+                this.userId = 'demo_user_' + Math.random().toString(36).substr(2, 9);
+                this.trackId = 'demo_track_1';
+
+                // Metrics
+                this.metrics = {
+                    messagesSent: 0,
+                    messagesReceived: 0,
+                    totalLatency: 0,
+                    errorCount: 0,
+                    messageTimestamps: new Map()
+                };
+
+                // Initialize
+                this.updateUI();
+                this.log('INFO', 'Demo initialized. Session: ' + this.sessionId);
+            }
+
+            connect() {
+                if (this.isConnected) {
+                    this.log('WARN', 'Already connected');
+                    return;
+                }
+
+                try {
+                    this.ws = new WebSocket('ws://localhost:8000/ws');
+                    this.setupWebSocket();
+                    this.log('INFO', 'Connecting to WebSocket...');
+                } catch (error) {
+                    this.log('ERROR', 'Connection failed: ' + error.message);
+                    this.simulateConnection();
+                }
+            }
+
+            setupWebSocket() {
+                this.ws.onopen = () => {
+                    this.isConnected = true;
+                    this.log('SUCCESS', 'WebSocket connected');
+                    this.updateUI();
+
+                    // Send authentication
+                    this.sendMessage({
+                        type: 'AUTH',
+                        data: {
+                            token: 'demo_token_' + Date.now(),
+                            user_id: this.userId,
+                            session_id: this.sessionId
+                        }
+                    });
+                };
+
+                this.ws.onmessage = (event) => {
+                    try {
+                        const message = JSON.parse(event.data);
+                        this.handleMessage(message);
+                    } catch (error) {
+                        this.log('ERROR', 'Failed to parse message: ' + error.message);
+                    }
+                };
+
+                this.ws.onclose = () => {
+                    this.isConnected = false;
+                    this.log('WARN', 'WebSocket disconnected');
+                    this.updateUI();
+                };
+
+                this.ws.onerror = (error) => {
+                    this.log('ERROR', 'WebSocket error: ' + error);
+                    this.simulateConnection();
+                };
+            }
+
+            simulateConnection() {
+                // Simulate connection for demo purposes
+                setTimeout(() => {
+                    this.isConnected = true;
+                    this.log('SUCCESS', 'Simulated connection established (demo mode)');
+                    this.updateUI();
+                    this.log('INFO', 'Session: ' + this.sessionId);
+                    this.log('INFO', 'User: ' + this.userId);
+                }, 1000);
+            }
+
+            handleMessage(message) {
+                const timestamp = Date.now();
+                this.metrics.messagesReceived++;
+
+                // Calculate latency
+                if (message.id && this.metrics.messageTimestamps.has(message.id)) {
+                    const latency = timestamp - this.metrics.messageTimestamps.get(message.id);
+                    this.metrics.totalLatency += latency;
+                    this.metrics.messageTimestamps.delete(message.id);
+                }
+
+                this.log('RECEIVED', `${message.type}: ${JSON.stringify(message.data)}`);
+
+                // Handle different message types
+                switch (message.type) {
+                    case 'AUTH_SUCCESS':
+                        this.log('SUCCESS', 'Authentication successful');
+                        break;
+                    case 'PLUGIN_ADD':
+                        this.handlePluginAdded(message.data);
+                        break;
+                    case 'PLUGIN_REMOVE':
+                        this.handlePluginRemoved(message.data);
+                        break;
+                    case 'PLUGIN_PARAMETER':
+                        this.handleParameterUpdated(message.data);
+                        break;
+                    case 'PLUGIN_BYPASS':
+                        this.handleBypassToggled(message.data);
+                        break;
+                    case 'PLUGIN_PRESET':
+                        this.handlePresetLoaded(message.data);
+                        break;
+                    case 'PLUGIN_PARAMETERS_GET':
+                        this.handleParametersReceived(message.data);
+                        break;
+                    case 'ERROR':
+                        this.handleError(message.data);
+                        break;
+                }
+
+                this.updateMetrics();
+            }
+
+            sendMessage(message) {
+                if (!this.isConnected && !this.ws) {
+                    // Simulate message for demo
+                    this.simulateMessageResponse(message);
+                    return;
+                }
+
+                try {
+                    const fullMessage = {
+                        ...message,
+                        id: 'msg_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
+                        user_id: this.userId,
+                        session_id: this.sessionId,
+                        timestamp: new Date().toISOString()
+                    };
+
+                    this.metrics.messageTimestamps.set(fullMessage.id, Date.now());
+                    this.metrics.messagesSent++;
+
+                    if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+                        this.ws.send(JSON.stringify(fullMessage));
+                        this.log('SENT', `${message.type}: ${JSON.stringify(message.data)}`);
+                    } else {
+                        this.simulateMessageResponse(fullMessage);
+                    }
+
+                    this.updateMetrics();
+                } catch (error) {
+                    this.log('ERROR', 'Failed to send message: ' + error.message);
+                }
+            }
+
+            simulateMessageResponse(message) {
+                // Simulate server response for demo
+                setTimeout(() => {
+                    const response = this.createMockResponse(message);
+                    this.handleMessage(response);
+                }, Math.random() * 200 + 50); // Random delay 50-250ms
+            }
+
+            createMockResponse(message) {
+                switch (message.type) {
+                    case 'PLUGIN_ADD':
+                        const pluginId = 'plugin_' + Date.now();
+                        return {
+                            id: 'response_' + message.id,
+                            type: 'PLUGIN_ADD',
+                            data: {
+                                ...message.data,
+                                plugin_id: pluginId,
+                                parameters: this.generateMockParameters(message.data.name),
+                                success: true
+                            }
+                        };
+
+                    case 'PLUGIN_PARAMETER':
+                        return {
+                            id: 'response_' + message.id,
+                            type: 'PLUGIN_PARAMETER',
+                            data: {
+                                ...message.data,
+                                success: true
+                            }
+                        };
+
+                    case 'PLUGIN_BYPASS':
+                        return {
+                            id: 'response_' + message.id,
+                            type: 'PLUGIN_BYPASS',
+                            data: {
+                                ...message.data,
+                                success: true
+                            }
+                        };
+
+                    case 'AUTH':
+                        return {
+                            id: 'response_' + message.id,
+                            type: 'AUTH_SUCCESS',
+                            data: {
+                                session_id: this.sessionId,
+                                user_id: this.userId
+                            }
+                        };
+
+                    default:
+                        return {
+                            id: 'response_' + message.id,
+                            type: 'ERROR',
+                            data: {
+                                error: 'Unknown message type: ' + message.type,
+                                code: 'UNKNOWN_MESSAGE_TYPE'
+                            }
+                        };
+                }
+            }
+
+            generateMockParameters(pluginType) {
+                const parameterSets = {
+                    reverb: {
+                        wet_dry: 0.5,
+                        room_size: 0.7,
+                        damping: 0.3,
+                        pre_delay: 0.01,
+                        high_freq: 8000,
+                        low_freq: 200
+                    },
+                    compressor: {
+                        threshold: -20,
+                        ratio: 4,
+                        attack: 0.003,
+                        release: 0.1,
+                        makeup_gain: 0,
+                        knee: 2
+                    },
+                    eq: {
+                        low_freq: 200,
+                        low_gain: 0,
+                        mid_freq: 1000,
+                        mid_gain: 0,
+                        mid_q: 1,
+                        high_freq: 8000,
+                        high_gain: 0
+                    },
+                    delay: {
+                        delay_time: 0.25,
+                        feedback: 0.3,
+                        wet_dry: 0.3,
+                        filter_freq: 10000,
+                        modulation: 0
+                    },
+                    distortion: {
+                        drive: 5,
+                        tone: 5,
+                        level: 0,
+                        mix: 0.5
+                    }
+                };
+
+                return parameterSets[pluginType.toLowerCase()] || {};
+            }
+
+            // Plugin handling methods
+            handlePluginAdded(data) {
+                const plugin = {
+                    id: data.plugin_id,
+                    name: data.name,
+                    type: data.name.toLowerCase(),
+                    parameters: data.parameters || {},
+                    bypassed: false
+                };
+
+                this.plugins.set(data.plugin_id, plugin);
+                this.renderPlugins();
+                this.log('SUCCESS', `Plugin added: ${plugin.name} (${plugin.id})`);
+            }
+
+            handlePluginRemoved(data) {
+                const plugin = this.plugins.get(data.plugin_id);
+                if (plugin) {
+                    this.plugins.delete(data.plugin_id);
+                    this.renderPlugins();
+                    this.log('SUCCESS', `Plugin removed: ${plugin.name}`);
+                }
+            }
+
+            handleParameterUpdated(data) {
+                const plugin = this.plugins.get(data.plugin_id);
+                if (plugin) {
+                    plugin.parameters[data.parameter_id] = data.parameter_value;
+                    this.updatePluginUI(data.plugin_id);
+                }
+            }
+
+            handleBypassToggled(data) {
+                const plugin = this.plugins.get(data.plugin_id);
+                if (plugin) {
+                    plugin.bypassed = data.bypass;
+                    this.updatePluginUI(data.plugin_id);
+                }
+            }
+
+            handlePresetLoaded(data) {
+                const plugin = this.plugins.get(data.plugin_id);
+                if (plugin && data.preset_data) {
+                    plugin.parameters = data.preset_data;
+                    this.updatePluginUI(data.plugin_id);
+                    this.log('SUCCESS', `Preset loaded for ${plugin.name}`);
+                }
+            }
+
+            handleParametersReceived(data) {
+                const plugin = this.plugins.get(data.plugin_id);
+                if (plugin && data.parameters) {
+                    plugin.parameters = data.parameters;
+                    this.updatePluginUI(data.plugin_id);
+                }
+            }
+
+            handleError(data) {
+                this.metrics.errorCount++;
+                this.log('ERROR', `${data.code}: ${data.error}`);
+                this.updateMetrics();
+            }
+
+            // UI Methods
+            renderPlugins() {
+                const container = document.getElementById('pluginsChain');
+
+                if (this.plugins.size === 0) {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <h3>No plugins loaded</h3>
+                            <p>Click "Add Plugin" or select from the sidebar to get started</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                container.innerHTML = Array.from(this.plugins.values()).map(plugin => `
+                    <div class="plugin-card ${plugin.bypassed ? 'bypassed' : 'active'}" id="plugin-${plugin.id}">
+                        <div class="plugin-header">
+                            <span class="plugin-name">${plugin.name}</span>
+                            <div class="plugin-actions">
+                                <button class="btn btn-secondary" onclick="demoApp.toggleBypass('${plugin.id}')">
+                                    ${plugin.bypassed ? 'Enable' : 'Bypass'}
+                                </button>
+                                <button class="btn btn-secondary" onclick="demoApp.refreshParameters('${plugin.id}')">
+                                    ↻
+                                </button>
+                                <button class="btn btn-danger" onclick="demoApp.removePlugin('${plugin.id}')">
+                                    ×
+                                </button>
+                            </div>
+                        </div>
+                        <div class="parameters">
+                            ${Object.entries(plugin.parameters).map(([paramId, value]) => `
+                                <div class="parameter">
+                                    <label>${paramId.replace(/_/g, ' ')}</label>
+                                    <div class="parameter-control">
+                                        <input type="range"
+                                               min="0"
+                                               max="1"
+                                               step="0.01"
+                                               value="${this.normalizeParameterValue(value)}"
+                                               oninput="demoApp.updateParameter('${plugin.id}', '${paramId}', this.value)">
+                                        <span class="parameter-value">${value.toFixed(2)}</span>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                        <div class="presets">
+                            <h4>Presets</h4>
+                            <div class="preset-buttons">
+                                ${this.generatePresetButtons(plugin.type, plugin.id)}
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            updatePluginUI(pluginId) {
+                const plugin = this.plugins.get(pluginId);
+                if (!plugin) return;
+
+                const pluginElement = document.getElementById(`plugin-${pluginId}`);
+                if (!pluginElement) return;
+
+                // Update bypass state
+                pluginElement.className = `plugin-card ${plugin.bypassed ? 'bypassed' : 'active'}`;
+
+                // Update parameters
+                Object.entries(plugin.parameters).forEach(([paramId, value]) => {
+                    const input = pluginElement.querySelector(`input[oninput*="${paramId}"]`);
+                    const valueSpan = pluginElement.querySelector(`.parameter-value`);
+                    if (input && valueSpan) {
+                        input.value = this.normalizeParameterValue(value);
+                        valueSpan.textContent = value.toFixed(2);
+                    }
+                });
+            }
+
+            normalizeParameterValue(value) {
+                // Normalize various parameter ranges to 0-1 for slider
+                if (typeof value === 'number') {
+                    if (value < -10) return (value + 100) / 110; // For -100 to +10 range
+                    if (value > 10) return Math.min(value / 100, 1); // For 0+ ranges
+                    return (value + 20) / 40; // For -20 to +20 range
+                }
+                return 0.5;
+            }
+
+            denormalizeParameterValue(value, paramId) {
+                // Convert 0-1 slider value back to parameter range
+                const ranges = {
+                    threshold: () => (value * 60) - 40, // -40 to +20
+                    ratio: () => value * 20, // 0 to 20
+                    attack: () => Math.pow(value, 3) * 0.1, // 0 to 100ms
+                    release: () => Math.pow(value, 3) * 2, // 0 to 2s
+                    makeup_gain: () => (value * 40) - 20, // -20 to +20
+                    'default': () => value // 0 to 1
+                };
+
+                const normalizer = ranges[paramId] || ranges['default'];
+                return normalizer();
+            }
+
+            generatePresetButtons(pluginType, pluginId) {
+                const presets = {
+                    reverb: ['Hall', 'Room', 'Plate', 'Spring'],
+                    compressor: ['Gentle', 'Medium', 'Aggressive', 'Lim'],
+                    eq: ['Flat', 'Smile', 'Warm', 'Bright'],
+                    delay: ['Quarter', 'Eighth', 'Dotted', 'Ping Pong'],
+                    distortion: ['Tape', 'Tube', 'Fuzz', 'Subtle']
+                };
+
+                const pluginPresets = presets[pluginType] || [];
+                return pluginPresets.map(preset =>
+                    `<button class="preset-btn" onclick="demoApp.loadPreset('${pluginId}', '${preset.toLowerCase()}')">${preset}</button>`
+                ).join('');
+            }
+
+            updateUI() {
+                const statusElement = document.getElementById('connectionStatus');
+                statusElement.className = `status ${this.isConnected ? 'connected' : 'disconnected'}`;
+                statusElement.innerHTML = `
+                    <span class="icon"></span>
+                    <span>${this.isConnected ? 'Connected' : 'Disconnected'}</span>
+                `;
+
+                document.getElementById('sessionId').textContent = this.sessionId;
+                document.getElementById('userId').textContent = this.userId;
+
+                this.renderPlugins();
+            }
+
+            updateMetrics() {
+                document.getElementById('messagesSent').textContent = this.metrics.messagesSent;
+                document.getElementById('messagesReceived').textContent = this.metrics.messagesReceived;
+                document.getElementById('errorCount').textContent = this.metrics.errorCount;
+
+                const avgLatency = this.metrics.messagesReceived > 0
+                    ? this.metrics.totalLatency / this.metrics.messagesReceived
+                    : 0;
+                document.getElementById('avgLatency').textContent = avgLatency.toFixed(1) + 'ms';
+            }
+
+            log(level, message) {
+                const timestamp = new Date().toLocaleTimeString();
+                const logElement = document.getElementById('messageLog');
+                const logEntry = document.createElement('div');
+
+                logEntry.innerHTML = `
+                    <span class="timestamp">${timestamp}</span>
+                    <span class="type ${level.toLowerCase()}">${level}</span>
+                    ${message}
+                `;
+
+                logElement.appendChild(logEntry);
+                logElement.scrollTop = logElement.scrollHeight;
+
+                // Keep only last 100 messages
+                while (logElement.children.length > 100) {
+                    logElement.removeChild(logElement.firstChild);
+                }
+            }
+
+            // Public API methods
+            addPlugin(pluginType, customName) {
+                const name = customName || pluginType.charAt(0).toUpperCase() + pluginType.slice(1);
+
+                this.sendMessage({
+                    type: 'PLUGIN_ADD',
+                    data: {
+                        track_id: this.trackId,
+                        name: name,
+                        plugin_path: `/path/to/${pluginType}.vst3`,
+                        plugin_id: ''
+                    }
+                });
+            }
+
+            removePlugin(pluginId) {
+                this.sendMessage({
+                    type: 'PLUGIN_REMOVE',
+                    data: {
+                        track_id: this.trackId,
+                        plugin_id: pluginId
+                    }
+                });
+            }
+
+            updateParameter(pluginId, parameterId, normalizedValue) {
+                const value = this.denormalizeParameterValue(parseFloat(normalizedValue), parameterId);
+
+                this.sendMessage({
+                    type: 'PLUGIN_PARAMETER',
+                    data: {
+                        track_id: this.trackId,
+                        plugin_id: pluginId,
+                        parameter_id: parameterId,
+                        parameter_value: value
+                    }
+                });
+            }
+
+            toggleBypass(pluginId) {
+                const plugin = this.plugins.get(pluginId);
+                if (plugin) {
+                    this.sendMessage({
+                        type: 'PLUGIN_BYPASS',
+                        data: {
+                            track_id: this.trackId,
+                            plugin_id: pluginId,
+                            bypass: !plugin.bypassed
+                        }
+                    });
+                }
+            }
+
+            loadPreset(pluginId, presetName) {
+                const plugin = this.plugins.get(pluginId);
+                if (plugin) {
+                    const presetData = this.generateMockParameters(plugin.type + '_' + presetName);
+                    this.sendMessage({
+                        type: 'PLUGIN_PRESET',
+                        data: {
+                            track_id: this.trackId,
+                            plugin_id: pluginId,
+                            preset_data: presetData
+                        }
+                    });
+                }
+            }
+
+            refreshParameters(pluginId) {
+                this.sendMessage({
+                    type: 'PLUGIN_PARAMETERS_GET',
+                    data: {
+                        track_id: this.trackId,
+                        plugin_id: pluginId
+                    }
+                });
+            }
+
+            refreshAllPlugins() {
+                this.plugins.forEach((plugin, pluginId) => {
+                    this.refreshParameters(pluginId);
+                });
+            }
+
+            disconnect() {
+                if (this.ws) {
+                    this.ws.close();
+                    this.ws = null;
+                }
+                this.isConnected = false;
+                this.updateUI();
+                this.log('INFO', 'Disconnected');
+            }
+        }
+
+        // Initialize demo
+        let demoApp;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            demoApp = new WebSocketPluginDemo();
+        });
+
+        // Global functions for onclick handlers
+        function connect() {
+            demoApp.connect();
+        }
+
+        function disconnect() {
+            demoApp.disconnect();
+        }
+
+        function showAddPluginModal(pluginType) {
+            document.getElementById('addPluginModal').classList.add('active');
+            if (pluginType) {
+                document.getElementById('pluginType').value = pluginType;
+            }
+        }
+
+        function closeModal() {
+            document.getElementById('addPluginModal').classList.remove('active');
+            document.getElementById('pluginType').value = '';
+            document.getElementById('pluginName').value = '';
+        }
+
+        function addPlugin() {
+            const pluginType = document.getElementById('pluginType').value;
+            const customName = document.getElementById('pluginName').value;
+
+            if (pluginType) {
+                demoApp.addPlugin(pluginType, customName);
+                closeModal();
+            }
+        }
+
+        function clearLog() {
+            document.getElementById('messageLog').innerHTML = '';
+            demoApp.log('INFO', 'Log cleared');
+        }
+
+        // Modal close on background click
+        document.getElementById('addPluginModal').addEventListener('click', (e) => {
+            if (e.target.id === 'addPluginModal') {
+                closeModal();
+            }
+        });
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closeModal();
+            } else if (e.ctrlKey && e.key === 'k') {
+                e.preventDefault();
+                showAddPluginModal();
+            } else if (e.ctrlKey && e.key === 'l') {
+                e.preventDefault();
+                clearLog();
+            }
+        });
+    </script>
+</body>
+</html>

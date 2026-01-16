@@ -1,0 +1,273 @@
+name: Standalone Application Build (Desktop)
+
+on:
+  push:
+    branches: [main, develop]
+    paths:
+      - 'juce_backend/**'
+      - '.github/workflows/build-standalone.yml'
+  pull_request:
+    branches: [main, develop]
+    paths:
+      - 'juce_backend/**'
+
+jobs:
+  build-macos:
+    name: Build macOS Standalone
+    runs-on: macos-14
+    strategy:
+      matrix:
+        arch: [arm64, x86_64]
+        config: [Release, Debug]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Install dependencies
+        run: |
+          brew install cmake ninja nlohmann-json googletest
+
+      - name: Configure CMake
+        working-directory: juce_backend
+        run: |
+          cmake -B build \
+            -GNinja \
+            -DCMAKE_BUILD_TYPE=${{ matrix.config }} \
+            -DCMAKE_OSX_ARCHITECTURES=${{ matrix.arch }} \
+            -DCMAKE_OSX_DEPLOYMENT_TARGET=10.15
+
+      - name: Build standalone app
+        working-directory: juce_backend
+        run: |
+          cmake --build build --target SchillingerEcosystemWorkingDAW -j$(sysctl -n hw.ncpu)
+
+      - name: Run tests
+        if: matrix.config == 'Debug'
+        working-directory: juce_backend
+        run: |
+          ctest --test-dir build --output-on-failure
+
+      - name: Create DMG
+        working-directory: juce_backend
+        run: |
+          mkdir -p dmg/Distribution
+          cp -R build/SchillingerEcosystemWorkingDAW.app dmg/Distribution/
+
+          # Create DMG
+          hdiutil create -volname "White Room" \
+            -srcfolder dmg/Distribution \
+            -ov -format UDZO \
+            artifacts/WhiteRoom-${{ matrix.arch }}-${{ matrix.config }}.dmg
+
+      - name: Notarize DMG (Release only)
+        if: matrix.config == 'Release' && matrix.arch == 'arm64'
+        env:
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_ID_PASSWORD: ${{ secrets.APPLE_ID_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        run: |
+          xcrun notarytool submit juce_backend/artifacts/WhiteRoom-${{ matrix.arch }}-${{ matrix.config }}.dmg \
+            --apple-id "$APPLE_ID" \
+            --password "$APPLE_ID_PASSWORD" \
+            --team-id "$APPLE_TEAM_ID" \
+            --wait
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: standalone-macos-${{ matrix.arch }}-${{ matrix.config }}
+          path: juce_backend/artifacts/*.dmg
+          retention-days: 30
+
+  build-windows:
+    name: Build Windows Standalone
+    runs-on: windows-2022
+    strategy:
+      matrix:
+        arch: [x86_64]
+        config: [Release, Debug]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Install dependencies
+        run: |
+          choco install cmake ninja
+          choco install nlohmann-json
+
+      - name: Set up MSVC
+        uses: microsoft/setup-msbuild@v2
+
+      - name: Configure CMake
+        working-directory: juce_backend
+        run: |
+          cmake -B build `
+            -G "Visual Studio 17 2022" `
+            -A ${{ matrix.arch }} `
+            -DCMAKE_BUILD_TYPE=${{ matrix.config }}
+
+      - name: Build standalone app
+        working-directory: juce_backend
+        run: |
+          cmake --build build --config ${{ matrix.config }} `
+            --target SchillingerEcosystemWorkingDAW -j
+
+      - name: Run tests
+        if: matrix.config == 'Debug'
+        working-directory: juce_backend
+        run: |
+          ctest --test-dir build --config ${{ matrix.config }} --output-on-failure
+
+      - name: Package installer
+        working-directory: juce_backend
+        run: |
+          mkdir artifacts
+          # Create portable zip
+          Compress-Archive -Path build/${{ matrix.config }}/SchillingerEcosystemWorkingDAW.exe `
+            -DestinationPath artifacts/WhiteRoom-win64-${{ matrix.config }}.zip
+
+      - name: Sign binary (Release only)
+        if: matrix.config == 'Release'
+        env:
+          CERTIFICATE_PASSWORD: ${{ secrets.WINDOWS_CERTIFICATE_PASSWORD }}
+        run: |
+          # Sign with Windows certificate (if available)
+          signtool sign /f certificate.pfx /p "$CERTIFICATE_PASSWORD" `
+            /fd SHA256 /tr http://timestamp.digicert.com `
+            juce_backend/artifacts/WhiteRoom-win64-${{ matrix.config }}.zip
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: standalone-windows-${{ matrix.arch }}-${{ matrix.config }}
+          path: juce_backend/artifacts/*.zip
+          retention-days: 30
+
+  build-linux:
+    name: Build Linux Standalone
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        distro: [ubuntu-22.04, ubuntu-24.04]
+        arch: [x86_64]
+        config: [Release, Debug]
+
+    container:
+      image: ${{ matrix.distro }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Install dependencies
+        run: |
+          apt-get update
+          apt-get install -y \
+            cmake ninja-build build-essential \
+            libnlohmann-json3-dev libgtest-dev \
+            libasound2-dev libx11-dev libxcb1-dev \
+            libxrandr-dev libxinerama-dev libxcursor-dev \
+            libfreetype6-dev libgtk-3-dev
+
+      - name: Configure CMake
+        working-directory: juce_backend
+        run: |
+          cmake -B build \
+            -GNinja \
+            -DCMAKE_BUILD_TYPE=${{ matrix.config }}
+
+      - name: Build standalone app
+        working-directory: juce_backend
+        run: |
+          cmake --build build --target SchillingerEcosystemWorkingDAW -j$(nproc)
+
+      - name: Run tests
+        if: matrix.config == 'Debug'
+        working-directory: juce_backend
+        run: |
+          ctest --test-dir build --output-on-failure
+
+      - name: Package AppImage
+        working-directory: juce_backend
+        run: |
+          mkdir -p artifacts/AppDir/usr/bin
+          cp build/SchillingerEcosystemWorkingDAW artifacts/AppDir/usr/bin/
+
+          # Create AppImage
+          wget -c "https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage"
+          wget -c "https://github.com/linuxdeploy/linuxdeploy-plugin-qt/releases/download/continuous/linuxdeploy-plugin-qt-x86_64.AppImage"
+          chmod +x linuxdeploy*.AppImage
+
+          ./linuxdeploy-x86_64.AppImage \
+            --appdir artifacts/AppDir \
+            --output appimage
+
+          mv WhiteRoom*.AppImage artifacts/WhiteRoom-linux-${{ matrix.distro }}-${{ matrix.config }}.AppImage
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: standalone-linux-${{ matrix.distro }}-${{ matrix.config }}
+          path: juce_backend/artifacts/*.AppImage
+          retention-days: 30
+
+  create-universal-release:
+    name: Create Universal Release
+    needs: [build-macos, build-windows, build-linux]
+    runs-on: macos-14
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: all-artifacts
+
+      - name: Create release package
+        run: |
+          mkdir -p release
+          cp -r all-artifacts/*/artifacts/* release/
+
+          # Create checksums
+          cd release
+          shasum -a 256 * > SHA256SUMS.txt
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: v${{ github.run_number }}
+          name: White Room ${{ github.run_number }}
+          draft: false
+          prerelease: false
+          files: release/*
+          body: |
+            ## White Room Standalone Application Release ${{ github.run_number }}
+
+            ### Downloads
+
+            - **macOS (Apple Silicon)**: `WhiteRoom-arm64-Release.dmg`
+            - **macOS (Intel)**: `WhiteRoom-x86_64-Release.dmg`
+            - **Windows**: `WhiteRoom-win64-Release.zip`
+            - **Linux**: `WhiteRoom-linux-ubuntu-22.04-Release.AppImage`
+
+            ### Verify Checksums
+            ```bash
+            shasum -a 256 -c SHA256SUMS.txt
+            ```
+
+            ### System Requirements
+
+            - macOS 10.15+
+            - Windows 10+
+            - Ubuntu 22.04+ (or equivalent)
+
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

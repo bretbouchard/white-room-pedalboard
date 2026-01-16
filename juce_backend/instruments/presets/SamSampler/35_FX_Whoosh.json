@@ -1,0 +1,33 @@
+{
+  "version": "1.0.0",
+  "name": "FX Whoosh",
+  "author": "Bret Bouchard",
+  "description": "Fast whoosh transition with air movement and stereo sweep.",
+  "category": "FX",
+  "tags": ["FX", "whoosh", "transition", "air", "stereo"],
+  "creationDate": "2025-12-27",
+  "parameters": {
+    "sample.file": "fx_whoosh.wav",
+    "sample.loop_mode": 0.0,
+    "sample.loop.start": 0.0,
+    "sample.loop.end": 1.0,
+    "pitch.transpose": 0.5,
+    "pitch.detune": 0.5,
+    "pitch.bend": 0.5,
+    "filter.type": 0.0,
+    "filter.cutoff": 0.75,
+    "filter.resonance": 0.15,
+    "env.adsr.a": 0.005,
+    "env.adsr.d": 0.35,
+    "env.adsr.s": 0.0,
+    "env.adsr.r": 0.2,
+    "fx.drive": 0.0,
+    "fx.chorus": 0.3,
+    "fx.delay": 0.0,
+    "fx.reverb": 0.25,
+    "output.level": 0.85,
+    "output.pan": 0.5
+  },
+  "macroMappings": {},
+  "modulationMatrix": {}
+}

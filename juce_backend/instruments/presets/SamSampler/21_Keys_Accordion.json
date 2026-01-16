@@ -1,0 +1,33 @@
+{
+  "version": "1.0.0",
+  "name": "Accordion",
+  "author": "Bret Bouchard",
+  "description": "Accordion with characteristic reedy tone and breath controller response.",
+  "category": "Keys",
+  "tags": ["keys", "accordion", "reedy", "folk", "characteristic"],
+  "creationDate": "2025-12-27",
+  "parameters": {
+    "sample.file": "accordion_C4.wav",
+    "sample.loop_mode": 1.0,
+    "sample.loop.start": 0.12,
+    "sample.loop.end": 0.88,
+    "pitch.transpose": 0.5,
+    "pitch.detune": 0.5,
+    "pitch.bend": 0.5,
+    "filter.type": 0.0,
+    "filter.cutoff": 0.68,
+    "filter.resonance": 0.2,
+    "env.adsr.a": 0.02,
+    "env.adsr.d": 0.12,
+    "env.adsr.s": 0.7,
+    "env.adsr.r": 0.18,
+    "fx.drive": 0.0,
+    "fx.chorus": 0.2,
+    "fx.delay": 0.0,
+    "fx.reverb": 0.3,
+    "output.level": 0.8,
+    "output.pan": 0.5
+  },
+  "macroMappings": {},
+  "modulationMatrix": {}
+}

@@ -1,0 +1,52 @@
+{
+  "version": "1.0.0",
+  "name": "Bass Init",
+  "author": "Bret Bouchard",
+  "description": "Warm subtractive bass with detuned oscillators and filter envelope for punchy low-end.",
+  "category": "Bass",
+  "tags": ["bass", "warm", "punchy", "subtractive"],
+  "creationDate": "2025-12-26",
+  "parameters": {
+    "osc1.waveform": 1.0,
+    "osc1.pitch": 0.35,
+    "osc1.detune": 0.52,
+    "osc1.level": 0.8,
+    "osc2.waveform": 1.0,
+    "osc2.pitch": 0.35,
+    "osc2.detune": 0.48,
+    "osc2.level": 0.6,
+    "filter.type": 0.0,
+    "filter.cutoff": 0.25,
+    "filter.resonance": 0.5,
+    "filter.env.amount": 0.7,
+    "filter.lfo.rate": 0.3,
+    "filter.lfo.amount": 0.0,
+    "env.adsr.a": 0.01,
+    "env.adsr.d": 0.3,
+    "env.adsr.s": 0.6,
+    "env.adsr.r": 0.4,
+    "fx.drive": 0.15,
+    "fx.chorus": 0.0,
+    "fx.delay": 0.0,
+    "fx.reverb": 0.1,
+    "output.level": 0.85,
+    "output.pan": 0.5
+  },
+  "macroMappings": {
+    "macro_0": {
+      "name": "Filter Drive",
+      "destination": "fx.drive",
+      "amount": 1.0,
+      "minValue": 0.0,
+      "maxValue": 0.5
+    }
+  },
+  "modulationMatrix": {
+    "slot_0": {
+      "source": "envelope",
+      "destination": "filter.cutoff",
+      "amount": 0.7,
+      "curve": "linear"
+    }
+  }
+}

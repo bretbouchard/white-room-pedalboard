@@ -1,0 +1,33 @@
+{
+  "version": "1.0.0",
+  "name": "Choir Pad",
+  "author": "Bret Bouchard",
+  "description": "Vocal choir pad with formant filtering and atmospheric reverb.",
+  "category": "Pad",
+  "tags": ["pad", "choir", "vocal", "atmospheric", "ethereal"],
+  "creationDate": "2025-12-27",
+  "parameters": {
+    "sample.file": "choir_ahh_C4.wav",
+    "sample.loop_mode": 1.0,
+    "sample.loop.start": 0.25,
+    "sample.loop.end": 0.75,
+    "pitch.transpose": 0.5,
+    "pitch.detune": 0.5,
+    "pitch.bend": 0.5,
+    "filter.type": 0.0,
+    "filter.cutoff": 0.55,
+    "filter.resonance": 0.2,
+    "env.adsr.a": 0.5,
+    "env.adsr.d": 0.35,
+    "env.adsr.s": 0.65,
+    "env.adsr.r": 0.8,
+    "fx.drive": 0.0,
+    "fx.chorus": 0.6,
+    "fx.delay": 0.25,
+    "fx.reverb": 0.8,
+    "output.level": 0.7,
+    "output.pan": 0.5
+  },
+  "macroMappings": {},
+  "modulationMatrix": {}
+}

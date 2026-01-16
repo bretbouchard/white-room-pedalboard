@@ -1,0 +1,18 @@
+{
+  "id": "artifact-1768420469618-ggwittzht",
+  "type": "pattern",
+  "content": "tvOS Siri Intents Implementation Pattern for Voice Commands\n\nWhen implementing tvOS Siri intents for voice commands in Swift apps:\n\n1. **Intent Structure**: Create INIntent subclass with string parameters for natural language\n2. **Parameter Extraction**: Use private extensions on enums to parse speech strings with contains() matching\n3. **Validation**: Implement validate() method to check required parameters before processing\n4. **Error Handling**: Create IntentError enum with LocalizedError for helpful voice feedback\n5. **Voice Feedback**: Use AVSpeechSynthesizer with rate=0.5 for clear, slow speech\n6. **Response System**: Create INIntentResponse subclass with code enum and feedback string\n7. **INExtension**: Implement handler(for:) to return intent handler instances\n8. **Confirmation Flow**: Implement confirm(intent:) to validate before executing\n9. **Intent Donation**: Use INInteraction.donate() to teach Siri user preferences\n10. **Shortcuts**: Use INVoiceShortcutCenter.setShortcutSuggestions() for custom phrases\n\nKey Files:\n- Intent definition: OrderSongIntentDefinition (INIntent subclass)\n- Intent handler: OrderSongIntentHandler (INExtension + handling protocol)\n- Intent processing: SiriOrderingIntents (ObservableObject with business logic)\n- App integration: SchillingerTVApp with onIntentCompletion modifier\n\nCommon Pattern:\n```swift\n// Parse speech parameter\nprivate extension SongIntent {\n    init?(fromIntentString string: String) {\n        let lowercased = string.lowercased()\n        if lowercased.contains(\"identity\") { self = .identity }\n        else if lowercased.contains(\"song\") { self = .song }\n        // ... other cases\n        else { return nil }\n    }\n}\n\n// Donate intent for learning\nlet interaction = INInteraction(intent: intent, response: nil)\ninteraction.donate { error in /* handle */ }\n```\n\nValidation: Always validate intent parameters before processing, provide helpful error messages for invalid values.\nFeedback: Use voice feedback to confirm actions and explain errors to users.",
+  "metadata": {
+    "scope": "repository",
+    "tags": [
+      "tvos",
+      "siri",
+      "intents",
+      "voice",
+      "swift",
+      "speech-recognition"
+    ],
+    "confidence": 0.9
+  },
+  "timestamp": "2026-01-14T19:54:29.618Z"
+}

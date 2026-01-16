@@ -1,0 +1,265 @@
+name: Schillinger SDK CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+env:
+  # canonical rule: TypeScript is source of truth
+  CANONICAL_LANGUAGE: typescript
+
+jobs:
+  # ========================================================================
+  # Stage 1: Build All Languages
+  # ========================================================================
+  build:
+    name: Build (${{ matrix.language }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - language: typescript
+            os: ubuntu-latest
+          - language: dart
+            os: ubuntu-latest
+          - language: python
+            os: ubuntu-latest
+          - language: swift
+            os: macos-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup ${{ matrix.language }}
+        uses: ./.github/actions/setup-${{ matrix.language }}
+        with:
+          version: ${{ matrix.version }}
+
+      - name: Build
+        run: |
+          ./.github/scripts/build-${{ matrix.language }}.sh
+
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-${{ matrix.language }}
+          path: |
+            packages/${{ matrix.language }}/build/
+            packages/${{ matrix.language }}/dist/
+            packages/${{ matrix.language }}/.dart_tool/
+
+  # ========================================================================
+  # Stage 2: Golden Generation (TypeScript Only)
+  # ========================================================================
+  generate-goldens:
+    name: Generate Goldens (TypeScript)
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup TypeScript
+        uses: ./.github/actions/setup-typescript
+
+      - name: Generate Goldens
+        run: |
+          ./.github/scripts/generate-goldens.sh
+
+      - name: Upload Goldens
+        uses: actions/upload-artifact@v4
+        with:
+          name: golden-reference
+          path: tests/golden/
+
+  # ========================================================================
+  # Stage 3: Golden Verification (All Languages)
+  # ========================================================================
+  verify-goldens:
+    name: Verify Goldens (${{ matrix.language }})
+    needs: [build, generate-goldens]
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - language: typescript
+            os: ubuntu-latest
+          - language: dart
+            os: ubuntu-latest
+          - language: python
+            os: ubuntu-latest
+          - language: swift
+            os: macos-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup ${{ matrix.language }}
+        uses: ./.github/actions/setup-${{ matrix.language }}
+
+      - name: Download Goldens
+        uses: actions/download-artifact@v4
+        with:
+          name: golden-reference
+          path: tests/golden/
+
+      - name: Verify Goldens
+        run: |
+          ./.github/scripts/verify-goldens-${{ matrix.language }}.sh
+
+      - name: Upload Results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: golden-results-${{ matrix.language }}
+          path: tests/golden/results/
+
+  # ========================================================================
+  # Stage 4: Chaos Runner (All Languages)
+  # ========================================================================
+  chaos-tests:
+    name: Chaos Tests (${{ matrix.language }})
+    needs: build
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - language: typescript
+            os: ubuntu-latest
+          - language: dart
+            os: ubuntu-latest
+          - language: python
+            os: ubuntu-latest
+          - language: swift
+            os: macos-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup ${{ matrix.language }}
+        uses: ./.github/actions/setup-${{ matrix.language }}
+
+      - name: Run Chaos Scenarios
+        run: |
+          ./.github/scripts/run-chaos-${{ matrix.language }}.sh
+
+      - name: Upload Chaos Results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: chaos-results-${{ matrix.language }}
+          path: tests/chaos/results/
+
+  # ========================================================================
+  # Stage 5: Determinism Rerun Diff
+  # ========================================================================
+  determinism-check:
+    name: Determinism Check (${{ matrix.language }})
+    needs: build
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - language: typescript
+            os: ubuntu-latest
+          - language: dart
+            os: ubuntu-latest
+          - language: python
+            os: ubuntu-latest
+          - language: swift
+            os: macos-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup ${{ matrix.language }}
+        uses: ./.github/actions/setup-${{ matrix.language }}
+
+      - name: Run Determinism Test
+        run: |
+          ./.github/scripts/determinism-${{ matrix.language }}.sh
+
+      - name: Diff Results
+        run: |
+          ./.github/scripts/diff-reruns-${{ matrix.language }}.sh
+
+      - name: Upload Diff Results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: determinism-results-${{ matrix.language }}
+          path: tests/determinism/results/
+
+  # ========================================================================
+  # Stage 6: CI Status Report
+  # ========================================================================
+  ci-report:
+    name: CI Status Report
+    needs: [verify-goldens, chaos-tests, determinism-check]
+    runs-on: ubuntu-latest
+    if: always()
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download All Results
+        uses: actions/download-artifact@v4
+        with:
+          path: test-results/
+
+      - name: Generate Report
+        run: |
+          ./.github/scripts/generate-ci-report.sh
+
+      - name: Upload Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: ci-report
+          path: test-results/ci-report.md
+
+      - name: Comment PR
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const report = fs.readFileSync('test-results/ci-report.md', 'utf8');
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: report
+            });
+
+  # ========================================================================
+  # CI "Green" Definition
+  # ========================================================================
+  # CI passes only if:
+  # ✅ TS goldens generate
+  # ✅ All languages match goldens
+  # ✅ All chaos scenarios pass
+  # ✅ Determinism holds on rerun
+  # ✅ No silent failures occur
+
+# ============================================================================
+# Failure Classifications
+# ============================================================================
+# - GOLDEN_MISMATCH
+# - NON_DETERMINISTIC
+# - CAUSALITY_VIOLATION
+# - PRIORITY_BREACH
+# - SILENT_FAILURE
+# - SERIALIZATION_LEAK
+#
+# All failures must be explicit and typed.

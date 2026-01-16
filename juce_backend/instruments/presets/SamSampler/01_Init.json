@@ -1,0 +1,33 @@
+{
+  "version": "1.0.0",
+  "name": "Init",
+  "author": "Bret Bouchard",
+  "description": "Clean starting point for Sam Sampler professional sampler. All parameters at neutral defaults.",
+  "category": "Init",
+  "tags": ["clean", "default", "starting point", "sampler"],
+  "creationDate": "2025-12-26",
+  "parameters": {
+    "sample.file": "",
+    "sample.loop_mode": 0.0,
+    "sample.loop.start": 0.0,
+    "sample.loop.end": 1.0,
+    "pitch.transpose": 0.5,
+    "pitch.detune": 0.5,
+    "pitch.bend": 0.5,
+    "filter.type": 0.0,
+    "filter.cutoff": 1.0,
+    "filter.resonance": 0.0,
+    "env.adsr.a": 0.001,
+    "env.adsr.d": 0.2,
+    "env.adsr.s": 1.0,
+    "env.adsr.r": 0.3,
+    "fx.drive": 0.0,
+    "fx.chorus": 0.0,
+    "fx.delay": 0.0,
+    "fx.reverb": 0.2,
+    "output.level": 0.8,
+    "output.pan": 0.5
+  },
+  "macroMappings": {},
+  "modulationMatrix": {}
+}

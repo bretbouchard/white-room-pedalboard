@@ -1,0 +1,576 @@
+name: Schillinger SDK Testing and Quality Pipeline
+
+on:
+  push:
+    branches: [ main, develop, 'feature/*' ]
+  pull_request:
+    branches: [ main, develop ]
+  schedule:
+    # Run comprehensive tests daily at 2 AM UTC
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+    inputs:
+      test_type:
+        description: 'Type of tests to run'
+        required: true
+        default: 'all'
+        type: choice
+        options:
+        - all
+        - unit
+        - integration
+        - performance
+        - property-based
+        - hardware
+      run_benchmarks:
+        description: 'Run performance benchmarks'
+        required: false
+        default: false
+        type: boolean
+
+env:
+  NODE_VERSION: '20'
+  PYTHON_VERSION: '3.11'
+  # Cache keys
+  CACHE_VERSION: v1
+  # Performance regression thresholds
+  PERFORMANCE_THRESHOLD: 5 # 5% regression allowed
+
+jobs:
+  # Job 1: Code Quality and Linting
+  code-quality:
+    name: Code Quality
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Full history for better analysis
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: |
+          npm ci
+          cd packages/shared && npm install fast-check @types/sinon sinon benchmark stats-lite cli-table3 chalk progress || true
+
+      - name: Run ESLint
+        run: npm run lint:all
+        continue-on-error: ${{ github.event_name == 'schedule' }}
+
+      - name: Run TypeScript type checking
+        run: npm run type-check:all
+        continue-on-error: ${{ github.event_name == 'schedule' }}
+
+      - name: Check code formatting
+        run: npm run lint -- --fix --dry-run
+
+      - name: Upload lint results
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lint-results
+          path: |
+            .eslintcache
+            node_modules/.cache/
+          retention-days: 1
+
+  # Job 2: Unit Tests
+  unit-tests:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    needs: code-quality
+    timeout-minutes: 15
+    strategy:
+      matrix:
+        node-version: ['18', '20', '22']
+      fail-fast: false
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: |
+          npm ci
+          cd packages/shared && npm install fast-check @types/sinon sinon benchmark stats-lite cli-table3 chalk progress || true
+
+      - name: Run unit tests
+        run: |
+          npm run test -- --reporter=verbose --coverage
+        env:
+          CI: true
+          NODE_ENV: test
+
+      - name: Upload coverage reports
+        uses: codecov/codecov-action@v4
+        with:
+          files: ./test-reports/coverage/lcov.info
+          flags: unit-tests-node${{ matrix.node-version }}
+          name: codecov-unit-node${{ matrix.node-version }}
+          fail_ci_if_error: false
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: unit-test-results-node${{ matrix.node-version }}
+          path: |
+            test-reports/
+            coverage/
+
+  # Job 3: Property-Based Testing
+  property-based-tests:
+    name: Property-Based Tests
+    runs-on: ubuntu-latest
+    needs: unit-tests
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: |
+          npm ci
+          cd packages/shared && npm install fast-check @types/sinon sinon benchmark stats-lite cli-table3 chalk progress || true
+
+      - name: Run property-based tests
+        run: |
+          npm run test -- tests/property-based --reporter=verbose
+        env:
+          CI: true
+          VITEST_SEED: ${{ github.sha }}
+          FC_MAX_RUNS: 1000
+
+      - name: Property-Based Test Summary
+        run: |
+          echo "## Property-Based Testing Results" >> $GITHUB_STEP_SUMMARY
+          echo "- Ran $(grep -c '✅.*passed' test-reports/results.json || echo 'N/A') successful property tests" >> $GITHUB_STEP_SUMMARY
+          echo "- Failed tests: $(grep -c '❌.*failed' test-reports/results.json || echo 'N/A')" >> $GITHUB_STEP_SUMMARY
+
+      - name: Upload PBT results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: property-based-test-results
+          path: test-reports/
+
+  # Job 4: Performance Testing
+  performance-tests:
+    name: Performance Tests
+    runs-on: ubuntu-latest
+    needs: property-based-tests
+    timeout-minutes: 20
+    if: github.event.inputs.run_benchmarks == 'true' || github.event_name == 'schedule'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: |
+          npm ci
+          cd packages/shared && npm install fast-check @types/sinon sinon benchmark stats-lite cli-table3 chalk progress || true
+
+      - name: Run performance benchmarks
+        run: |
+          npm run test:performance -- --reporter=json
+        env:
+          CI: true
+          NODE_OPTIONS: '--max-old-space-size=4096'
+
+      - name: Download previous benchmarks
+        id: benchmarks
+        uses: actions/cache@v4
+        with:
+          path: ./previous-benchmarks.json
+          key: benchmarks-${{ runner.os }}-node${{ env.NODE_VERSION }}
+          restore-keys: |
+            benchmarks-${{ runner.os }}-node${{ env.NODE_VERSION }}
+            benchmarks-${{ runner.os }}
+
+      - name: Compare performance
+        run: |
+          node -e "
+          const current = require('./test-reports/benchmark-results.json');
+          const previous = require('./previous-benchmarks.json') || {};
+
+          let regressions = [];
+
+          for (const [key, result] of Object.entries(current.results)) {
+            if (previous[key]) {
+              const change = ((result.averageTime - previous[key].averageTime) / previous[key].averageTime) * 100;
+              if (change > ${{ env.PERFORMANCE_THRESHOLD }}) {
+                regressions.push({key, change, current: result.averageTime, previous: previous[key].averageTime});
+              }
+            }
+          }
+
+          if (regressions.length > 0) {
+            console.error('Performance regressions detected:');
+            regressions.forEach(r => {
+              console.error(\`- \${r.key}: \${r.change.toFixed(2)}% slower (\${r.previous}ms → \${r.current}ms)\`);
+            });
+            process.exit(1);
+          } else {
+            console.log('No performance regressions detected');
+          }
+          "
+
+      - name: Save current benchmarks
+        if: always()
+        run: cp test-reports/benchmark-results.json ./previous-benchmarks.json
+
+      - name: Cache benchmarks
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: ./previous-benchmarks.json
+          key: benchmarks-${{ runner.os }}-node${{ env.NODE_VERSION }}-${{ github.sha }}
+
+      - name: Upload performance results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: performance-test-results
+          path: |
+            test-reports/
+            previous-benchmarks.json
+
+  # Job 5: Integration Tests
+  integration-tests:
+    name: Integration Tests
+    runs-on: ubuntu-latest
+    needs: property-based-tests
+    timeout-minutes: 25
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+      fail-fast: false
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install system dependencies (Ubuntu)
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libasound2-dev libjack-jackd2-dev \
+            libpulse-dev portaudio19-dev python3-dev python3-pip
+
+      - name: Install system dependencies (macOS)
+        if: matrix.os == 'macos-latest'
+        run: |
+          brew install portaudio
+
+      - name: Install system dependencies (Windows)
+        if: matrix.os == 'windows-latest'
+        run: |
+          choco install portaudio
+
+      - name: Install dependencies
+        run: |
+          npm ci
+          cd packages/shared && npm install fast-check @types/sinon sinon benchmark stats-lite cli-table3 chalk progress || true
+
+      - name: Run integration tests
+        run: |
+          npm run test:integration -- --reporter=verbose
+        env:
+          CI: true
+          INTEGRATION_TEST_MODE: mock
+
+      - name: Test hardware simulation
+        run: |
+          npm run test -- tests/hardware --reporter=verbose
+        env:
+          CI: true
+          HARDWARE_SIMULATION: true
+
+      - name: Upload integration results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: integration-test-results-${{ matrix.os }}
+          path: test-reports/
+
+  # Job 6: End-to-End Tests
+  end-to-end-tests:
+    name: End-to-End Tests
+    runs-on: ubuntu-latest
+    needs: integration-tests
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: |
+          npm ci
+          cd packages/shared && npm install fast-check @types/sinon sinon benchmark stats-lite cli-table3 chalk progress || true
+
+      - name: Build packages
+        run: npm run build
+
+      - name: Run E2E tests
+        run: |
+          npm run test -- tests/end-to-end --reporter=verbose
+        env:
+          CI: true
+          E2E_TEST_MODE: mock
+
+      - name: Upload E2E results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: e2e-test-results
+          path: test-reports/
+
+  # Job 7: Security and Dependency Audit
+  security-audit:
+    name: Security Audit
+    runs-on: ubuntu-latest
+    needs: code-quality
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run npm audit
+        run: npm audit --audit-level moderate
+
+      - name: Run Snyk security scan
+        uses: snyk/actions/node@master
+        continue-on-error: true
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+
+      - name: Upload security results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: security-audit-results
+          path: .snyk/
+
+  # Job 8: Quality Gates and Reporting
+  quality-gates:
+    name: Quality Gates
+    runs-on: ubuntu-latest
+    needs: [unit-tests, property-based-tests, performance-tests, integration-tests, end-to-end-tests]
+    if: always() && (needs.unit-tests.result == 'success' || needs.property-based-tests.result == 'success' || needs.integration-tests.result == 'success')
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: '*-test-results*'
+          merge-multiple: true
+          path: ./all-test-results/
+
+      - name: Generate quality report
+        run: |
+          echo "# Schillinger SDK Quality Report" > quality-report.md
+          echo "" >> quality-report.md
+          echo "## Test Results Summary" >> quality-report.md
+          echo "" >> quality-report.md
+
+          # Count test results
+          if [ -d "./all-test-results/coverage" ]; then
+            echo "- **Coverage**: $(cat ./all-test-results/coverage/coverage-summary.json | jq '.total.lines.pct')%" >> quality-report.md
+          fi
+
+          if [ -f "./all-test-results/results.json" ]; then
+            total_tests=$(cat ./all-test-results/results.json | jq '.numTotalTests || 0')
+            passed_tests=$(cat ./all-test-results/results.json | jq '.numPassedTests || 0')
+            failed_tests=$(cat ./all-test-results/results.json | jq '.numFailedTests || 0')
+            echo "- **Tests**: $passed_tests/$total_tests passed" >> quality-report.md
+            echo "- **Failures**: $failed_tests" >> quality-report.md
+          fi
+
+          echo "" >> quality-report.md
+          echo "## Performance Summary" >> quality-report.md
+          echo "" >> quality-report.md
+
+          if [ -f "./all-test-results/benchmark-results.json" ]; then
+            echo "- Benchmarks completed: $(cat ./all-test-results/benchmark-results.json | jq '.results | length')" >> quality-report.md
+          fi
+
+          echo "" >> quality-report.md
+          echo "## Quality Gates Status" >> quality-report.md
+          echo "" >> quality-report.md
+
+          # Quality gate checks
+          QUALITY_STATUS="✅ PASSED"
+
+          # Check unit tests
+          if [[ "${{ needs.unit-tests.result }}" != "success" ]]; then
+            echo "- ❌ Unit tests failed" >> quality-report.md
+            QUALITY_STATUS="❌ FAILED"
+          else
+            echo "- ✅ Unit tests passed" >> quality-report.md
+          fi
+
+          # Check property-based tests
+          if [[ "${{ needs.property-based-tests.result }}" != "success" ]]; then
+            echo "- ❌ Property-based tests failed" >> quality-report.md
+            QUALITY_STATUS="❌ FAILED"
+          else
+            echo "- ✅ Property-based tests passed" >> quality-report.md
+          fi
+
+          # Check integration tests
+          if [[ "${{ needs.integration-tests.result }}" != "success" ]]; then
+            echo "- ❌ Integration tests failed" >> quality-report.md
+            QUALITY_STATUS="❌ FAILED"
+          else
+            echo "- ✅ Integration tests passed" >> quality-report.md
+          fi
+
+          # Check E2E tests
+          if [[ "${{ needs.end-to-end-tests.result }}" != "success" ]]; then
+            echo "- ❌ E2E tests failed" >> quality-report.md
+            QUALITY_STATUS="❌ FAILED"
+          else
+            echo "- ✅ E2E tests passed" >> quality-report.md
+          fi
+
+          echo "" >> quality-report.md
+          echo "## Final Status: $QUALITY_STATUS" >> quality-report.md
+
+          # Output to summary
+          cat quality-report.md >> $GITHUB_STEP_SUMMARY
+
+          # Set exit status
+          if [[ "$QUALITY_STATUS" == *"FAILED"* ]]; then
+            exit 1
+          fi
+
+      - name: Upload quality report
+        uses: actions/upload-artifact@v4
+        with:
+          name: quality-report
+          path: quality-report.md
+
+  # Job 9: Release Preparation (only on main branch)
+  release-prep:
+    name: Release Preparation
+    runs-on: ubuntu-latest
+    needs: quality-gates
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          registry-url: 'https://npm.pkg.github.com'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build packages
+        run: npm run build
+
+      - name: Run version validation
+        run: npm run version:validate
+
+      - name: Generate changelog
+        id: changelog
+        run: |
+          # Generate changelog from commits since last tag
+          LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+          if [ -n "$LAST_TAG" ]; then
+            CHANGELOG=$(git log --pretty=format:"- %s (%h)" $LAST_TAG..HEAD)
+          else
+            CHANGELOG=$(git log --pretty=format:"- %s (%h)")
+          fi
+          echo "changelog<<EOF" >> $GITHUB_OUTPUT
+          echo "$CHANGELOG" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Create release draft
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: v$(npm run version:current --silent)
+          release_name: Schillinger SDK v$(npm run version:current --silent)
+          body: |
+            ## Changes
+            ${{ steps.changelog.outputs.changelog }}
+
+            ## Installation
+            ```bash
+            npm install @schillinger-sdk/sdk
+            ```
+          draft: true
+          prerelease: false
+
+      - name: Store build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-artifacts
+          path: |
+            packages/*/dist/
+            packages/*/build/

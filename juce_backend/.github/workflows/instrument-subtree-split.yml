@@ -1,0 +1,68 @@
+name: Instrument Subtree Split
+
+on:
+  push:
+    branches: [main, juce_backend_clean]
+  workflow_dispatch:
+    inputs:
+      skip_build:
+        description: 'Skip build step (split only)'
+        required: false
+        default: 'false'
+        type: boolean
+
+jobs:
+  subtree-split:
+    runs-on: macos-latest
+    timeout-minutes: 30
+
+    steps:
+    - name: Checkout monorepo
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0  # Full history for subtree split
+
+    - name: Configure Git
+      run: |
+        git config user.name "GitHub Actions Bot"
+        git config user.email "actions@github.com"
+
+    - name: Install subtree split script
+      run: |
+        chmod +x .github/scripts/split_instruments.sh
+        chmod +x .github/scripts/split_single_instrument.sh
+
+    - name: Create instrument repositories (if needed)
+      env:
+        GH_TOKEN: ${{ secrets.GH_PAT_TOKEN }}
+      run: |
+        # Read instrument config and create repos if they don't exist
+        .github/scripts/create_instrument_repos.sh
+
+    - name: Split and push instruments
+      env:
+        GH_TOKEN: ${{ secrets.GH_PAT_TOKEN }}
+      run: |
+        .github/scripts/split_instruments.sh
+
+    - name: Build plugins (optional)
+      if: github.event.inputs.skip_build != 'true'
+      run: |
+        echo "Building plugins..."
+        # Add build commands here if needed
+        # cmake -B build -S . -DCMAKE_BUILD_TYPE=Release
+        # cmake --build build --target all
+
+    - name: Summary
+      run: |
+        echo "### Subtree Split Complete :rocket:" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "All instruments have been split and pushed to their individual repositories." >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "**Instruments split:**" >> $GITHUB_STEP_SUMMARY
+        echo "- LOCAL_GAL" >> $GITHUB_STEP_SUMMARY
+        echo "- Sam Sampler" >> $GITHUB_STEP_SUMMARY
+        echo "- Nex Synth" >> $GITHUB_STEP_SUMMARY
+        echo "- Kane Marco" >> $GITHUB_STEP_SUMMARY
+        echo "- Giant Instruments" >> $GITHUB_STEP_SUMMARY
+        echo "- Drum Machine" >> $GITHUB_STEP_SUMMARY

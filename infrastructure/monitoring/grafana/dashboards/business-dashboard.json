@@ -1,0 +1,218 @@
+{
+  "dashboard": {
+    "title": "White Room - Business Metrics",
+    "tags": ["business", "analytics", "production"],
+    "timezone": "browser",
+    "schemaVersion": 38,
+    "version": 1,
+    "refresh": "1m",
+    "panels": [
+      {
+        "id": 1,
+        "title": "Daily Active Users (DAU)",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "count(increase(user_sessions_total[1d]))",
+            "legendFormat": "DAU"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 6, "x": 0, "y": 0},
+        "options": {
+          "colorMode": "value",
+          "graphMode": "area",
+          "reduceOptions": {
+            "calcs": ["lastNotNull"],
+            "fields": "",
+            "values": false
+          }
+        },
+        "fieldConfig": {
+          "defaults": {
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": null, "color": "red"},
+                {"value": 10, "color": "yellow"},
+                {"value": 50, "color": "green"}
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 2,
+        "title": "Monthly Active Users (MAU)",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "count(increase(user_sessions_total[30d]))",
+            "legendFormat": "MAU"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 6, "x": 6, "y": 0}
+      },
+      {
+        "id": 3,
+        "title": "Songs Created (24h)",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "increase(songs_created_total[24h])",
+            "legendFormat": "Songs"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 6, "x": 12, "y": 0}
+      },
+      {
+        "id": 4,
+        "title": "Performances Switched (24h)",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "increase(performances_switched_total[24h])",
+            "legendFormat": "Performances"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 6, "x": 18, "y": 0}
+      },
+      {
+        "id": 5,
+        "title": "User Signups Trend",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "rate(user_signups_total[1h])",
+            "legendFormat": "Signups per Hour"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8},
+        "yAxes": [
+          {"format": "ops", "label": "Signups per Hour"}
+        ]
+      },
+      {
+        "id": 6,
+        "title": "Song Creation Rate",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "rate(songs_created_total[1h])",
+            "legendFormat": "Songs per Hour"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 8},
+        "yAxes": [
+          {"format": "ops", "label": "Songs per Hour"}
+        ]
+      },
+      {
+        "id": 7,
+        "title": "Average Session Duration",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "avg(session_duration_seconds)",
+            "legendFormat": "Session Duration"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 16},
+        "yAxes": [
+          {"format": "dtdurations", "label": "Session Duration"}
+        ]
+      },
+      {
+        "id": 8,
+        "title": "Retention Rate (Day 7)",
+        "type": "gauge",
+        "targets": [
+          {
+            "expr": "sum(increase(user_sessions_total[7d])) by (user_id) / sum(increase(user_sessions_total[1d])) by (user_id) * 100",
+            "legendFormat": "Retention %"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 16},
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percent",
+            "min": 0,
+            "max": 100,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": null, "color": "red"},
+                {"value": 20, "color": "yellow"},
+                {"value": 40, "color": "green"}
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 9,
+        "title": "Feature Usage - Rhythm Generator",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "rate(feature_usage_total{feature=\"rhythm_generator\"}[1h])",
+            "legendFormat": "Rhythm Generator"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 24},
+        "yAxes": [
+          {"format": "ops", "label": "Usage per Hour"}
+        ]
+      },
+      {
+        "id": 10,
+        "title": "Feature Usage - Harmony Generator",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "rate(feature_usage_total{feature=\"harmony_generator\"}[1h])",
+            "legendFormat": "Harmony Generator"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 24},
+        "yAxes": [
+          {"format": "ops", "label": "Usage per Hour"}
+        ]
+      },
+      {
+        "id": 11,
+        "title": "Top Instruments Used",
+        "type": "table",
+        "targets": [
+          {
+            "expr": "topk(10, sum(instrument_assignments_total) by (instrument))",
+            "legendFormat": "{{ instrument }}",
+            "format": "table"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 32},
+        "transformations": [
+          {
+            "id": "organize",
+            "options": {
+              "excludeByName": {"Time": true, "__name__": true, "job": true},
+              "indexByName": {"instrument": 0, "Value": 1},
+              "renameByName": {"instrument": "Instrument", "Value": "Assignments"}
+            }
+          }
+        ]
+      },
+      {
+        "id": 12,
+        "title": "Error Rate by Feature",
+        "type": "heatmap",
+        "targets": [
+          {
+            "expr": "sum(rate(feature_errors_total[5m])) by (feature)",
+            "legendFormat": "{{ feature }}"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 32}
+      }
+    ]
+  }
+}

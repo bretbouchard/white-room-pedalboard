@@ -1,0 +1,12 @@
+{
+  "op": "applyIR",
+  "id": "test-applyir-001",
+  "payload": {
+    "sessionId": "session-1234567890",
+    "irDelta": {
+      "type": "add",
+      "path": "graph.tempo",
+      "value": 120
+    }
+  }
+}

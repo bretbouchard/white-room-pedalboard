@@ -1,0 +1,1392 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://schemas.schillinger.sdk/v1/schillinger-song",
+  "title": "SchillingerSong_v1",
+  "description": "Canonical theory representation containing only systems, parameters, bindings, and constraints. Zero notes, zero events, pure theory.",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "songId",
+    "globals",
+    "bookI_rhythmSystems",
+    "bookII_melodySystems",
+    "bookIII_harmonySystems",
+    "bookIV_formSystem",
+    "bookV_orchestration",
+    "ensembleModel",
+    "bindings",
+    "constraints",
+    "provenance"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "type": "string",
+      "const": "1.0",
+      "description": "Schema version for migration support"
+    },
+    "songId": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Unique identifier for this song (UUID v4)"
+    },
+    "globals": {
+      "type": "object",
+      "description": "Global musical parameters",
+      "required": ["tempo", "timeSignature", "key"],
+      "properties": {
+        "tempo": {
+          "type": "number",
+          "minimum": 40,
+          "maximum": 300,
+          "description": "Tempo in beats per minute"
+        },
+        "timeSignature": {
+          "type": "array",
+          "items": {
+            "type": "integer"
+          },
+          "minItems": 2,
+          "maxItems": 2,
+          "description": "Time signature as [numerator, denominator]"
+        },
+        "key": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 11,
+          "description": "Pitch class (0=C, 1=C#, ..., 11=B)"
+        }
+      },
+      "additionalProperties": false
+    },
+    "bookI_rhythmSystems": {
+      "type": "array",
+      "description": "Book I: Rhythm systems - generators and resultants",
+      "items": {
+        "$ref": "#/definitions/rhythmSystem"
+      }
+    },
+    "bookII_melodySystems": {
+      "type": "array",
+      "description": "Book II: Melody systems - pitch cycles and intervals",
+      "items": {
+        "$ref": "#/definitions/melodySystem"
+      }
+    },
+    "bookIII_harmonySystems": {
+      "type": "array",
+      "description": "Book III: Harmony systems - vertical distributions",
+      "items": {
+        "$ref": "#/definitions/harmonySystem"
+      }
+    },
+    "bookIV_formSystem": {
+      "description": "Book IV: Form system - ratio trees and sections",
+      "oneOf": [
+        {
+          "$ref": "#/definitions/formSystem"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "bookV_orchestration": {
+      "description": "Book V: Orchestration system - roles and voice assignments",
+      "$ref": "#/definitions/orchestrationSystem"
+    },
+    "ensembleModel": {
+      "description": "Voice topology independent of instruments",
+      "$ref": "#/definitions/ensembleModel"
+    },
+    "bindings": {
+      "type": "object",
+      "required": [
+        "roleRhythmBindings",
+        "roleMelodyBindings",
+        "roleHarmonyBindings",
+        "roleEnsembleBindings"
+      ],
+      "properties": {
+        "roleRhythmBindings": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/roleRhythmBinding"
+          }
+        },
+        "roleMelodyBindings": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/roleMelodyBinding"
+          }
+        },
+        "roleHarmonyBindings": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/roleHarmonyBinding"
+          }
+        },
+        "roleEnsembleBindings": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/roleEnsembleBinding"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "constraints": {
+      "type": "array",
+      "description": "Global and system-specific constraints",
+      "items": {
+        "$ref": "#/definitions/constraint"
+      }
+    },
+    "provenance": {
+      "type": "object",
+      "required": ["createdAt", "createdBy", "modifiedAt", "derivationChain"],
+      "properties": {
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "ISO 8601 timestamp when song was created"
+        },
+        "createdBy": {
+          "type": "string",
+          "description": "User or system ID that created this song"
+        },
+        "modifiedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "ISO 8601 timestamp of last modification"
+        },
+        "derivationChain": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "description": "IDs of previous versions this song derives from"
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false,
+  "definitions": {
+    "rhythmSystem": {
+      "type": "object",
+      "required": ["systemId", "systemType", "generators", "resultantSelection", "permutations", "accentDisplacement", "densityConstraints", "quantizationConstraint"],
+      "properties": {
+        "systemId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "systemType": {
+          "const": "rhythm"
+        },
+        "generators": {
+          "type": "array",
+          "minItems": 2,
+          "items": {
+            "type": "object",
+            "required": ["period", "phase"],
+            "properties": {
+              "period": {
+                "type": "number",
+                "minimum": 1,
+                "maximum": 16
+              },
+              "phase": {
+                "type": "number",
+                "minimum": 0
+              },
+              "weight": {
+                "type": "number",
+                "minimum": 0.1,
+                "maximum": 2.0
+              }
+            }
+          }
+        },
+        "resultantSelection": {
+          "type": "object",
+          "required": ["method"],
+          "properties": {
+            "method": {
+              "type": "string",
+              "enum": ["interference", "modulo", "custom"]
+            },
+            "targetPeriod": {
+              "type": "number",
+              "minimum": 1
+            }
+          }
+        },
+        "permutations": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["ruleId", "type", "period"],
+            "properties": {
+              "ruleId": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "type": {
+                "type": "string",
+                "enum": ["rotation", "retrograde", "inversion"]
+              },
+              "period": {
+                "type": "number",
+                "minimum": 1
+              },
+              "parameter": true
+            }
+          }
+        },
+        "accentDisplacement": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["ruleId", "trigger", "displacement"],
+            "properties": {
+              "ruleId": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "trigger": {
+                "type": "string",
+                "enum": ["strong", "weak", "custom"]
+              },
+              "displacement": {
+                "type": "number",
+                "minimum": 0
+              }
+            }
+          }
+        },
+        "densityConstraints": {
+          "type": "object",
+          "required": ["constraintId", "scope"],
+          "properties": {
+            "constraintId": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "scope": {
+              "type": "string",
+              "enum": ["global", "system"]
+            },
+            "minAttacksPerMeasure": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "maxAttacksPerMeasure": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        },
+        "quantizationConstraint": {
+          "type": "object",
+          "required": ["constraintId", "grid", "allowOffset"],
+          "properties": {
+            "constraintId": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "grid": {
+              "type": "number",
+              "minimum": 0.0625,
+              "description": "Quantization grid in beats (e.g., 0.25 = sixteenth note)"
+            },
+            "allowOffset": {
+              "type": "boolean"
+            }
+          }
+        }
+      }
+    },
+    "melodySystem": {
+      "type": "object",
+      "required": ["systemId", "systemType", "cycleLength", "intervalSeed", "rotationRule", "expansionRules", "contractionRules", "contourConstraints", "directionalBias", "registerConstraints"],
+      "properties": {
+        "systemId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "systemType": {
+          "const": "melody"
+        },
+        "cycleLength": {
+          "type": "integer",
+          "minimum": 2,
+          "maximum": 24
+        },
+        "intervalSeed": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "integer",
+            "minimum": -12,
+            "maximum": 12
+          }
+        },
+        "rotationRule": {
+          "type": "object",
+          "required": ["ruleId", "type", "interval"],
+          "properties": {
+            "ruleId": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "type": {
+              "type": "string",
+              "enum": ["cyclic", "random"]
+            },
+            "interval": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "amount": {
+              "type": "integer"
+            }
+          }
+        },
+        "expansionRules": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["ruleId", "trigger", "multiplier"],
+            "properties": {
+              "ruleId": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "trigger": {
+                "type": "string",
+                "enum": ["periodic", "conditional"]
+              },
+              "multiplier": {
+                "type": "number",
+                "minimum": 1,
+                "maximum": 4
+              },
+              "period": {
+                "type": "integer",
+                "minimum": 1
+              }
+            }
+          }
+        },
+        "contractionRules": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["ruleId", "trigger", "divisor"],
+            "properties": {
+              "ruleId": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "trigger": {
+                "type": "string",
+                "enum": ["periodic", "conditional"]
+              },
+              "divisor": {
+                "type": "number",
+                "minimum": 1,
+                "maximum": 4
+              },
+              "period": {
+                "type": "integer",
+                "minimum": 1
+              }
+            }
+          }
+        },
+        "contourConstraints": {
+          "type": "object",
+          "required": ["constraintId", "type"],
+          "properties": {
+            "constraintId": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "type": {
+              "type": "string",
+              "enum": ["ascending", "descending", "oscillating", "custom"]
+            },
+            "maxIntervalLeaps": {
+              "type": "integer",
+              "minimum": 1
+            }
+          }
+        },
+        "directionalBias": {
+          "type": "number",
+          "minimum": -1,
+          "maximum": 1
+        },
+        "registerConstraints": {
+          "type": "object",
+          "required": ["constraintId", "allowTransposition"],
+          "properties": {
+            "constraintId": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "minPitch": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 127
+            },
+            "maxPitch": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 127
+            },
+            "allowTransposition": {
+              "type": "boolean"
+            }
+          }
+        }
+      }
+    },
+    "harmonySystem": {
+      "type": "object",
+      "required": ["systemId", "systemType", "distribution", "harmonicRhythmBinding", "voiceLeadingConstraints", "resolutionRules"],
+      "properties": {
+        "systemId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "systemType": {
+          "const": "harmony"
+        },
+        "distribution": {
+          "type": "array",
+          "minItems": 12,
+          "maxItems": 12,
+          "items": {
+            "type": "number",
+            "minimum": 0
+          },
+          "description": "Interval weights for intervals 1-12 semitones"
+        },
+        "harmonicRhythmBinding": {
+          "type": "string",
+          "format": "uuid",
+          "description": "RhythmSystem ID that governs harmonic rhythm"
+        },
+        "voiceLeadingConstraints": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["constraintId", "maxIntervalLeap", "avoidParallels", "preferredMotion"],
+            "properties": {
+              "constraintId": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "maxIntervalLeap": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 12
+              },
+              "avoidParallels": {
+                "type": "boolean"
+              },
+              "preferredMotion": {
+                "type": "string",
+                "enum": ["contrary", "oblique", "similar", "parallel"]
+              }
+            }
+          }
+        },
+        "resolutionRules": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["ruleId", "trigger", "targetDistribution", "tendency"],
+            "properties": {
+              "ruleId": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "trigger": {
+                "type": "string",
+                "enum": ["cadence", "conditional"]
+              },
+              "targetDistribution": {
+                "type": "array",
+                "minItems": 12,
+                "maxItems": 12,
+                "items": {
+                  "type": "number",
+                  "minimum": 0
+                }
+              },
+              "tendency": {
+                "type": "string",
+                "enum": ["resolve", "suspend", "avoid"]
+              }
+            }
+          }
+        }
+      }
+    },
+    "formSystem": {
+      "type": "object",
+      "required": ["systemId", "systemType", "ratioTree", "nestedPeriodicity", "reuseRules", "transformationReferences", "cadenceConstraints", "symmetryRules"],
+      "properties": {
+        "systemId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "systemType": {
+          "const": "form"
+        },
+        "ratioTree": {
+          "type": "array",
+          "minItems": 2,
+          "items": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "description": "Section ratios [A, B, C, ...]"
+        },
+        "nestedPeriodicity": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["nodeId", "ratio", "children"],
+            "properties": {
+              "nodeId": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "ratio": {
+                "type": "array",
+                "items": {
+                  "type": "integer",
+                  "minimum": 1
+                }
+              },
+              "children": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/definitions/formNode"
+                }
+              }
+            }
+          }
+        },
+        "reuseRules": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["ruleId", "sourceSection", "targetSection"],
+            "properties": {
+              "ruleId": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "sourceSection": {
+                "type": "string"
+              },
+              "targetSection": {
+                "type": "string"
+              },
+              "transformation": {
+                "type": "string",
+                "enum": ["transpose", "retrograde", "invert"]
+              }
+            }
+          }
+        },
+        "transformationReferences": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["referenceId", "sourceSection", "transformationType", "parameter"],
+            "properties": {
+              "referenceId": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "sourceSection": {
+                "type": "string"
+              },
+              "transformationType": {
+                "type": "string",
+                "enum": ["transpose", "retrograde", "invert", "augment"]
+              },
+              "parameter": true
+            }
+          }
+        },
+        "cadenceConstraints": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["constraintId", "sectionId", "type"],
+            "properties": {
+              "constraintId": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "sectionId": {
+                "type": "string"
+              },
+              "type": {
+                "type": "string",
+                "enum": ["authentic", "plagal", "deceptive", "half"]
+              }
+            }
+          }
+        },
+        "symmetryRules": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["ruleId", "axis", "type"],
+            "properties": {
+              "ruleId": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "axis": {
+                "type": "string"
+              },
+              "type": {
+                "type": "string",
+                "enum": ["mirror", "rotational", "palindromic"]
+              }
+            }
+          }
+        }
+      }
+    },
+    "formNode": {
+      "type": "object",
+      "required": ["nodeId", "ratio", "children"],
+      "properties": {
+        "nodeId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "ratio": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 1
+          }
+        },
+        "children": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/formNode"
+          }
+        }
+      }
+    },
+    "orchestrationSystem": {
+      "type": "object",
+      "required": ["systemId", "systemType", "roles", "registerSystem", "spacingSystem", "densitySystem", "doublingRules", "reinforcementRules", "splitRules", "mergeRules", "formOrchestration"],
+      "properties": {
+        "systemId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "systemType": {
+          "const": "orchestration"
+        },
+        "roles": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["roleId", "roleName", "priority", "functionalClass", "yieldTo"],
+            "properties": {
+              "roleId": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "roleName": {
+                "type": "string"
+              },
+              "priority": {
+                "type": "string",
+                "enum": ["primary", "secondary", "tertiary"]
+              },
+              "functionalClass": {
+                "type": "string",
+                "enum": ["foundation", "motion", "ornament", "reinforcement"]
+              },
+              "yieldTo": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "format": "uuid"
+                }
+              }
+            }
+          }
+        },
+        "registerSystem": {
+          "type": "object",
+          "required": ["systemId", "roleRegisters"],
+          "properties": {
+            "systemId": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "roleRegisters": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": ["roleId", "minPitch", "maxPitch"],
+                "properties": {
+                  "roleId": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "minPitch": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 127
+                  },
+                  "maxPitch": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 127
+                  },
+                  "envelope": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "required": ["sectionId", "minPitch", "maxPitch"],
+                      "properties": {
+                        "sectionId": {
+                          "type": "string"
+                        },
+                        "minPitch": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 127
+                        },
+                        "maxPitch": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 127
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "spacingSystem": {
+          "type": "object",
+          "required": ["systemId", "minSpacing", "maxSpacing", "crossingRules"],
+          "properties": {
+            "systemId": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "minSpacing": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": ["voiceId", "minInterval"],
+                "properties": {
+                  "voiceId": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "minInterval": {
+                    "type": "integer",
+                    "minimum": 0
+                  }
+                }
+              }
+            },
+            "maxSpacing": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": ["voiceId", "maxInterval"],
+                "properties": {
+                  "voiceId": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "maxInterval": {
+                    "type": "integer",
+                    "minimum": 0
+                  }
+                }
+              }
+            },
+            "crossingRules": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": ["ruleId", "allowCrossing"],
+                "properties": {
+                  "ruleId": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "allowCrossing": {
+                    "type": "boolean"
+                  },
+                  "conditions": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "densitySystem": {
+          "type": "object",
+          "required": ["systemId", "roleDensity"],
+          "properties": {
+            "systemId": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "roleDensity": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": ["roleId", "densityBudget", "couplingRules"],
+                "properties": {
+                  "roleId": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "densityBudget": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1
+                  },
+                  "couplingRules": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "required": ["ruleId", "targetRoleId", "type", "amount"],
+                      "properties": {
+                        "ruleId": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "targetRoleId": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "type": {
+                          "type": "string",
+                          "enum": ["direct", "inverse", "independent"]
+                        },
+                        "amount": {
+                          "type": "number"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "doublingRules": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["ruleId", "sourceVoiceId", "targetVoiceId", "interval", "conditional"],
+            "properties": {
+              "ruleId": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "sourceVoiceId": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "targetVoiceId": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "interval": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "conditional": {
+                "type": "boolean"
+              },
+              "trigger": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "reinforcementRules": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["ruleId", "sourceVoiceId", "targetVoiceId", "delay"],
+            "properties": {
+              "ruleId": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "sourceVoiceId": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "targetVoiceId": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "delay": {
+                "type": "number",
+                "minimum": 0
+              },
+              "duration": {
+                "type": "number",
+                "minimum": 0
+              }
+            }
+          }
+        },
+        "splitRules": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["ruleId", "sourceSystemId", "targetVoices", "splitMethod"],
+            "properties": {
+              "ruleId": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "sourceSystemId": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "targetVoices": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "format": "uuid"
+                }
+              },
+              "splitMethod": {
+                "type": "string",
+                "enum": ["parallel", "antiphonal", "alternating"]
+              }
+            }
+          }
+        },
+        "mergeRules": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["ruleId", "sourceVoiceIds", "targetVoiceId", "mergeMethod"],
+            "properties": {
+              "ruleId": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "sourceVoiceIds": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "format": "uuid"
+                }
+              },
+              "targetVoiceId": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "mergeMethod": {
+                "type": "string",
+                "enum": ["unison", "octave", "layered"]
+              }
+            }
+          }
+        },
+        "formOrchestration": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["bindingId", "sectionId", "roleReassignments"],
+            "properties": {
+              "bindingId": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "sectionId": {
+                "type": "string"
+              },
+              "roleReassignments": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": ["roleId", "newRole"],
+                  "properties": {
+                    "roleId": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "newRole": {
+                      "type": "string",
+                      "format": "uuid"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "ensembleModel": {
+      "type": "object",
+      "required": ["voices", "groups", "balanceRules"],
+      "properties": {
+        "voices": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["voiceId", "voiceName", "rolePool", "registerRange"],
+            "properties": {
+              "voiceId": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "voiceName": {
+                "type": "string"
+              },
+              "rolePool": {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                  "type": "string",
+                  "format": "uuid"
+                }
+              },
+              "registerRange": {
+                "type": "object",
+                "required": ["minPitch", "maxPitch"],
+                "properties": {
+                  "minPitch": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 127
+                  },
+                  "maxPitch": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 127
+                  }
+                }
+              },
+              "groupId": {
+                "type": "string",
+                "format": "uuid"
+              }
+            }
+          }
+        },
+        "groups": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["groupId", "groupName", "voiceIds", "balanceRules"],
+            "properties": {
+              "groupId": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "groupName": {
+                "type": "string"
+              },
+              "voiceIds": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "format": "uuid"
+                }
+              },
+              "balanceRules": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": ["ruleId", "type", "target", "reference", "ratio"],
+                  "properties": {
+                    "ruleId": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "type": {
+                      "type": "string",
+                      "enum": ["relative", "absolute"]
+                    },
+                    "target": {
+                      "type": "string"
+                    },
+                    "reference": {
+                      "type": "string"
+                    },
+                    "ratio": {
+                      "type": "number",
+                      "exclusiveMinimum": 0
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "balanceRules": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["ruleId", "type", "target", "reference", "ratio"],
+            "properties": {
+              "ruleId": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "type": {
+                "type": "string",
+                "enum": ["relative", "absolute"]
+              },
+              "target": {
+                "type": "string"
+              },
+              "reference": {
+                "type": "string"
+              },
+              "ratio": {
+                "type": "number",
+                "exclusiveMinimum": 0
+              }
+            }
+          }
+        }
+      }
+    },
+    "roleRhythmBinding": {
+      "type": "object",
+      "required": ["bindingId", "roleId", "rhythmSystemId", "voiceId", "priority"],
+      "properties": {
+        "bindingId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "roleId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "rhythmSystemId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "voiceId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "priority": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10
+        }
+      }
+    },
+    "roleMelodyBinding": {
+      "type": "object",
+      "required": ["bindingId", "roleId", "melodySystemId", "voiceId", "priority"],
+      "properties": {
+        "bindingId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "roleId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "melodySystemId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "voiceId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "priority": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10
+        }
+      }
+    },
+    "roleHarmonyBinding": {
+      "type": "object",
+      "required": ["bindingId", "roleId", "harmonySystemId", "voiceIds", "priority"],
+      "properties": {
+        "bindingId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "roleId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "harmonySystemId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "voiceIds": {
+          "type": "array",
+          "minItems": 2,
+          "items": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "priority": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10
+        }
+      }
+    },
+    "roleEnsembleBinding": {
+      "type": "object",
+      "required": ["bindingId", "roleId", "voiceId"],
+      "properties": {
+        "bindingId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "roleId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "voiceId": {
+          "type": "string",
+          "format": "uuid"
+        }
+      }
+    },
+    "constraint": {
+      "type": "object",
+      "required": ["constraintId", "type", "scope", "parameters", "enabled"],
+      "properties": {
+        "constraintId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "type": {
+          "type": "string"
+        },
+        "scope": {
+          "type": "object",
+          "required": ["type"],
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": ["global", "system", "voice"]
+            },
+            "targetId": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        },
+        "parameters": {
+          "type": "object"
+        },
+        "enabled": {
+          "type": "boolean"
+        }
+      }
+    }
+  },
+  "examples": [
+    {
+      "description": "Simple song with rhythm system only",
+      "schemaVersion": "1.0",
+      "songId": "550e8400-e29b-41d4-a716-446655440000",
+      "globals": {
+        "tempo": 120,
+        "timeSignature": [4, 4],
+        "key": 0
+      },
+      "bookI_rhythmSystems": [
+        {
+          "systemId": "6ba7b810-9dad-11d1-80b4-00c04fd430c8",
+          "systemType": "rhythm",
+          "generators": [
+            {
+              "period": 3,
+              "phase": 0,
+              "weight": 1.0
+            },
+            {
+              "period": 4,
+              "phase": 0,
+              "weight": 1.0
+            }
+          ],
+          "resultantSelection": {
+            "method": "interference"
+          },
+          "permutations": [],
+          "accentDisplacement": [],
+          "densityConstraints": {
+            "constraintId": "7f9b8e10-9dad-11d1-80b4-00c04fd430c8",
+            "scope": "system",
+            "minAttacksPerMeasure": 2,
+            "maxAttacksPerMeasure": 8
+          },
+          "quantizationConstraint": {
+            "constraintId": "8ba09020-9dad-11d1-80b4-00c04fd430c8",
+            "grid": 0.25,
+            "allowOffset": false
+          }
+        }
+      ],
+      "bookII_melodySystems": [],
+      "bookIII_harmonySystems": [],
+      "bookIV_formSystem": null,
+      "bookV_orchestration": {
+        "$ref": "#/definitions/orchestrationSystem"
+      },
+      "ensembleModel": {
+        "$ref": "#/definitions/ensembleModel"
+      },
+      "bindings": {
+        "roleRhythmBindings": [],
+        "roleMelodyBindings": [],
+        "roleHarmonyBindings": [],
+        "roleEnsembleBindings": []
+      },
+      "constraints": [],
+      "provenance": {
+        "createdAt": "2025-01-07T12:00:00.000Z",
+        "createdBy": "user-123",
+        "modifiedAt": "2025-01-07T12:00:00.000Z",
+        "derivationChain": []
+      }
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+//
+//  schillinger.modulemap
+//  White Room Swift Frontend
+//
+//  Swift module map for Schillinger JUCE FFI bridge
+//  Enables Swift to call C functions from JUCE backend
+//
+
+module SchillingerFFI {
+    header "sch_engine.hpp"
+
+    // Export all C functions and types from sch_engine.hpp
+    export *
+}

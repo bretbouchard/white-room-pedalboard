@@ -1,0 +1,200 @@
+{
+  "version": "1.0",
+  "id": "satb-test-song",
+  "name": "SATB Test Song",
+  "metadata": {
+    "tempo": 100.0,
+    "timeSignature": [4, 4],
+    "duration": 30.0,
+    "key": "C",
+    "tags": ["satb", "choir", "4-part"]
+  },
+  "sections": [
+    {
+      "id": "section-intro",
+      "name": "Intro",
+      "start": { "seconds": 0.0 },
+      "end": { "seconds": 8.0 },
+      "roles": ["soprano", "alto", "tenor", "bass"]
+    },
+    {
+      "id": "section-verse",
+      "name": "Verse",
+      "start": { "seconds": 8.0 },
+      "end": { "seconds": 22.0 },
+      "roles": ["soprano", "alto", "tenor", "bass"]
+    },
+    {
+      "id": "section-outro",
+      "name": "Outro",
+      "start": { "seconds": 22.0 },
+      "end": { "seconds": 30.0 },
+      "roles": ["soprano", "alto", "tenor", "bass"]
+    }
+  ],
+  "roles": [
+    {
+      "id": "soprano",
+      "name": "Soprano",
+      "type": "melody",
+      "generatorConfig": {
+        "type": "schillinger-melody",
+        "parameters": { "density": 0.7, "complexity": 0.6 }
+      },
+      "parameters": {
+        "density": 0.7,
+        "range": [72, 96],
+        "velocityRange": [80, 120]
+      }
+    },
+    {
+      "id": "alto",
+      "name": "Alto",
+      "type": "harmony",
+      "generatorConfig": {
+        "type": "schillinger-harmony",
+        "parameters": { "density": 0.6, "voiceLeading": "close" }
+      },
+      "parameters": {
+        "density": 0.6,
+        "range": [60, 84],
+        "velocityRange": [70, 110]
+      }
+    },
+    {
+      "id": "tenor",
+      "name": "Tenor",
+      "type": "harmony",
+      "generatorConfig": {
+        "type": "schillinger-harmony",
+        "parameters": { "density": 0.6, "voiceLeading": "open" }
+      },
+      "parameters": {
+        "density": 0.6,
+        "range": [48, 72],
+        "velocityRange": [70, 110]
+      }
+    },
+    {
+      "id": "bass",
+      "name": "Bass",
+      "type": "bass",
+      "generatorConfig": {
+        "type": "schillinger-bass",
+        "parameters": { "density": 0.5 }
+      },
+      "parameters": {
+        "density": 0.5,
+        "range": [36, 60],
+        "velocityRange": [80, 120]
+      }
+    }
+  ],
+  "projections": [
+    {
+      "id": "projection-soprano",
+      "roleId": "soprano",
+      "target": { "type": "instrument", "id": "choir-soprano" }
+    },
+    {
+      "id": "projection-alto",
+      "roleId": "alto",
+      "target": { "type": "instrument", "id": "choir-alto" }
+    },
+    {
+      "id": "projection-tenor",
+      "roleId": "tenor",
+      "target": { "type": "instrument", "id": "choir-tenor" }
+    },
+    {
+      "id": "projection-bass",
+      "roleId": "bass",
+      "target": { "type": "instrument", "id": "choir-bass" }
+    }
+  ],
+  "mixGraph": {
+    "tracks": [
+      {
+        "id": "track-soprano",
+        "name": "Soprano",
+        "volume": 0.8,
+        "pan": -0.3,
+        "mute": false,
+        "solo": false
+      },
+      {
+        "id": "track-alto",
+        "name": "Alto",
+        "volume": 0.75,
+        "pan": -0.1,
+        "mute": false,
+        "solo": false
+      },
+      {
+        "id": "track-tenor",
+        "name": "Tenor",
+        "volume": 0.75,
+        "pan": 0.1,
+        "mute": false,
+        "solo": false
+      },
+      {
+        "id": "track-bass",
+        "name": "Bass",
+        "volume": 0.85,
+        "pan": 0.0,
+        "mute": false,
+        "solo": false
+      }
+    ],
+    "buses": [
+      {
+        "id": "reverb",
+        "name": "Reverb",
+        "volume": 0.4,
+        "pan": 0.0,
+        "mute": false,
+        "solo": false
+      }
+    ],
+    "sends": [
+      {
+        "id": "send-soprano-reverb",
+        "fromTrackId": "track-soprano",
+        "toBusId": "reverb",
+        "amount": 0.3
+      },
+      {
+        "id": "send-alto-reverb",
+        "fromTrackId": "track-alto",
+        "toBusId": "reverb",
+        "amount": 0.25
+      },
+      {
+        "id": "send-tenor-reverb",
+        "fromTrackId": "track-tenor",
+        "toBusId": "reverb",
+        "amount": 0.25
+      },
+      {
+        "id": "send-bass-reverb",
+        "fromTrackId": "track-bass",
+        "toBusId": "reverb",
+        "amount": 0.2
+      }
+    ],
+    "master": {
+      "volume": 0.9,
+      "sampleRate": 44100,
+      "bufferSize": 512
+    }
+  },
+  "realizationPolicy": {
+    "windowSize": { "seconds": 2.0 },
+    "lookaheadDuration": { "seconds": 4.0 },
+    "determinismMode": "strict"
+  },
+  "determinismSeed": "satb-test-seed",
+  "createdAt": "2026-01-15T00:00:00.000Z",
+  "updatedAt": "2026-01-15T00:00:00.000Z"
+}

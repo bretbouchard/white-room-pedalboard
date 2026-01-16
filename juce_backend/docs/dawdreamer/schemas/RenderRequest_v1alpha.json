@@ -1,0 +1,16 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://example.com/schemas/RenderRequest_v1alpha.json",
+  "title": "RenderRequest v1alpha",
+  "type": "object",
+  "properties": {
+    "version": {"type": "string", "const": "v1alpha"},
+    "request_id": {"type": "string"},
+    "duration_seconds": {"type": "number", "minimum": 0},
+    "sample_rate": {"type": "integer", "enum": [44100, 48000, 96000]},
+    "channels": {"type": "integer", "minimum": 1},
+    "flags": {"type": "object", "additionalProperties": true}
+  },
+  "required": ["version", "request_id", "duration_seconds", "sample_rate", "channels"],
+  "additionalProperties": false
+}

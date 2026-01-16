@@ -1,0 +1,23 @@
+{
+  "mcpServers": {
+    "fly-mcp": {
+      "url": "http://127.0.0.1:2345/mcp",
+      "type": "http"
+    },
+    "lucide-icons-enhanced": {
+      "command": "node",
+      "args": [
+        "/Users/bretbouchard/apps/mcp_servers/lucide-icons-mcp/build/entry.js",
+        "--stdio"
+      ]
+    },
+    "docker": {
+      "command": "docker",
+      "args": [
+        "mcp",
+        "gateway",
+        "run"
+      ]
+    }
+  }
+}

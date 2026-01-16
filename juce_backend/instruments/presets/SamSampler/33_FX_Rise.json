@@ -1,0 +1,33 @@
+{
+  "version": "1.0.0",
+  "name": "FX Rise",
+  "author": "Bret Bouchard",
+  "description": "Rising atmospheric sweep with tension-building energy.",
+  "category": "FX",
+  "tags": ["FX", "rise", "sweep", "tension", "transition"],
+  "creationDate": "2025-12-27",
+  "parameters": {
+    "sample.file": "fx_rise.wav",
+    "sample.loop_mode": 0.0,
+    "sample.loop.start": 0.0,
+    "sample.loop.end": 1.0,
+    "pitch.transpose": 0.5,
+    "pitch.detune": 0.5,
+    "pitch.bend": 0.5,
+    "filter.type": 0.0,
+    "filter.cutoff": 0.7,
+    "filter.resonance": 0.25,
+    "env.adsr.a": 0.1,
+    "env.adsr.d": 1.0,
+    "env.adsr.s": 0.0,
+    "env.adsr.r": 0.3,
+    "fx.drive": 0.1,
+    "fx.chorus": 0.2,
+    "fx.delay": 0.0,
+    "fx.reverb": 0.4,
+    "output.level": 0.8,
+    "output.pan": 0.5
+  },
+  "macroMappings": {},
+  "modulationMatrix": {}
+}

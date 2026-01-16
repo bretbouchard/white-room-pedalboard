@@ -1,0 +1,55 @@
+{
+  "version": "1.0.0",
+  "name": "Strings Section",
+  "author": "Bret Bouchard",
+  "description": "String section sample with slow attack, lush chorus, and generous reverb for cinematic textures.",
+  "category": "Strings",
+  "tags": ["strings", "section", "cinematic", "lush"],
+  "creationDate": "2025-12-26",
+  "parameters": {
+    "sample.file": "samples/strings_section.wav",
+    "sample.loop_mode": 1.0,
+    "sample.loop.start": 0.2,
+    "sample.loop.end": 0.9,
+    "pitch.transpose": 0.5,
+    "pitch.detune": 0.5,
+    "pitch.bend": 0.5,
+    "filter.type": 0.0,
+    "filter.cutoff": 0.7,
+    "filter.resonance": 0.15,
+    "env.adsr.a": 0.3,
+    "env.adsr.d": 0.4,
+    "env.adsr.s": 0.7,
+    "env.adsr.r": 0.6,
+    "fx.drive": 0.0,
+    "fx.chorus": 0.55,
+    "fx.delay": 0.2,
+    "fx.reverb": 0.65,
+    "output.level": 0.75,
+    "output.pan": 0.5
+  },
+  "macroMappings": {
+    "macro_0": {
+      "name": "Attack",
+      "destination": "env.adsr.a",
+      "amount": 1.0,
+      "minValue": 0.0,
+      "maxValue": 0.8
+    },
+    "macro_1": {
+      "name": "Ensemble",
+      "destination": "fx.chorus",
+      "amount": 1.0,
+      "minValue": 0.2,
+      "maxValue": 0.8
+    },
+    "macro_2": {
+      "name": "Space",
+      "destination": "fx.reverb",
+      "amount": 1.0,
+      "minValue": 0.3,
+      "maxValue": 0.9
+    }
+  },
+  "modulationMatrix": {}
+}

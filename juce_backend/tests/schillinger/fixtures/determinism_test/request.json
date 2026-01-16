@@ -1,0 +1,12 @@
+{
+  "op": "plan",
+  "id": "req-determinism-001",
+  "payload": {
+    "sessionId": "session-test-001",
+    "window": {
+      "from": 0,
+      "to": 48000
+    },
+    "seed": 42
+  }
+}

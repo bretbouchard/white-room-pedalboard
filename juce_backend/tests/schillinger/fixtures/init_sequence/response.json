@@ -1,0 +1,9 @@
+{
+  "id": "req-init-001",
+  "ok": true,
+  "result": {
+    "sessionId": "session-test-001",
+    "sdkBuildHash": "tvos-bundle-v1",
+    "schemaVersion": "2.0.0"
+  }
+}

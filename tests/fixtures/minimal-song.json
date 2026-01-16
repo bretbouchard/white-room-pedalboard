@@ -1,0 +1,74 @@
+{
+  "version": "1.0",
+  "id": "minimal-test-song",
+  "name": "Minimal Test Song",
+  "metadata": {
+    "tempo": 120.0,
+    "timeSignature": [4, 4],
+    "duration": 10.0,
+    "key": "C",
+    "tags": []
+  },
+  "sections": [
+    {
+      "id": "section-0",
+      "name": "Section 0",
+      "start": { "seconds": 0.0 },
+      "end": { "seconds": 10.0 },
+      "roles": ["role-0"]
+    }
+  ],
+  "roles": [
+    {
+      "id": "role-0",
+      "name": "Role 0",
+      "type": "melody",
+      "generatorConfig": {
+        "type": "test-generator",
+        "parameters": { "density": 0.5 }
+      },
+      "parameters": {
+        "density": 0.5,
+        "range": [48, 72],
+        "velocityRange": [64, 100]
+      }
+    }
+  ],
+  "projections": [
+    {
+      "id": "projection-0",
+      "roleId": "role-0",
+      "target": {
+        "type": "instrument",
+        "id": "instrument-0"
+      }
+    }
+  ],
+  "mixGraph": {
+    "tracks": [
+      {
+        "id": "track-0",
+        "name": "Track 0",
+        "volume": 0.8,
+        "pan": 0.0,
+        "mute": false,
+        "solo": false
+      }
+    ],
+    "buses": [],
+    "sends": [],
+    "master": {
+      "volume": 1.0,
+      "sampleRate": 44100,
+      "bufferSize": 512
+    }
+  },
+  "realizationPolicy": {
+    "windowSize": { "seconds": 1.0 },
+    "lookaheadDuration": { "seconds": 2.0 },
+    "determinismMode": "strict"
+  },
+  "determinismSeed": "test-seed",
+  "createdAt": "2026-01-15T00:00:00.000Z",
+  "updatedAt": "2026-01-15T00:00:00.000Z"
+}

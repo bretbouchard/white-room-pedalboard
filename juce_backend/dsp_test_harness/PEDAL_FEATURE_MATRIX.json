@@ -1,0 +1,1193 @@
+[
+  {
+    "name": "BiPhase",
+    "parameters": [
+      {
+        "name": "RateA",
+        "index": 0,
+        "min": 0.0,
+        "max": 1.0,
+        "default": 0.5,
+        "unit": "",
+        "label": "RateA"
+      },
+      {
+        "name": "DepthA",
+        "index": 1,
+        "min": 0.0,
+        "max": 1.0,
+        "default": 0.5,
+        "unit": "",
+        "label": "DepthA"
+      },
+      {
+        "name": "FeedbackA",
+        "index": 2,
+        "min": 0.0,
+        "max": 1.0,
+        "default": 0.5,
+        "unit": "",
+        "label": "FeedbackA"
+      },
+      {
+        "name": "RateB",
+        "index": 3,
+        "min": 0.0,
+        "max": 1.0,
+        "default": 0.5,
+        "unit": "",
+        "label": "RateB"
+      },
+      {
+        "name": "DepthB",
+        "index": 4,
+        "min": 0.0,
+        "max": 1.0,
+        "default": 0.5,
+        "unit": "",
+        "label": "DepthB"
+      },
+      {
+        "name": "FeedbackB",
+        "index": 5,
+        "min": 0.0,
+        "max": 1.0,
+        "default": 0.5,
+        "unit": "",
+        "label": "FeedbackB"
+      },
+      {
+        "name": "Mix",
+        "index": 6,
+        "min": 0.0,
+        "max": 1.0,
+        "default": 0.5,
+        "unit": "",
+        "label": "Mix"
+      },
+      {
+        "name": "Level",
+        "index": 7,
+        "min": 0.0,
+        "max": 1.0,
+        "default": 0.5,
+        "unit": "",
+        "label": "Level"
+      },
+      {
+        "name": "Routing",
+        "index": 8,
+        "min": 0.0,
+        "max": 1.0,
+        "default": 0.5,
+        "unit": "",
+        "label": "Routing"
+      }
+    ],
+    "presets": [
+      {
+        "name": "ClassicBiPhase",
+        "index": 0
+      },
+      {
+        "name": "StereoPhaser",
+        "index": 1
+      },
+      {
+        "name": "DeepPhase",
+        "index": 2
+      },
+      {
+        "name": "SubtlePhase",
+        "index": 3
+      },
+      {
+        "name": "Rotary",
+        "index": 4
+      },
+      {
+        "name": "JetPhaser",
+        "index": 5
+      },
+      {
+        "name": "Vibrato",
+        "index": 6
+      }
+    ],
+    "enum_classes": {}
+  },
+  {
+    "name": "Chorus",
+    "parameters": [
+      {
+        "name": "Rate",
+        "index": 0,
+        "min": 0.0,
+        "max": 1.0,
+        "default": 0.5,
+        "unit": "",
+        "label": "Rate"
+      },
+      {
+        "name": "Depth",
+        "index": 1,
+        "min": 0.0,
+        "max": 1.0,
+        "default": 0.5,
+        "unit": "",
+        "label": "Depth"
+      },
+      {
+        "name": "Mix",
+        "index": 2,
+        "min": 0.0,
+        "max": 1.0,
+        "default": 0.5,
+        "unit": "",
+        "label": "Mix"
+      },
+      {
+        "name": "Tone",
+        "index": 3,
+        "min": 0.0,
+        "max": 1.0,
+        "default": 0.5,
+        "unit": "",
+        "label": "Tone"
+      },
+      {
+        "name": "VoiceCount",
+        "index": 4,
+        "min": 0.0,
+        "max": 1.0,
+        "default": 0.5,
+        "unit": "",
+        "label": "VoiceCount"
+      },
+      {
+        "name": "Circuit",
+        "index": 5,
+        "min": 0.0,
+        "max": 1.0,
+        "default": 0.5,
+        "unit": "",
+        "label": "Circuit"
+      },
+      {
+        "name": "VibratoMode",
+        "index": 6,
+        "min": 0.0,
+        "max": 1.0,
+        "default": 0.5,
+        "unit": "",
+        "label": "VibratoMode"
+      },
+      {
+        "name": "SpeedSwitch",
+        "index": 7,
+        "min": 0.0,
+        "max": 1.0,
+        "default": 0.5,
+        "unit": "",
+        "label": "SpeedSwitch"
+      },
+      {
+        "name": "Waveform",
+        "index": 8,
+        "min": 0.0,
+        "max": 1.0,
+        "default": 0.5,
+        "unit": "",
+        "label": "Waveform"
+      },
+      {
+        "name": "StereoModeParam",
+        "index": 9,
+        "min": 0.0,
+        "max": 1.0,
+        "default": 0.5,
+        "unit": "",
+        "label": "StereoModeParam"
+      },
+      {
+        "name": "Detune",
+        "index": 10,
+        "min": 0.0,
+        "max": 1.0,
+        "default": 0.5,
+        "unit": "",
+        "label": "Detune"
+      }
+    ],
+    "presets": [],
+    "enum_classes": {
+      "ChorusCircuit": [
+        "AnalogChorus",
+        "rich"
+      ],
+      "LFOWaveform": [
+        "Triangle"
+      ],
+      "StereoMode": [
+        "Mono"
+      ]
+    }
+  },
+  {
+    "name": "Compressor",
+    "parameters": [
+      {
+        "name": "Threshold",
+        "index": 0,
+        "min": 0.0,
+        "max": 1.0,
+        "default": 0.5,
+        "unit": "",
+        "label": "Threshold"
+      },
+      {
+        "name": "Ratio",
+        "index": 1,
+        "min": 0.0,
+        "max": 1.0,
+        "default": 0.5,
+        "unit": "",
+        "label": "Ratio"
+      },
+      {
+        "name": "Attack",
+        "index": 2,
+        "min": 0.0,
+        "max": 1.0,
+        "default": 0.5,
+        "unit": "",
+        "label": "Attack"
+      },
+      {
+        "name": "Release",
+        "index": 3,
+        "min": 0.0,
+        "max": 1.0,
+        "default": 0.5,
+        "unit": "",
+        "label": "Release"
+      },
+      {
+        "name": "Level",
+        "index": 4,
+        "min": 0.0,
+        "max": 1.0,
+        "default": 0.5,
+        "unit": "",
+        "label": "Level"
+      },
+      {
+        "name": "Blend",
+        "index": 5,
+        "min": 0.0,
+        "max": 1.0,
+        "default": 0.5,
+        "unit": "",
+        "label": "Blend"
+      },
+      {
+        "name": "Sustain",
+        "index": 6,
+        "min": 0.0,
+        "max": 1.0,
+        "default": 0.5,
+        "unit": "",
+        "label": "Sustain"
+      },
+      {
+        "name": "Knee",
+        "index": 7,
+        "min": 0.0,
+        "max": 1.0,
+        "default": 0.5,
+        "unit": "",
+        "label": "Knee"
+      },
+      {
+        "name": "Tone",
+        "index": 8,
+        "min": 0.0,
+        "max": 1.0,
+        "default": 0.5,
+        "unit": "",
+        "label": "Tone"
+      },
+      {
+        "name": "Circuit",
+        "index": 9,
+        "min": 0.0,
+        "max": 1.0,
+        "default": 0.5,
+        "unit": "",
+        "label": "Circuit"
+      }
+    ],
+    "presets": [
+      {
+        "name": "Country",
+        "index": 0
+      },
+      {
+        "name": "Funk",
+        "index": 1
+      },
+      {
+        "name": "Rock",
+        "index": 2
+      },
+      {
+        "name": "Jazz",
+        "index": 3
+      },
+      {
+        "name": "ChickenPicking",
+        "index": 4
+      },
+      {
+        "name": "MaxSustain",
+        "index": 5
+      },
+      {
+        "name": "Transparent",
+        "index": 6
+      },
+      {
+        "name": "Squash",
+        "index": 7
+      }
+    ],
+    "enum_classes": {
+      "CompressorCircuit": [
+        "Dynacomp"
+      ]
+    }
+  },
+  {
+    "name": "Delay",
+    "parameters": [
+      {
+        "name": "Time",
+        "index": 0,
+        "min": 0.0,
+        "max": 1.0,
+        "default": 0.5,
+        "unit": "",
+        "label": "Time"
+      },
+      {
+        "name": "Feedback",
+        "index": 1,
+        "min": 0.0,
+        "max": 1.0,
+        "default": 0.5,
+        "unit": "",
+        "label": "Feedback"
+      },
+      {
+        "name": "Mix",
+        "index": 2,
+        "min": 0.0,
+        "max": 1.0,
+        "default": 0.5,
+        "unit": "",
+        "label": "Mix"
+      },
+      {
+        "name": "Tone",
+        "index": 3,
+        "min": 0.0,
+        "max": 1.0,
+        "default": 0.5,
+        "unit": "",
+        "label": "Tone"
+      },
+      {
+        "name": "Modulation",
+        "index": 4,
+        "min": 0.0,
+        "max": 1.0,
+        "default": 0.5,
+        "unit": "",
+        "label": "Modulation"
+      },
+      {
+        "name": "Level",
+        "index": 5,
+        "min": 0.0,
+        "max": 1.0,
+        "default": 0.5,
+        "unit": "",
+        "label": "Level"
+      },
+      {
+        "name": "Circuit",
+        "index": 6,
+        "min": 0.0,
+        "max": 1.0,
+        "default": 0.5,
+        "unit": "",
+        "label": "Circuit"
+      },
+      {
+        "name": "TapTempo",
+        "index": 7,
+        "min": 0.0,
+        "max": 1.0,
+        "default": 0.5,
+        "unit": "",
+        "label": "TapTempo"
+      },
+      {
+        "name": "Wow",
+        "index": 8,
+        "min": 0.0,
+        "max": 1.0,
+        "default": 0.5,
+        "unit": "",
+        "label": "Wow"
+      },
+      {
+        "name": "Flutter",
+        "index": 9,
+        "min": 0.0,
+        "max": 1.0,
+        "default": 0.5,
+        "unit": "",
+        "label": "Flutter"
+      },
+      {
+        "name": "FilterModeParam",
+        "index": 10,
+        "min": 0.0,
+        "max": 1.0,
+        "default": 0.5,
+        "unit": "",
+        "label": "FilterModeParam"
+      },
+      {
+        "name": "MultiTap",
+        "index": 11,
+        "min": 0.0,
+        "max": 1.0,
+        "default": 0.5,
+        "unit": "",
+        "label": "MultiTap"
+      },
+      {
+        "name": "ReverseMode",
+        "index": 12,
+        "min": 0.0,
+        "max": 1.0,
+        "default": 0.5,
+        "unit": "",
+        "label": "ReverseMode"
+      },
+      {
+        "name": "Ducking",
+        "index": 13,
+        "min": 0.0,
+        "max": 1.0,
+        "default": 0.5,
+        "unit": "",
+        "label": "Ducking"
+      }
+    ],
+    "presets": [],
+    "enum_classes": {
+      "DelayCircuit": [
+        "AnalogDelay",
+        "dark"
+      ],
+      "FilterMode": [
+        "Low"
+      ],
+      "TapSubdivision": [
+        "Quarter"
+      ]
+    }
+  },
+  {
+    "name": "EQ",
+    "parameters": [
+      {
+        "name": "Bass",
+        "index": 0,
+        "min": 0.0,
+        "max": 1.0,
+        "default": 0.5,
+        "unit": "",
+        "label": "Bass"
+      },
+      {
+        "name": "Mid",
+        "index": 1,
+        "min": 0.0,
+        "max": 1.0,
+        "default": 0.5,
+        "unit": "",
+        "label": "Mid"
+      },
+      {
+        "name": "Treble",
+        "index": 2,
+        "min": 0.0,
+        "max": 1.0,
+        "default": 0.5,
+        "unit": "",
+        "label": "Treble"
+      },
+      {
+        "name": "MidFreq",
+        "index": 3,
+        "min": 0.0,
+        "max": 1.0,
+        "default": 0.5,
+        "unit": "",
+        "label": "MidFreq"
+      },
+      {
+        "name": "Level",
+        "index": 4,
+        "min": 0.0,
+        "max": 1.0,
+        "default": 0.5,
+        "unit": "",
+        "label": "Level"
+      },
+      {
+        "name": "Q",
+        "index": 5,
+        "min": 0.0,
+        "max": 1.0,
+        "default": 0.5,
+        "unit": "",
+        "label": "Q"
+      },
+      {
+        "name": "Circuit",
+        "index": 6,
+        "min": 0.0,
+        "max": 1.0,
+        "default": 0.5,
+        "unit": "",
+        "label": "Circuit"
+      }
+    ],
+    "presets": [
+      {
+        "name": "Flat",
+        "index": 0
+      },
+      {
+        "name": "BassBoost",
+        "index": 1
+      },
+      {
+        "name": "TrebleBoost",
+        "index": 2
+      },
+      {
+        "name": "MidScoop",
+        "index": 3
+      },
+      {
+        "name": "VShape",
+        "index": 4
+      },
+      {
+        "name": "Country",
+        "index": 5
+      },
+      {
+        "name": "Blues",
+        "index": 6
+      },
+      {
+        "name": "Jazz",
+        "index": 7
+      }
+    ],
+    "enum_classes": {
+      "EQCircuit": [
+        "BossGE7"
+      ]
+    }
+  },
+  {
+    "name": "Fuzz",
+    "parameters": [
+      {
+        "name": "Fuzz",
+        "index": 0,
+        "min": 0.0,
+        "max": 1.0,
+        "default": 0.5,
+        "unit": "",
+        "label": "Fuzz"
+      },
+      {
+        "name": "Tone",
+        "index": 1,
+        "min": 0.0,
+        "max": 1.0,
+        "default": 0.5,
+        "unit": "",
+        "label": "Tone"
+      },
+      {
+        "name": "Contour",
+        "index": 2,
+        "min": 0.0,
+        "max": 1.0,
+        "default": 0.5,
+        "unit": "",
+        "label": "Contour"
+      },
+      {
+        "name": "Gate",
+        "index": 3,
+        "min": 0.0,
+        "max": 1.0,
+        "default": 0.5,
+        "unit": "",
+        "label": "Gate"
+      },
+      {
+        "name": "Volume",
+        "index": 4,
+        "min": 0.0,
+        "max": 1.0,
+        "default": 0.5,
+        "unit": "",
+        "label": "Volume"
+      },
+      {
+        "name": "Stab",
+        "index": 5,
+        "min": 0.0,
+        "max": 1.0,
+        "default": 0.5,
+        "unit": "",
+        "label": "Stab"
+      },
+      {
+        "name": "Circuit",
+        "index": 6,
+        "min": 0.0,
+        "max": 1.0,
+        "default": 0.5,
+        "unit": "",
+        "label": "Circuit"
+      },
+      {
+        "name": "Bias",
+        "index": 7,
+        "min": 0.0,
+        "max": 1.0,
+        "default": 0.5,
+        "unit": "",
+        "label": "Bias"
+      },
+      {
+        "name": "InputTrim",
+        "index": 8,
+        "min": 0.0,
+        "max": 1.0,
+        "default": 0.5,
+        "unit": "",
+        "label": "InputTrim"
+      },
+      {
+        "name": "GateMode",
+        "index": 9,
+        "min": 0.0,
+        "max": 1.0,
+        "default": 0.5,
+        "unit": "",
+        "label": "GateMode"
+      },
+      {
+        "name": "OctaveUp",
+        "index": 10,
+        "min": 0.0,
+        "max": 1.0,
+        "default": 0.5,
+        "unit": "",
+        "label": "OctaveUp"
+      },
+      {
+        "name": "MidScoop",
+        "index": 11,
+        "min": 0.0,
+        "max": 1.0,
+        "default": 0.5,
+        "unit": "",
+        "label": "MidScoop"
+      }
+    ],
+    "presets": [],
+    "enum_classes": {
+      "FuzzCircuit": [
+        "FuzzFace",
+        "splatty",
+        "wall"
+      ]
+    }
+  },
+  {
+    "name": "NoiseGate",
+    "parameters": [
+      {
+        "name": "Threshold",
+        "index": 0,
+        "min": 0.0,
+        "max": 1.0,
+        "default": 0.5,
+        "unit": "",
+        "label": "Threshold"
+      },
+      {
+        "name": "Attack",
+        "index": 1,
+        "min": 0.0,
+        "max": 1.0,
+        "default": 0.5,
+        "unit": "",
+        "label": "Attack"
+      },
+      {
+        "name": "Hold",
+        "index": 2,
+        "min": 0.0,
+        "max": 1.0,
+        "default": 0.5,
+        "unit": "",
+        "label": "Hold"
+      },
+      {
+        "name": "Release",
+        "index": 3,
+        "min": 0.0,
+        "max": 1.0,
+        "default": 0.5,
+        "unit": "",
+        "label": "Release"
+      },
+      {
+        "name": "Hysteresis",
+        "index": 4,
+        "min": 0.0,
+        "max": 1.0,
+        "default": 0.5,
+        "unit": "",
+        "label": "Hysteresis"
+      },
+      {
+        "name": "Mix",
+        "index": 5,
+        "min": 0.0,
+        "max": 1.0,
+        "default": 0.5,
+        "unit": "",
+        "label": "Mix"
+      }
+    ],
+    "presets": [
+      {
+        "name": "Silent",
+        "index": 0
+      },
+      {
+        "name": "Medium",
+        "index": 1
+      },
+      {
+        "name": "Open",
+        "index": 2
+      },
+      {
+        "name": "Studio",
+        "index": 3
+      },
+      {
+        "name": "Fast",
+        "index": 4
+      },
+      {
+        "name": "Slow",
+        "index": 5
+      },
+      {
+        "name": "Tracking",
+        "index": 6
+      },
+      {
+        "name": "Transparent",
+        "index": 7
+      }
+    ],
+    "enum_classes": {}
+  },
+  {
+    "name": "Overdrive",
+    "parameters": [
+      {
+        "name": "Drive",
+        "index": 0,
+        "min": 0.0,
+        "max": 1.0,
+        "default": 0.5,
+        "unit": "",
+        "label": "Drive"
+      },
+      {
+        "name": "Tone",
+        "index": 1,
+        "min": 0.0,
+        "max": 1.0,
+        "default": 0.5,
+        "unit": "",
+        "label": "Tone"
+      },
+      {
+        "name": "Bass",
+        "index": 2,
+        "min": 0.0,
+        "max": 1.0,
+        "default": 0.5,
+        "unit": "",
+        "label": "Bass"
+      },
+      {
+        "name": "Mid",
+        "index": 3,
+        "min": 0.0,
+        "max": 1.0,
+        "default": 0.5,
+        "unit": "",
+        "label": "Mid"
+      },
+      {
+        "name": "Treble",
+        "index": 4,
+        "min": 0.0,
+        "max": 1.0,
+        "default": 0.5,
+        "unit": "",
+        "label": "Treble"
+      },
+      {
+        "name": "Level",
+        "index": 5,
+        "min": 0.0,
+        "max": 1.0,
+        "default": 0.5,
+        "unit": "",
+        "label": "Level"
+      },
+      {
+        "name": "Circuit",
+        "index": 6,
+        "min": 0.0,
+        "max": 1.0,
+        "default": 0.5,
+        "unit": "",
+        "label": "Circuit"
+      },
+      {
+        "name": "Presence",
+        "index": 7,
+        "min": 0.0,
+        "max": 1.0,
+        "default": 0.5,
+        "unit": "",
+        "label": "Presence"
+      },
+      {
+        "name": "Bite",
+        "index": 8,
+        "min": 0.0,
+        "max": 1.0,
+        "default": 0.5,
+        "unit": "",
+        "label": "Bite"
+      },
+      {
+        "name": "TightLoose",
+        "index": 9,
+        "min": 0.0,
+        "max": 1.0,
+        "default": 0.5,
+        "unit": "",
+        "label": "TightLoose"
+      },
+      {
+        "name": "BrightCap",
+        "index": 10,
+        "min": 0.0,
+        "max": 1.0,
+        "default": 0.5,
+        "unit": "",
+        "label": "BrightCap"
+      },
+      {
+        "name": "MidFocus",
+        "index": 11,
+        "min": 0.0,
+        "max": 1.0,
+        "default": 0.5,
+        "unit": "",
+        "label": "MidFocus"
+      }
+    ],
+    "presets": [],
+    "enum_classes": {
+      "CircuitType": [
+        "Standard",
+        "mid"
+      ]
+    }
+  },
+  {
+    "name": "Reverb",
+    "parameters": [
+      {
+        "name": "Decay",
+        "index": 0,
+        "min": 0.0,
+        "max": 1.0,
+        "default": 0.5,
+        "unit": "",
+        "label": "Decay"
+      },
+      {
+        "name": "Mix",
+        "index": 1,
+        "min": 0.0,
+        "max": 1.0,
+        "default": 0.5,
+        "unit": "",
+        "label": "Mix"
+      },
+      {
+        "name": "Tone",
+        "index": 2,
+        "min": 0.0,
+        "max": 1.0,
+        "default": 0.5,
+        "unit": "",
+        "label": "Tone"
+      },
+      {
+        "name": "PreDelay",
+        "index": 3,
+        "min": 0.0,
+        "max": 1.0,
+        "default": 0.5,
+        "unit": "",
+        "label": "PreDelay"
+      },
+      {
+        "name": "Size",
+        "index": 4,
+        "min": 0.0,
+        "max": 1.0,
+        "default": 0.5,
+        "unit": "",
+        "label": "Size"
+      },
+      {
+        "name": "Diffusion",
+        "index": 5,
+        "min": 0.0,
+        "max": 1.0,
+        "default": 0.5,
+        "unit": "",
+        "label": "Diffusion"
+      },
+      {
+        "name": "Modulation",
+        "index": 6,
+        "min": 0.0,
+        "max": 1.0,
+        "default": 0.5,
+        "unit": "",
+        "label": "Modulation"
+      },
+      {
+        "name": "Damping",
+        "index": 7,
+        "min": 0.0,
+        "max": 1.0,
+        "default": 0.5,
+        "unit": "",
+        "label": "Damping"
+      },
+      {
+        "name": "Level",
+        "index": 8,
+        "min": 0.0,
+        "max": 1.0,
+        "default": 0.5,
+        "unit": "",
+        "label": "Level"
+      },
+      {
+        "name": "Type",
+        "index": 9,
+        "min": 0.0,
+        "max": 1.0,
+        "default": 0.5,
+        "unit": "",
+        "label": "Type"
+      }
+    ],
+    "presets": [
+      {
+        "name": "SmallRoom",
+        "index": 0
+      },
+      {
+        "name": "LargeHall",
+        "index": 1
+      },
+      {
+        "name": "VintagePlate",
+        "index": 2
+      },
+      {
+        "name": "FenderSpring",
+        "index": 3
+      },
+      {
+        "name": "ShimmerVerb",
+        "index": 4
+      },
+      {
+        "name": "ModulatedVerb",
+        "index": 5
+      },
+      {
+        "name": "ReverseVerb",
+        "index": 6
+      },
+      {
+        "name": "GatedVerb",
+        "index": 7
+      }
+    ],
+    "enum_classes": {
+      "ReverbType": [
+        "Room"
+      ]
+    }
+  },
+  {
+    "name": "Volume",
+    "parameters": [
+      {
+        "name": "Volume",
+        "index": 0,
+        "min": 0.0,
+        "max": 1.0,
+        "default": 0.5,
+        "unit": "",
+        "label": "Volume"
+      },
+      {
+        "name": "Minimum",
+        "index": 1,
+        "min": 0.0,
+        "max": 1.0,
+        "default": 0.5,
+        "unit": "",
+        "label": "Minimum"
+      },
+      {
+        "name": "ExpressionMode",
+        "index": 2,
+        "min": 0.0,
+        "max": 1.0,
+        "default": 0.5,
+        "unit": "",
+        "label": "ExpressionMode"
+      },
+      {
+        "name": "Reverse",
+        "index": 3,
+        "min": 0.0,
+        "max": 1.0,
+        "default": 0.5,
+        "unit": "",
+        "label": "Reverse"
+      },
+      {
+        "name": "Curve",
+        "index": 4,
+        "min": 0.0,
+        "max": 1.0,
+        "default": 0.5,
+        "unit": "",
+        "label": "Curve"
+      },
+      {
+        "name": "Range",
+        "index": 5,
+        "min": 0.0,
+        "max": 1.0,
+        "default": 0.5,
+        "unit": "",
+        "label": "Range"
+      },
+      {
+        "name": "Level",
+        "index": 6,
+        "min": 0.0,
+        "max": 1.0,
+        "default": 0.5,
+        "unit": "",
+        "label": "Level"
+      }
+    ],
+    "presets": [
+      {
+        "name": "Standard",
+        "index": 0
+      },
+      {
+        "name": "Expression",
+        "index": 1
+      },
+      {
+        "name": "ReverseDir",
+        "index": 2
+      },
+      {
+        "name": "LogCurve",
+        "index": 3
+      },
+      {
+        "name": "Linear",
+        "index": 4
+      },
+      {
+        "name": "LimitedRange",
+        "index": 5
+      },
+      {
+        "name": "FullRange",
+        "index": 6
+      }
+    ],
+    "enum_classes": {
+      "VolumeMode": [
+        "Volume"
+      ]
+    }
+  }
+]

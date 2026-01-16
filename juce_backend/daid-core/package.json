@@ -1,0 +1,78 @@
+{
+  "name": "@schillinger-daid/daid_core",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Shared DAID provenance system for Schillinger ecosystem",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bretbouchard/daid-core.git"
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
+  },
+  "homepage": "https://github.com/bretbouchard/daid-core#readme",
+  "bugs": {
+    "url": "https://github.com/bretbouchard/daid-core/issues"
+  },
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "type-check": "tsc --noEmit",
+    "lint": "eslint src/**/*.ts",
+    "lint:ci": "eslint src/**/*.ts --max-warnings 200",
+    "format": "prettier --write src/**/*.ts",
+    "prepublishOnly": "npm run build && npm test",
+    "publish:github": "npm publish",
+    "release": "./scripts/release.sh",
+    "release:patch": "./scripts/release.sh patch",
+    "release:minor": "./scripts/release.sh minor",
+    "release:major": "./scripts/release.sh major"
+  },
+  "exports": {
+    ".": "./dist/index.js",
+    "./client": "./dist/client.js",
+    "./unified-client": "./dist/unified-client.js",
+    "./middleware": "./dist/middleware.js",
+    "./monitoring": "./dist/monitoring.js",
+    "./integrations/fastapi": "./integrations/fastapi.py",
+    "./integrations/websocket": "./integrations/websocket.py",
+    "./integrations/decorators": "./integrations/decorators.py",
+    "./react": "./dist/react.js",
+    "./python": "./python/daid_core.py"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.38.0",
+    "@types/node": "^20.0.0",
+    "@types/react": "^19.1.9",
+    "@types/react-dom": "^19.1.7",
+    "@types/uuid": "^9.0.0",
+    "@typescript-eslint/eslint-plugin": "^6.21.0",
+    "@typescript-eslint/parser": "^6.21.0",
+    "@vitest/coverage-v8": "^3.2.4",
+    "eslint": "^8.0.0",
+    "prettier": "^3.0.0",
+    "typescript": "^5.0.0",
+    "vitest": "^3.2.4"
+  },
+  "files": [
+    "dist/",
+    "python/",
+    "integrations/",
+    "examples/",
+    "README.md",
+    "INTEGRATION_GUIDE.md",
+    "MIGRATION_GUIDE.md"
+  ],
+  "dependencies": {
+    "uuid": "^9.0.0"
+  },
+  "peerDependencies": {
+    "react": "^19.1.1",
+    "react-dom": "^19.1.1"
+  }
+}

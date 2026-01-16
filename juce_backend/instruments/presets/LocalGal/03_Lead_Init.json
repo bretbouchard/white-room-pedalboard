@@ -1,0 +1,59 @@
+{
+  "version": "1.0.0",
+  "name": "Lead Init",
+  "author": "Bret Bouchard",
+  "description": "Bright lead synth with sawtooth oscillators and resonant filter for cutting through the mix.",
+  "category": "Lead",
+  "tags": ["lead", "bright", "sawtooth", "resonant"],
+  "creationDate": "2025-12-26",
+  "parameters": {
+    "osc1.waveform": 1.0,
+    "osc1.pitch": 0.5,
+    "osc1.detune": 0.5,
+    "osc1.level": 0.75,
+    "osc2.waveform": 1.0,
+    "osc2.pitch": 0.5,
+    "osc2.detune": 0.52,
+    "osc2.level": 0.7,
+    "filter.type": 0.0,
+    "filter.cutoff": 0.7,
+    "filter.resonance": 0.6,
+    "filter.env.amount": 0.4,
+    "filter.lfo.rate": 0.5,
+    "filter.lfo.amount": 0.15,
+    "env.adsr.a": 0.01,
+    "env.adsr.d": 0.15,
+    "env.adsr.s": 0.4,
+    "env.adsr.r": 0.25,
+    "fx.drive": 0.2,
+    "fx.chorus": 0.3,
+    "fx.delay": 0.25,
+    "fx.reverb": 0.35,
+    "output.level": 0.8,
+    "output.pan": 0.5
+  },
+  "macroMappings": {
+    "macro_0": {
+      "name": "Brightness",
+      "destination": "filter.cutoff",
+      "amount": 1.0,
+      "minValue": 0.5,
+      "maxValue": 0.9
+    },
+    "macro_1": {
+      "name": "Modulation",
+      "destination": "filter.lfo.amount",
+      "amount": 1.0,
+      "minValue": 0.0,
+      "maxValue": 0.5
+    }
+  },
+  "modulationMatrix": {
+    "slot_0": {
+      "source": "lfo",
+      "destination": "filter.cutoff",
+      "amount": 0.15,
+      "curve": "linear"
+    }
+  }
+}

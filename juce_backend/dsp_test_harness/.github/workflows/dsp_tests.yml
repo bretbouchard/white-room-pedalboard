@@ -1,0 +1,129 @@
+name: DSP Audio Tests
+
+on:
+  push:
+    branches: [main, develop]
+    paths:
+      - 'juce_backend/instruments/**'
+      - 'juce_backend/dsp_test_harness/**'
+  pull_request:
+    branches: [main, develop]
+    paths:
+      - 'juce_backend/instruments/**'
+      - 'juce_backend/dsp_test_harness/**'
+  workflow_dispatch:
+
+jobs:
+  dsp-tests:
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Install dependencies
+        run: |
+          brew install cmake
+          pip3 install numpy matplotlib
+
+      - name: Build test harness
+        run: |
+          cd juce_backend/dsp_test_harness
+          mkdir -p build && cd build
+          cmake ..
+          make -j$(sysctl -n hw.ncpu)
+
+      - name: List available instruments
+        run: |
+          cd juce_backend/dsp_test_harness/build
+          ./bin/dsp_test_host --list-instruments
+
+      - name: List available tests
+        run: |
+          cd juce_backend/dsp_test_harness/build
+          ./bin/dsp_test_host --list-tests
+
+      - name: Run SamSampler tests
+        run: |
+          cd juce_backend/dsp_test_harness
+          python scripts/run_dsp_tests.py \
+            --bin build/bin/dsp_test_host \
+            --instrument SamSampler
+
+      - name: Run DrumMachine tests
+        run: |
+          cd juce_backend/dsp_test_harness
+          python scripts/run_dsp_tests.py \
+            --bin build/bin/dsp_test_host \
+            --instrument DrumMachine
+
+      - name: Upload test outputs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: dsp-test-outputs
+          path: |
+            juce_backend/dsp_test_harness/tests/audio/out/*.wav
+            juce_backend/dsp_test_harness/tests/audio/out/*.json
+          retention-days: 30
+
+      - name: Upload test plots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: dsp-test-plots
+          path: juce_backend/dsp_test_harness/tests/audio/plots/*.png
+          retention-days: 30
+
+      - name: Generate test summary
+        if: always()
+        run: |
+          cd juce_backend/dsp_test_harness/tests/audio/out
+          if [ -f test_results.json ]; then
+            echo "## Test Results" >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+            cat test_results.json >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+          fi
+
+  # Separate job for golden file updates (manual only)
+  update-golden:
+    runs-on: macos-latest
+    if: github.event_name == 'workflow_dispatch'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          brew install cmake
+          pip3 install numpy matplotlib
+
+      - name: Build
+        run: |
+          cd juce_backend/dsp_test_harness
+          mkdir -p build && cd build
+          cmake ..
+          make -j$(sysctl -n hw.ncpu)
+
+      - name: Update golden files
+        run: |
+          cd juce_backend/dsp_test_harness
+          python scripts/run_dsp_tests.py \
+            --bin build/bin/dsp_test_host \
+            --instrument SamSampler \
+            --update-golden
+
+      - name: Commit golden files
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add juce_backend/dsp_test_harness/tests/audio/golden/*.wav
+          git diff --staged --quiet || git commit -m "chore: update DSP test golden files"
+
+      - name: Push changes
+        uses: ad-m/github-push-action@master
+        with:
+          branch: ${{ github.ref }}

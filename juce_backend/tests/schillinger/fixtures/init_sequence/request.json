@@ -1,0 +1,10 @@
+{
+  "op": "init",
+  "id": "req-init-001",
+  "payload": {
+    "sessionSeed": 12345,
+    "graphInstanceId": "test-graph-golden",
+    "schemaVersion": "2.0.0",
+    "sdkBuildHash": "tvos-bundle-test"
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "version": "1.0.0",
+  "name": "Guitar Lead",
+  "author": "Bret Bouchard",
+  "description": "Clean electric guitar lead with spanky tone and sustain.",
+  "category": "Lead",
+  "tags": ["lead", "guitar", "clean", "spanky", "sustain"],
+  "creationDate": "2025-12-27",
+  "parameters": {
+    "sample.file": "guitar_electric_clean_C4.wav",
+    "sample.loop_mode": 1.0,
+    "sample.loop.start": 0.12,
+    "sample.loop.end": 0.88,
+    "pitch.transpose": 0.5,
+    "pitch.detune": 0.5,
+    "pitch.bend": 0.5,
+    "filter.type": 0.0,
+    "filter.cutoff": 0.7,
+    "filter.resonance": 0.18,
+    "env.adsr.a": 0.003,
+    "env.adsr.d": 0.2,
+    "env.adsr.s": 0.5,
+    "env.adsr.r": 0.25,
+    "fx.drive": 0.15,
+    "fx.chorus": 0.4,
+    "fx.delay": 0.2,
+    "fx.reverb": 0.35,
+    "output.level": 0.8,
+    "output.pan": 0.5
+  },
+  "macroMappings": {},
+  "modulationMatrix": {}
+}

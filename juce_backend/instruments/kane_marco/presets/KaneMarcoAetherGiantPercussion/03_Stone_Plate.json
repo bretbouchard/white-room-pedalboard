@@ -1,0 +1,43 @@
+{
+  "version": "1.0.0",
+  "author": "Kane Marco Design Team",
+  "creationDate": "2025-01-08",
+  "name": "Stone Plate",
+  "description": "Wide and ominous with complex Chladni patterns",
+  "category": "Giant Percussion",
+  "tags": ["plate", "stone", "ominous", "wide", "complex"],
+  "giant_scale": {
+    "scale_meters": 3.5,
+    "mass_bias": 0.75,
+    "air_loss": 0.35,
+    "transient_slowing": 0.7
+  },
+  "gesture": {
+    "force": 0.8,
+    "speed": 0.3,
+    "contact_area": 0.7,
+    "roughness": 0.5
+  },
+  "percussion_parameters": {
+    "instrument_type": 2.0,
+    "size_meters": 3.5,
+    "thickness": 0.4,
+    "material_hardness": 0.6,
+    "damping": 0.4,
+    "num_modes": 20.0,
+    "inharmonicity": 0.6,
+    "mallet_type": 2.0,
+    "click_amount": 0.2,
+    "noise_amount": 0.2,
+    "brightness": 0.5,
+    "stereo_width": 0.8,
+    "hf_directionality": 0.6,
+    "master_volume": 0.8
+  },
+  "parameters": {
+    "master_volume": 0.8,
+    "scale_meters": 3.5,
+    "instrument_type": 2.0,
+    "force": 0.8
+  }
+}

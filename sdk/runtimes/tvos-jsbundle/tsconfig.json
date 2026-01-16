@@ -1,0 +1,51 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "outDir": "../../dist/tvos",
+    "rootDir": "../../",
+    "tsBuildInfoFile": ".tsbuildinfo-tvos"
+  },
+  "include": [
+    "../../core/**/*",
+    "../../packages/shared/**/*",
+    "../../packages/realtime/**/*",
+    "../../packages/analysis/**/*",
+    "../../packages/generation/**/*"
+  ],
+  "exclude": [
+    // ❌ Networking & Cloud (tvOS is local-only)
+    "../../packages/gateway/**/*",
+    "../../packages/audio/**/*",
+
+    // ❌ Authentication & Multi-user (tvOS is single-user local)
+    "../../**/auth/**",
+    "../../**/collaboration/**",
+    "../../**/network/**",
+    "../../**/websocket*/**",
+    "../../**/realtime/realtime-*.ts",
+
+    // ❌ Background services (tvOS lifecycle only)
+    "../../**/worker*/**",
+    "../../**/service*/**",
+    "../../**/scheduler*/**",
+
+    // Test files (excluded from production build)
+    "../../**/__tests__/**",
+    "../../**/*.test.ts",
+    "../../**/*.test.tsx",
+    "../../**/*.spec.ts",
+    "../../**/*.spec.tsx",
+
+    // Node.js-specific (not applicable to tvOS)
+    "../../**/node/**",
+
+    // Build artifacts
+    "../../**/dist/**",
+    "../../**/node_modules/**"
+  ],
+  "references": [
+    { "path": "../../packages/shared" },
+    { "path": "../../packages/analysis" },
+    { "path": "../../packages/generation" }
+  ]
+}

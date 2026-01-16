@@ -1,0 +1,18 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://example.com/schemas/RenderResult_v1alpha.json",
+  "title": "RenderResult v1alpha",
+  "type": "object",
+  "properties": {
+    "version": {"type": "string", "const": "v1alpha"},
+    "request_id": {"type": "string"},
+    "status": {"type": "string", "enum": ["ok", "error"]},
+    "shm_name": {"type": "string"},
+    "n_frames": {"type": "integer", "minimum": 0},
+    "channels": {"type": "integer", "minimum": 1},
+    "dtype": {"type": "string", "enum": ["float32"]},
+    "error": {"type": "string"}
+  },
+  "required": ["version", "request_id", "status"],
+  "additionalProperties": false
+}

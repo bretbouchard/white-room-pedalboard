@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>CFBundleExecutable</key>
+    <string>$<TARGET_FILE_NAME:SchillingerEcosystemWorkingDAW></string>
+    <key>CFBundleIdentifier</key>
+    <string>com.schillinger.ecosystem.daw.stable</string>
+    <key>CFBundleName</key>
+    <string>SchillingerEcosystem DAW</string>
+    <key>CFBundleDisplayName</key>
+    <string>SchillingerEcosystem DAW - Stable Build</string>
+    <key>CFBundleVersion</key>
+    <string>1.0.0</string>
+    <key>CFBundleShortVersionString</key>
+    <string>1.0.0</string>
+    <key>CFBundlePackageType</key>
+    <string>APPL</string>
+    <key>NSHighResolutionCapable</key>
+    <true/>
+    <key>NSPrincipalClass</key>
+    <string>NSApplication</string>
+    <key>LSMinimumSystemVersion</key>
+    <string>10.15</string>
+    <key>NSAppTransportSecure</key>
+    <false/>
+    <key>NSRequiresAquaSystemAppearance</key>
+    <false/>
+    <key>NSSupportsAutomaticGraphicsSwitching</key>
+    <true/>
+    <key>NSMicrophoneUsageDescription</key>
+    <string>SchillingerEcosystem DAW needs microphone access for audio recording</string>
+    <key>NSDocumentsFolderUsageDescription</key>
+    <string>SchillingerEcosystem DAW needs access to documents for loading and saving projects</string>
+</dict>
+</plist>

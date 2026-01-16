@@ -1,0 +1,25 @@
+{
+  "mcpServers": {
+    "serena": {
+      "command": "uvx",
+      "args": ["--from", "git+https://github.com/oraios/serena", "serena", "start-mcp-server", "--context", "ide-assistant", "--project", "/Users/bretbouchard/apps/schill/white_room"],
+      "description": "Serena MCP Server - Enhanced symbolic operations for complex code analysis"
+    },
+    "cognee-local": {
+      "command": "npx",
+      "args": ["-y", "@cogneeai/cognee-mcp"],
+      "description": "Cognee MCP Server - Persistent knowledge graph and memory across sessions"
+    },
+    "confucius": {
+      "command": "node",
+      "args": ["/Users/bretbouchard/apps/schill/confucius/packages/mcp-server/dist/index.js"],
+      "env": {
+        "CONFUCIUS_REPOSITORY": "/Users/bretbouchard/apps/schill/white_room",
+        "CONFUCIUS_SUBMODULES": "sdk,juce_backend,swift_frontend,daw_control,design_system,infrastructure,build,plans,specs,scripts",
+        "CONFUCIUS_STORAGE_PATH": "/Users/bretbouchard/apps/schill/white_room/.beads/memory",
+        "CONFUCIUS_AUTO_LEARNING": "true"
+      },
+      "description": "Confucius MCP Server - Hierarchical memory system with cross-session learning for AI agents"
+    }
+  }
+}

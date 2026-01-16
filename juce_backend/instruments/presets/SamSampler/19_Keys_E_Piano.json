@@ -1,0 +1,33 @@
+{
+  "version": "1.0.0",
+  "name": "Electric Piano",
+  "author": "Bret Bouchard",
+  "description": "Classic electric piano with bell tone and tremolo.",
+  "category": "Keys",
+  "tags": ["keys", "electric piano", "bell", "classic", "tremolo"],
+  "creationDate": "2025-12-27",
+  "parameters": {
+    "sample.file": "piano_electric_C4.wav",
+    "sample.loop_mode": 1.0,
+    "sample.loop.start": 0.15,
+    "sample.loop.end": 0.85,
+    "pitch.transpose": 0.5,
+    "pitch.detune": 0.5,
+    "pitch.bend": 0.5,
+    "filter.type": 0.0,
+    "filter.cutoff": 0.72,
+    "filter.resonance": 0.15,
+    "env.adsr.a": 0.001,
+    "env.adsr.d": 0.45,
+    "env.adsr.s": 0.2,
+    "env.adsr.r": 0.4,
+    "fx.drive": 0.0,
+    "fx.chorus": 0.35,
+    "fx.delay": 0.12,
+    "fx.reverb": 0.38,
+    "output.level": 0.78,
+    "output.pan": 0.5
+  },
+  "macroMappings": {},
+  "modulationMatrix": {}
+}

@@ -1,0 +1,131 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+    line-height: 1.5;
+    font-weight: 400;
+
+    color-scheme: dark;
+    color: #ffffff;
+    background-color: #1a1a1a;
+
+    font-synthesis: none;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+
+    /* DAW Theme CSS Variables */
+    --daw-bg-primary: #1a1a1a;
+    --daw-bg-secondary: #2a2a2a;
+    --daw-bg-tertiary: #3a3a3a;
+    --daw-surface-primary: #2d2d2d;
+    --daw-surface-secondary: #3d3d3d;
+    --daw-surface-tertiary: #4d4d4d;
+    --daw-accent-primary: #00ff88;
+    --daw-accent-secondary: #ff6b35;
+    --daw-accent-tertiary: #4ecdc4;
+    --daw-text-primary: #ffffff;
+    --daw-text-secondary: #cccccc;
+    --daw-text-tertiary: #999999;
+  }
+
+  body {
+    margin: 0;
+    min-width: 320px;
+    min-height: 100vh;
+    background-color: #1a1a1a;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+}
+
+@layer components {
+  /* DAW-specific component styles */
+  .daw-panel {
+    background-color: #1f2937;
+    border: 1px solid #4b5563;
+    border-radius: 0.5rem;
+  }
+
+  .daw-button {
+    background-color: #374151;
+    color: white;
+    border: 1px solid #4b5563;
+    border-radius: 0.25rem;
+    transition: all 0.2s;
+    padding: 0.5rem 1rem;
+    font-weight: 500;
+  }
+
+  .daw-button:hover {
+    background-color: #4b5563;
+    border-color: #10b981;
+  }
+
+  .daw-input {
+    background-color: #374151;
+    border: 1px solid #4b5563;
+    color: white;
+    border-radius: 0.25rem;
+    padding: 0.5rem 0.75rem;
+  }
+
+  .daw-input:focus {
+    border-color: #10b981;
+    outline: none;
+  }
+
+  .daw-slider {
+    appearance: none;
+    background-color: #4b5563;
+    border-radius: 9999px;
+    height: 0.5rem;
+  }
+
+  .daw-slider::-webkit-slider-thumb {
+    appearance: none;
+    width: 1rem;
+    height: 1rem;
+    background-color: #10b981;
+    border-radius: 9999px;
+    cursor: pointer;
+  }
+
+  .daw-knob {
+    width: 3rem;
+    height: 3rem;
+    background-color: #374151;
+    border: 2px solid #4b5563;
+    border-radius: 9999px;
+    position: relative;
+    cursor: pointer;
+  }
+
+  .level-meter {
+    background-color: #4b5563;
+    border-radius: 0.125rem;
+    overflow: hidden;
+  }
+
+  .level-meter-bar {
+    height: 100%;
+    transition: all 75ms ease-out;
+  }
+
+  .level-meter-green {
+    background-color: #10b981;
+  }
+
+  .level-meter-yellow {
+    background-color: #f59e0b;
+  }
+
+  .level-meter-red {
+    background-color: #ef4444;
+  }
+}

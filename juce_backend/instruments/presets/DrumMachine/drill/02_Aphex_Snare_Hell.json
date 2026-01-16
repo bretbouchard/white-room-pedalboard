@@ -1,0 +1,150 @@
+{
+  "version": "1.0.0",
+  "name": "Aphex Snare Hell",
+  "author": "Schill Instruments",
+  "description": "Aggressive Aphex Twin-inspired drill with heavy snare bursts, extreme chaos, and complex grid mutations",
+  "category": "Drill",
+  "tags": ["drill", "aphex twin", "aggressive", "IDM", "chaos"],
+  "creationDate": "2025-01-07",
+  "parameters": {
+    "tempo": 172.0,
+    "swing": 0.02,
+    "master_volume": 0.85,
+    "pattern_length": 16.0,
+    "pocket_offset": 0.0,
+    "push_offset": -0.05,
+    "pull_offset": 0.08,
+    "dilla_amount": 0.2,
+    "dilla_hat_bias": 0.6,
+    "dilla_snare_late": 0.7,
+    "dilla_kick_tight": 0.9,
+    "dilla_max_drift": 0.15
+  },
+  "pattern": {
+    "tracks": [
+      {
+        "index": 0,
+        "type": "Kick",
+        "timing_role": "Pocket",
+        "volume": 0.9,
+        "pan": 0.0,
+        "pitch": 0,
+        "steps": [
+          {"active":true,"velocity":127,"probability":1.0,"flam":false,"roll":false,"roll_notes":4,"use_drill":false,"burst_count":0,"burst_chaos":0.0,"burst_dropout":0.0,"drill_intent":0.0},
+          {"active":false,"velocity":100,"probability":1.0,"flam":false,"roll":false,"roll_notes":4,"use_drill":false,"burst_count":0,"burst_chaos":0.0,"burst_dropout":0.0,"drill_intent":0.0},
+          {"active":true,"velocity":110,"probability":0.9,"flam":false,"roll":false,"roll_notes":4,"use_drill":false,"burst_count":0,"burst_chaos":0.0,"burst_dropout":0.0,"drill_intent":0.0},
+          {"active":false,"velocity":100,"probability":1.0,"flam":false,"roll":false,"roll_notes":4,"use_drill":false,"burst_count":0,"burst_chaos":0.0,"burst_dropout":0.0,"drill_intent":0.0},
+          {"active":true,"velocity":120,"probability":0.8,"flam":true,"roll":false,"roll_notes":4,"use_drill":false,"burst_count":0,"burst_chaos":0.0,"burst_dropout":0.0,"drill_intent":0.0},
+          {"active":false,"velocity":100,"probability":1.0,"flam":false,"roll":false,"roll_notes":4,"use_drill":false,"burst_count":0,"burst_chaos":0.0,"burst_dropout":0.0,"drill_intent":0.0},
+          {"active":true,"velocity":115,"probability":0.95,"flam":false,"roll":false,"roll_notes":4,"use_drill":false,"burst_count":0,"burst_chaos":0.0,"burst_dropout":0.0,"drill_intent":0.0},
+          {"active":false,"velocity":100,"probability":1.0,"flam":false,"roll":false,"roll_notes":4,"use_drill":false,"burst_count":0,"burst_chaos":0.0,"burst_dropout":0.0,"drill_intent":0.0},
+          {"active":true,"velocity":127,"probability":1.0,"flam":false,"roll":false,"roll_notes":4,"use_drill":false,"burst_count":0,"burst_chaos":0.0,"burst_dropout":0.0,"drill_intent":0.0},
+          {"active":false,"velocity":100,"probability":1.0,"flam":false,"roll":false,"roll_notes":4,"use_drill":false,"burst_count":0,"burst_chaos":0.0,"burst_dropout":0.0,"drill_intent":0.0},
+          {"active":true,"velocity":110,"probability":0.85,"flam":false,"roll":false,"roll_notes":4,"use_drill":false,"burst_count":0,"burst_chaos":0.0,"burst_dropout":0.0,"drill_intent":0.0},
+          {"active":false,"velocity":100,"probability":1.0,"flam":false,"roll":false,"roll_notes":4,"use_drill":false,"burst_count":0,"burst_chaos":0.0,"burst_dropout":0.0,"drill_intent":0.0},
+          {"active":true,"velocity":120,"probability":0.9,"flam":true,"roll":false,"roll_notes":4,"use_drill":false,"burst_count":0,"burst_chaos":0.0,"burst_dropout":0.0,"drill_intent":0.0},
+          {"active":false,"velocity":100,"probability":1.0,"flam":false,"roll":false,"roll_notes":4,"use_drill":false,"burst_count":0,"burst_chaos":0.0,"burst_dropout":0.0,"drill_intent":0.0},
+          {"active":true,"velocity":115,"probability":0.95,"flam":false,"roll":false,"roll_notes":4,"use_drill":false,"burst_count":0,"burst_chaos":0.0,"burst_dropout":0.0,"drill_intent":0.0},
+          {"active":false,"velocity":100,"probability":1.0,"flam":false,"roll":false,"roll_notes":4,"use_drill":false,"burst_count":0,"burst_chaos":0.0,"burst_dropout":0.0,"drill_intent":0.0}
+        ]
+      },
+      {
+        "index": 1,
+        "type": "Snare",
+        "timing_role": "Pull",
+        "volume": 0.85,
+        "pan": 0.0,
+        "pitch": 0,
+        "steps": [
+          {"active":false,"velocity":100,"probability":1.0,"flam":false,"roll":false,"roll_notes":4,"use_drill":true,"burst_count":8,"burst_chaos":0.7,"burst_dropout":0.3,"drill_intent":0.8},
+          {"active":false,"velocity":100,"probability":1.0,"flam":false,"roll":false,"roll_notes":4,"use_drill":true,"burst_count":12,"burst_chaos":0.8,"burst_dropout":0.4,"drill_intent":0.9},
+          {"active":false,"velocity":100,"probability":1.0,"flam":false,"roll":false,"roll_notes":4,"use_drill":true,"burst_count":6,"burst_chaos":0.6,"burst_dropout":0.25,"drill_intent":0.7},
+          {"active":true,"velocity":120,"probability":1.0,"flam":false,"roll":false,"roll_notes":4,"use_drill":true,"burst_count":16,"burst_chaos":0.9,"burst_dropout":0.5,"drill_intent":1.0},
+          {"active":false,"velocity":100,"probability":1.0,"flam":false,"roll":false,"roll_notes":4,"use_drill":true,"burst_count":10,"burst_chaos":0.75,"burst_dropout":0.35,"drill_intent":0.85},
+          {"active":false,"velocity":100,"probability":1.0,"flam":false,"roll":false,"roll_notes":4,"use_drill":true,"burst_count":14,"burst_chaos":0.85,"burst_dropout":0.45,"drill_intent":0.95},
+          {"active":false,"velocity":100,"probability":1.0,"flam":false,"roll":false,"roll_notes":4,"use_drill":true,"burst_count":7,"burst_chaos":0.65,"burst_dropout":0.3,"drill_intent":0.75},
+          {"active":true,"velocity":115,"probability":1.0,"flam":false,"roll":false,"roll_notes":4,"use_drill":true,"burst_count":18,"burst_chaos":0.95,"burst_dropout":0.55,"drill_intent":1.0},
+          {"active":false,"velocity":100,"probability":1.0,"flam":false,"roll":false,"roll_notes":4,"use_drill":true,"burst_count":9,"burst_chaos":0.7,"burst_dropout":0.35,"drill_intent":0.8},
+          {"active":false,"velocity":100,"probability":1.0,"flam":false,"roll":false,"roll_notes":4,"use_drill":true,"burst_count":11,"burst_chaos":0.78,"burst_dropout":0.38,"drill_intent":0.88},
+          {"active":false,"velocity":100,"probability":1.0,"flam":false,"roll":false,"roll_notes":4,"use_drill":true,"burst_count":5,"burst_chaos":0.55,"burst_dropout":0.22,"drill_intent":0.68},
+          {"active":true,"velocity":120,"probability":1.0,"flam":false,"roll":false,"roll_notes":4,"use_drill":true,"burst_count":20,"burst_chaos":1.0,"burst_dropout":0.6,"drill_intent":1.0},
+          {"active":false,"velocity":100,"probability":1.0,"flam":false,"roll":false,"roll_notes":4,"use_drill":true,"burst_count":13,"burst_chaos":0.82,"burst_dropout":0.42,"drill_intent":0.92},
+          {"active":false,"velocity":100,"probability":1.0,"flam":false,"roll":false,"roll_notes":4,"use_drill":true,"burst_count":15,"burst_chaos":0.88,"burst_dropout":0.48,"drill_intent":0.98},
+          {"active":false,"velocity":100,"probability":1.0,"flam":false,"roll":false,"roll_notes":4,"use_drill":true,"burst_count":8,"burst_chaos":0.72,"burst_dropout":0.32,"drill_intent":0.82},
+          {"active":true,"velocity":115,"probability":1.0,"flam":false,"roll":false,"roll_notes":4,"use_drill":true,"burst_count":22,"burst_chaos":1.0,"burst_dropout":0.65,"drill_intent":1.0}
+        ]
+      },
+      {
+        "index": 2,
+        "type": "HiHatClosed",
+        "timing_role": "Push",
+        "volume": 0.65,
+        "pan": 0.0,
+        "pitch": 0,
+        "steps": [
+          {"active":true,"velocity":90,"probability":0.95,"flam":false,"roll":false,"roll_notes":4,"use_drill":true,"burst_count":3,"burst_chaos":0.4,"burst_dropout":0.2,"drill_intent":0.5},
+          {"active":true,"velocity":85,"probability":0.9,"flam":false,"roll":false,"roll_notes":4,"use_drill":true,"burst_count":4,"burst_chaos":0.45,"burst_dropout":0.22,"drill_intent":0.55},
+          {"active":true,"velocity":88,"probability":0.92,"flam":false,"roll":false,"roll_notes":4,"use_drill":true,"burst_count":3,"burst_chaos":0.42,"burst_dropout":0.18,"drill_intent":0.48},
+          {"active":true,"velocity":90,"probability":0.88,"flam":false,"roll":false,"roll_notes":4,"use_drill":true,"burst_count":5,"burst_chaos":0.5,"burst_dropout":0.25,"drill_intent":0.6},
+          {"active":true,"velocity":85,"velocity":87,"probability":0.94,"flam":false,"roll":false,"roll_notes":4,"use_drill":true,"burst_count":3,"burst_chaos":0.38,"burst_dropout":0.19,"drill_intent":0.52},
+          {"active":true,"velocity":90,"probability":0.91,"flam":false,"roll":false,"roll_notes":4,"use_drill":true,"burst_count":4,"burst_chaos":0.44,"burst_dropout":0.21,"drill_intent":0.54},
+          {"active":true,"velocity":86,"probability":0.93,"flam":false,"roll":false,"roll_notes":4,"use_drill":true,"burst_count":3,"burst_chaos":0.4,"burst_dropout":0.2,"drill_intent":0.5},
+          {"active":true,"velocity":89,"probability":0.89,"flam":false,"roll":false,"roll_notes":4,"use_drill":true,"burst_count":6,"burst_chaos":0.55,"burst_dropout":0.28,"drill_intent":0.65},
+          {"active":true,"velocity":90,"probability":0.96,"flam":false,"roll":false,"roll_notes":4,"use_drill":true,"burst_count":3,"burst_chaos":0.41,"burst_dropout":0.17,"drill_intent":0.49},
+          {"active":true,"velocity":84,"probability":0.92,"flam":false,"roll":false,"roll_notes":4,"use_drill":true,"burst_count":4,"burst_chaos":0.46,"burst_dropout":0.23,"drill_intent":0.56},
+          {"active":true,"velocity":88,"probability":0.9,"flam":false,"roll":false,"roll_notes":4,"use_drill":true,"burst_count":3,"burst_chaos":0.43,"burst_dropout":0.19,"drill_intent":0.51},
+          {"active":true,"velocity":90,"probability":0.87,"flam":false,"roll":false,"roll_notes":4,"use_drill":true,"burst_count":5,"burst_chaos":0.52,"burst_dropout":0.26,"drill_intent":0.62},
+          {"active":true,"velocity":85,"probability":0.95,"flam":false,"roll":false,"roll_notes":4,"use_drill":true,"burst_count":3,"burst_chaos":0.39,"burst_dropout":0.18,"drill_intent":0.47},
+          {"active":true,"velocity":89,"probability":0.93,"flam":false,"roll":false,"roll_notes":4,"use_drill":true,"burst_count":4,"burst_chaos":0.45,"burst_dropout":0.22,"drill_intent":0.55},
+          {"active":true,"velocity":86,"probability":0.91,"flam":false,"roll":false,"roll_notes":4,"use_drill":true,"burst_count":3,"burst_chaos":0.4,"burst_dropout":0.2,"drill_intent":0.5},
+          {"active":true,"velocity":90,"probability":0.88,"flam":false,"roll":false,"roll_notes":4,"use_drill":true,"burst_count":7,"burst_chaos":0.6,"burst_dropout":0.3,"drill_intent":0.7}
+        ]
+      }
+    ]
+  },
+  "drill": {
+    "enabled": true,
+    "amount": 0.9,
+    "mutationRate": 0.8,
+    "chaosAmount": 0.85,
+    "gridDensity": 0.75,
+    "gridChaos": 0.7,
+    "burstSizeMin": 6,
+    "burstSizeMax": 24,
+    "burstSustain": 0.7,
+    "burstDecay": 0.3,
+    "microTiming": 0.8,
+    "swingOverride": 0.15,
+    "velocityChaos": 0.75,
+    "rhythmFeelMode": "Drill",
+    "barsPerPhrase": 8,
+    "automation": {
+      "points": [
+        {"bar": 8, "amount": 0.7},
+        {"bar": 16, "amount": 1.0},
+        {"bar": 24, "amount": 0.5}
+      ]
+    },
+    "fillPolicy": {
+      "enabled": true,
+      "fillLengthSteps": 4,
+      "triggerChance": 0.7,
+      "fillAmount": 0.9,
+      "decayPerStep": 0.1
+    },
+    "gatePolicy": {
+      "enabled": true,
+      "silenceChance": 0.3,
+      "burstChance": 0.7,
+      "minSilentSteps": 1,
+      "maxSilentSteps": 4
+    }
+  },
+  "kit": {
+    "voices": {
+      "kick": {"pitch": 0.35, "decay": 0.5, "click": 0.7},
+      "snare": {"tone": 0.7, "decay": 0.3, "snap": 0.8},
+      "hihat_closed": {"tone": 0.65, "decay": 0.1, "metallic": 0.25}
+    }
+  }
+}

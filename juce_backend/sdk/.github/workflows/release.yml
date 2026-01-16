@@ -1,0 +1,170 @@
+name: Automated Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_type:
+        description: 'Release type'
+        required: true
+        default: 'patch'
+        type: choice
+        options:
+          - major
+          - minor
+          - patch
+          - prerelease
+      prerelease:
+        description: 'Mark as prerelease'
+        required: false
+        default: false
+        type: boolean
+      auto_publish:
+        description: 'Automatically publish packages'
+        required: false
+        default: false
+        type: boolean
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      packages: write
+      pull-requests: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Configure Git
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Install dependencies
+        run: |
+          cd sdk
+          npm ci
+
+      - name: Run tests
+        run: |
+          cd sdk
+          npm run test
+
+      - name: Run compatibility tests
+        run: |
+          cd sdk
+          ./scripts/compatibility-test.sh
+
+      - name: Create release
+        env:
+          RELEASE_TYPE: ${{ github.event.inputs.release_type }}
+          AUTO_PUSH: ${{ github.event.inputs.auto_publish }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          cd sdk
+          ./scripts/release.sh --type "$RELEASE_TYPE" --auto-push
+
+      - name: Get new version
+        id: version
+        run: |
+          cd sdk
+          echo "version=$(cat VERSION)" >> $GITHUB_OUTPUT
+
+      - name: Create GitHub Release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: v${{ steps.version.outputs.version }}
+          release_name: Release v${{ steps.version.outputs.version }}
+          body: |
+            ## Changes in v${{ steps.version.outputs.version }}
+
+            ### Features
+            - Mathematical pattern generation improvements
+            - Enhanced API compatibility
+            - Performance optimizations
+
+            ### Bug Fixes
+            - Various stability improvements
+
+            ### Documentation
+            - Updated migration guides
+            - Enhanced API documentation
+
+            ## Installation
+
+            ### JavaScript/TypeScript
+            ```bash
+            npm install @schillinger-sdk/core@${{ steps.version.outputs.version }}
+            ```
+
+            ### Python
+            ```bash
+            pip install schillinger-sdk==${{ steps.version.outputs.version }}
+            ```
+
+            ### Swift
+            ```swift
+            .package(url: "https://github.com/schillinger-system/sdk", from: "${{ steps.version.outputs.version }}")
+            ```
+
+            ## Migration Guide
+
+            See [MIGRATION_GUIDE.md](./MIGRATION_GUIDE.md) for detailed migration instructions.
+          draft: false
+          prerelease: ${{ github.event.inputs.prerelease }}
+
+      - name: Publish packages
+        env:
+          AUTO_PUBLISH: ${{ github.event.inputs.auto_publish }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          PYPI_TOKEN: ${{ secrets.PYPI_TOKEN }}
+        if: env.AUTO_PUBLISH == 'true'
+        run: |
+          cd sdk
+          ./scripts/publish-all.sh
+
+      - name: Update compatibility matrix
+        run: |
+          cd sdk
+          ./scripts/compatibility-test.sh --compare $(git tag -l "v*" | sort -V | tail -2 | head -1 | sed 's/v//')
+
+      - name: Generate migration guide
+        run: |
+          cd sdk
+          ./scripts/deprecation-manager.sh generate
+
+      - name: Commit generated files
+        run: |
+          cd sdk
+          git add MIGRATION_GUIDE.md compatibility-tests/
+          git commit -m "docs: update migration guide and compatibility tests for v${{ steps.version.outputs.version }}" || true
+          git push origin main || true
+
+      - name: Notify on success
+        if: success()
+        run: |
+          echo "✅ Release v${{ steps.version.outputs.version }} completed successfully!"
+          echo "🔗 View release: https://github.com/${{ github.repository }}/releases/tag/v${{ steps.version.outputs.version }}"
+
+      - name: Notify on failure
+        if: failure()
+        run: |
+          echo "❌ Release process failed!"
+          echo "Please check the logs and try again."

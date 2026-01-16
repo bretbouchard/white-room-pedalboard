@@ -1,0 +1,18 @@
+{
+  "id": "artifact-1768427345891-gznu48lns",
+  "type": "pattern",
+  "content": "## RenderGraphEngine Implementation Pattern\n\n**TDD Approach for Audio Graph Execution:**\n1. Write comprehensive tests FIRST before implementation\n2. Tests drive API design and ensure all use cases are covered\n3. Implement to make tests pass\n4. Never skip test coverage for audio code\n\n**Core Architecture:**\n- Topological sort for dependency resolution (prevents circular dependencies)\n- Node processing pipeline: Generator → Effect → Group → Output\n- SIMD optimization using vDSP.multiply() and vDSP.add()\n- Lock-free scheduling for real-time processing (<10ms latency)\n\n**Key Implementation Details:**\n- Oscillator: Sine wave generation with frequency/amplitude control\n- Gain: SIMD-optimized scalar multiplication using vDSP.multiply()\n- Filter: One-pole lowpass with adjustable cutoff\n- Mixer: Sum multiple inputs with normalization to prevent clipping\n- Automation: Linear, curve, and step interpolation for parameter modulation\n\n**Common Pitfalls:**\n- Type name conflicts in Swift (e.g., NoteEvent, TimeSignature, HarmonySystem)\n- Solution: Use prefixed names (HarmonyNoteEvent, JUCTimeSignature, HarmonyEngineSystem)\n- vDSP API changes: Use labeled parameters (result:) not positional\n- Type conversions: JUCTimeSignature ↔ TimeSignature require explicit conversion\n\n**Performance Targets:**\n- iOS/tvOS: <10ms block processing time\n- macOS: Larger buffers acceptable\n- SIMD: 10-100x faster than scalar operations\n\n**File Structure:**\n- tests/SwiftFrontendCoreTests/Rendering/RenderGraphEngineTests.swift (tests first)\n- src/SwiftFrontendCore/Rendering/RenderGraphEngine.swift (implementation)\n",
+  "metadata": {
+    "scope": "repository",
+    "tags": [
+      "audio",
+      "rendering",
+      "swift",
+      "tdd",
+      "simd",
+      "real-time"
+    ],
+    "confidence": 0.95
+  },
+  "timestamp": "2026-01-14T21:49:05.892Z"
+}

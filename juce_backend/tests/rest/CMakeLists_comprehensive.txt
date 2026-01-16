@@ -1,0 +1,134 @@
+# REST API Security Comprehensive Test Suite CMakeLists.txt
+
+cmake_minimum_required(VERSION 3.15)
+
+# Find required packages
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(JSONCPP REQUIRED jsoncpp)
+find_package(GTest REQUIRED)
+
+# Create comprehensive REST security test executable
+add_executable(RestSecurityComprehensiveTests
+    test_rest_security_comprehensive.cpp
+)
+
+# Include directories
+target_include_directories(RestSecurityComprehensiveTests PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../src/rest
+    ${JSONCPP_INCLUDE_DIRS}
+    ${GTEST_INCLUDE_DIRS}
+)
+
+# Link libraries
+target_link_libraries(RestSecurityComprehensiveTests PRIVATE
+    RestApiSecurityLib
+    ${JSONCPP_LIBRARIES}
+    ${GTEST_LIBRARIES}
+    GTest::Main
+    pthread
+)
+
+# Set C++ standard
+set_property(TARGET RestSecurityComprehensiveTests PROPERTY CXX_STANDARD 17)
+set_property(TARGET RestSecurityComprehensiveTests PROPERTY CXX_STANDARD_REQUIRED ON)
+
+# Compiler-specific options
+if(MSVC)
+    target_compile_options(RestSecurityComprehensiveTests PRIVATE /W4)
+else()
+    target_compile_options(RestSecurityComprehensiveTests PRIVATE -Wall -Wextra -Wpedantic)
+endif()
+
+# Add definitions for testing
+target_compile_definitions(RestSecurityComprehensiveTests PRIVATE
+    RESTAPI_SECURITY_TESTS_ENABLED=1
+    JSON_SECURITY_TESTS_ENABLED=1
+    RATE_LIMITING_TESTS_ENABLED=1
+    INPUT_VALIDATION_TESTS_ENABLED=1
+)
+
+# Enable testing
+enable_testing()
+
+# Add test to CTest
+add_test(NAME RestSecurityComprehensive
+         COMMAND RestSecurityComprehensiveTests)
+
+# Set test properties
+set_tests_properties(RestSecurityComprehensive PROPERTIES
+    TIMEOUT 300  # 5 minutes timeout
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+)
+
+# Custom target for running comprehensive security tests
+add_custom_target(run-rest-security-comprehensive
+    COMMAND ${CMAKE_CTEST_COMMAND} --output-on-failure -R "RestSecurityComprehensive"
+    DEPENDS RestSecurityComprehensiveTests
+    COMMENT "Running comprehensive REST API security tests"
+)
+
+# Performance testing target
+add_custom_target(run-rest-security-performance
+    COMMAND RestSecurityComprehensiveTests --gtest_filter="*Performance*"
+    DEPENDS RestSecurityComprehensiveTests
+    COMMENT "Running REST API security performance tests"
+)
+
+# Integration testing target
+add_custom_target(run-rest-security-integration
+    COMMAND RestSecurityComprehensiveTests --gtest_filter="*Integration*"
+    DEPENDS RestSecurityComprehensiveTests
+    COMMENT "Running REST API security integration tests"
+)
+
+# Security vulnerability testing target
+add_custom_target(run-rest-security-vulnerability
+    COMMAND RestSecurityComprehensiveTests --gtest_filter="*SqlInjection*:*Xss*:*RateLimit*"
+    DEPENDS RestSecurityComprehensiveTests
+    COMMENT "Running REST API security vulnerability tests"
+)
+
+# Memory leak testing with Valgrind (if available)
+find_program(VALGRIND_EXECUTABLE valgrind)
+if(VALGRIND_EXECUTABLE)
+    add_custom_target(run-rest-security-memory-check
+        COMMAND ${VALGRIND_EXECUTABLE} --leak-check=full --show-leak-kinds=all --error-exitcode=1
+                RestSecurityComprehensiveTests --gtest_filter="*RateLimit*:*JsonParser*"
+        DEPENDS RestSecurityComprehensiveTests
+        COMMENT "Running memory leak detection on REST security components"
+    )
+endif()
+
+# Code coverage support (if available)
+option(ENABLE_COVERAGE "Enable code coverage for REST security tests" OFF)
+if(ENABLE_COVERAGE AND CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+    target_compile_options(RestSecurityComprehensiveTests PRIVATE --coverage)
+    target_link_options(RestSecurityComprehensiveTests PRIVATE --coverage)
+
+    add_custom_target(generate-rest-security-coverage
+        COMMAND lcov --capture --directory . --output-file rest_security_coverage.info
+        COMMAND lcov --remove rest_security_coverage.info '/usr/*' --output-file rest_security_coverage.info
+        COMMAND lcov --remove rest_security_coverage.info '*/test*' --output-file rest_security_coverage.info
+        COMMAND genhtml rest_security_coverage.info --output-directory rest_security_coverage_report
+        DEPENDS RestSecurityComprehensiveTests
+        COMMENT "Generating code coverage report for REST security tests"
+    )
+endif()
+
+# Add custom test runner script
+configure_file(
+    "${CMAKE_CURRENT_SOURCE_DIR}/run_rest_security_tests.sh.in"
+    "${CMAKE_CURRENT_BINARY_DIR}/run_rest_security_tests.sh"
+    @ONLY
+)
+
+# Make the test runner script executable
+if(UNIX)
+    add_custom_command(
+        TARGET RestSecurityComprehensiveTests
+        POST_BUILD
+        COMMAND chmod +x ${CMAKE_CURRENT_BINARY_DIR}/run_rest_security_tests.sh
+        COMMENT "Making test runner script executable"
+    )
+endif()

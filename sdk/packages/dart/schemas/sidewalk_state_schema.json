@@ -1,0 +1,457 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://schillinger-sdk.com/schemas/sidewalk_state.json",
+  "title": "SidewalkState",
+  "description": "Complete serializable state for Moving Sidewalk Realization System - cross-language schema for Dart, TypeScript, and Swift implementations",
+  "type": "object",
+  "required": [
+    "stateId",
+    "createdAt",
+    "lastModified",
+    "musicalRealization",
+    "generatorState",
+    "timeline",
+    "roleAssignments",
+    "convergence",
+    "intensityCurves",
+    "performance",
+    "metadata"
+  ],
+  "properties": {
+    "stateId": {
+      "type": "string",
+      "pattern": "^state_[0-9]+-[0-9]+$",
+      "description": "Unique identifier for this state"
+    },
+    "createdAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 timestamp when state was created"
+    },
+    "lastModified": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 timestamp when state was last modified"
+    },
+    "musicalRealization": {
+      "$ref": "#/definitions/musicalRealization"
+    },
+    "generatorState": {
+      "$ref": "#/definitions/generatorState"
+    },
+    "timeline": {
+      "$ref": "#/definitions/timeline"
+    },
+    "roleAssignments": {
+      "type": "object",
+      "patternProperties": {
+        ".*": {
+          "$ref": "#/definitions/roleAssignment"
+        }
+      },
+      "description": "Map of role ID to role assignment state"
+    },
+    "convergence": {
+      "$ref": "#/definitions/convergence"
+    },
+    "intensityCurves": {
+      "type": "object",
+      "patternProperties": {
+        ".*": {
+          "$ref": "#/definitions/intensityCurve"
+        }
+      },
+      "description": "Map of curve ID to intensity curve state"
+    },
+    "performance": {
+      "$ref": "#/definitions/performance"
+    },
+    "uiState": {
+      "$ref": "#/definitions/uiState",
+      "description": "Optional UI state for restoring layout"
+    },
+    "metadata": {
+      "$ref": "#/definitions/metadata"
+    }
+  },
+  "definitions": {
+    "musicalRealization": {
+      "type": "object",
+      "required": ["scaleRoot", "scaleType", "harmonicSeries", "activePitchClasses", "rhythmicParameters", "melodicParameters"],
+      "properties": {
+        "scaleRoot": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Root note of scale (e.g., 'C', 'F#')"
+        },
+        "scaleType": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Type of scale (e.g., 'major', 'minor', 'pentatonic')"
+        },
+        "harmonicSeries": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Harmonic series number"
+        },
+        "activePitchClasses": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "description": "Active pitch classes in scale"
+        },
+        "rhythmicParameters": {
+          "type": "object",
+          "description": "Rhythm-related parameters"
+        },
+        "melodicParameters": {
+          "type": "object",
+          "description": "Melody-related parameters"
+        }
+      }
+    },
+    "generatorState": {
+      "type": "object",
+      "required": ["activeGenerator", "generatorParameters", "generationSeed", "enabledFeatures", "disabledConstraints"],
+      "properties": {
+        "activeGenerator": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Currently active generator ID"
+        },
+        "generatorParameters": {
+          "type": "object",
+          "description": "Generator-specific parameters"
+        },
+        "generationSeed": {
+          "type": "integer",
+          "description": "Seed for random number generation"
+        },
+        "enabledFeatures": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "List of enabled feature IDs"
+        },
+        "disabledConstraints": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "List of disabled constraint IDs"
+        }
+      }
+    },
+    "timeline": {
+      "type": "object",
+      "required": ["totalDuration", "tempo", "timeSignature", "markers", "regions"],
+      "properties": {
+        "totalDuration": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Total duration in milliseconds"
+        },
+        "tempo": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Tempo in BPM"
+        },
+        "timeSignature": {
+          "type": "string",
+          "pattern": "^[0-9]+/[0-9]+$",
+          "description": "Time signature (e.g., '4/4', '3/4')"
+        },
+        "markers": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/timelineMarker"
+          },
+          "description": "Timeline markers"
+        },
+        "regions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/timelineRegion"
+          },
+          "description": "Timeline regions"
+        }
+      }
+    },
+    "timelineMarker": {
+      "type": "object",
+      "required": ["id", "name", "position", "color"],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "position": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Position in milliseconds"
+        },
+        "color": {
+          "type": "string",
+          "pattern": "^#[0-9A-Fa-f]{6}$",
+          "description": "Hex color code"
+        }
+      }
+    },
+    "timelineRegion": {
+      "type": "object",
+      "required": ["id", "name", "startPosition", "endPosition", "color"],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "startPosition": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Start position in milliseconds"
+        },
+        "endPosition": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "End position in milliseconds"
+        },
+        "color": {
+          "type": "string",
+          "pattern": "^#[0-9A-Fa-f]{6}$",
+          "description": "Hex color code"
+        }
+      }
+    },
+    "roleAssignment": {
+      "type": "object",
+      "required": ["roleId", "role", "isActive", "volume", "pan", "isMuted", "isSolo", "roleParameters"],
+      "properties": {
+        "roleId": {
+          "type": "string"
+        },
+        "role": {
+          "type": "string",
+          "enum": ["MusicalRole.melody", "MusicalRole.lead", "MusicalRole.bass", "MusicalRole.harmony", "MusicalRole.rhythm", "MusicalRole.counterMelody", "MusicalRole.texture", "MusicalRole.ornament", "MusicalRole.accompaniment"],
+          "description": "Enum value must be fully qualified for cross-language compatibility"
+        },
+        "isActive": {
+          "type": "boolean"
+        },
+        "volume": {
+          "type": "number",
+          "minimum": 0.0,
+          "maximum": 1.0,
+          "description": "Volume level (0.0 - 1.0)"
+        },
+        "pan": {
+          "type": "number",
+          "minimum": -1.0,
+          "maximum": 1.0,
+          "description": "Pan position (-1.0 left, 0.0 center, 1.0 right)"
+        },
+        "isMuted": {
+          "type": "boolean"
+        },
+        "isSolo": {
+          "type": "boolean"
+        },
+        "roleParameters": {
+          "type": "object",
+          "description": "Role-specific parameters"
+        }
+      }
+    },
+    "convergence": {
+      "type": "object",
+      "required": ["convergenceEvents", "activeZones", "convergenceParameters"],
+      "properties": {
+        "convergenceEvents": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/convergenceEvent"
+          }
+        },
+        "activeZones": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/convergenceZone"
+          }
+        },
+        "convergenceParameters": {
+          "type": "object"
+        }
+      }
+    },
+    "convergenceEvent": {
+      "type": "object",
+      "required": ["id", "timestamp", "position", "convergingRoles", "convergenceType"],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "position": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Position in milliseconds"
+        },
+        "convergingRoles": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 2,
+          "description": "Set of role IDs converging"
+        },
+        "convergenceType": {
+          "type": "string",
+          "description": "Type of convergence"
+        }
+      }
+    },
+    "convergenceZone": {
+      "type": "object",
+      "required": ["id", "name", "startPosition", "endPosition", "involvedRoles", "intensity"],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "startPosition": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "endPosition": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "involvedRoles": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "intensity": {
+          "type": "number",
+          "minimum": 0.0,
+          "maximum": 1.0
+        }
+      }
+    },
+    "intensityCurve": {
+      "type": "object",
+      "required": ["id", "name", "points", "curveType"],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "points": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/intensityPoint"
+          }
+        },
+        "curveType": {
+          "type": "string",
+          "description": "Type of curve interpolation"
+        }
+      }
+    },
+    "intensityPoint": {
+      "type": "object",
+      "required": ["time", "value", "isControlPoint"],
+      "properties": {
+        "time": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Time position in milliseconds"
+        },
+        "value": {
+          "type": "number",
+          "minimum": 0.0,
+          "maximum": 1.0,
+          "description": "Intensity value (0.0 - 1.0)"
+        },
+        "isControlPoint": {
+          "type": "boolean",
+          "description": "Whether this is a control point for interpolation"
+        }
+      }
+    },
+    "performance": {
+      "type": "object",
+      "required": ["playbackParameters", "automationTracks", "expression"],
+      "properties": {
+        "playbackParameters": {
+          "type": "object"
+        },
+        "automationTracks": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "expression": {
+          "type": "object"
+        }
+      }
+    },
+    "uiState": {
+      "type": "object",
+      "required": ["windowLayout", "zoomLevels", "visiblePanels"],
+      "properties": {
+        "windowLayout": {
+          "type": "object"
+        },
+        "zoomLevels": {
+          "type": "object"
+        },
+        "visiblePanels": {
+          "type": "object"
+        }
+      }
+    },
+    "metadata": {
+      "type": "object",
+      "required": ["compositionId", "version", "tags", "customProperties"],
+      "properties": {
+        "compositionId": {
+          "type": "string"
+        },
+        "version": {
+          "type": "string",
+          "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
+          "description": "SemVer version string"
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "description": {
+          "type": "string"
+        },
+        "customProperties": {
+          "type": "object",
+          "description": "Extensible custom properties for cross-language data"
+        }
+      }
+    }
+  }
+}

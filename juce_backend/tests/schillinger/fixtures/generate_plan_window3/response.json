@@ -1,0 +1,27 @@
+{
+  "id": "req-plan-003",
+  "ok": true,
+  "result": {
+    "planHash": "plan-hash-003",
+    "irHash": "abc123def456",
+    "generatedAt": 1234567890,
+    "window": {
+      "from": 96000,
+      "to": 192000
+    },
+    "operations": [
+      {
+        "type": "note",
+        "time": 96000,
+        "pitch": 60,
+        "duration": 0.5
+      },
+      {
+        "type": "note",
+        "time": 120000,
+        "pitch": 64,
+        "duration": 0.5
+      }
+    ]
+  }
+}

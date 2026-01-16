@@ -1,0 +1,48 @@
+{
+  "version": "1.0.0",
+  "name": "FX Impact",
+  "author": "Bret Bouchard",
+  "description": "Impact FX sample with fast attack, filter sweep, and dramatic reverb tail.",
+  "category": "FX",
+  "tags": ["FX", "impact", "cinematic", "sweep"],
+  "creationDate": "2025-12-26",
+  "parameters": {
+    "sample.file": "samples/impact_fx.wav",
+    "sample.loop_mode": 0.0,
+    "sample.loop.start": 0.0,
+    "sample.loop.end": 1.0,
+    "pitch.transpose": 0.5,
+    "pitch.detune": 0.5,
+    "pitch.bend": 0.5,
+    "filter.type": 0.0,
+    "filter.cutoff": 0.3,
+    "filter.resonance": 0.5,
+    "env.adsr.a": 0.0,
+    "env.adsr.d": 0.5,
+    "env.adsr.s": 0.0,
+    "env.adsr.r": 1.2,
+    "fx.drive": 0.15,
+    "fx.chorus": 0.2,
+    "fx.delay": 0.3,
+    "fx.reverb": 0.7,
+    "output.level": 0.85,
+    "output.pan": 0.5
+  },
+  "macroMappings": {
+    "macro_0": {
+      "name": "Filter Sweep",
+      "destination": "filter.cutoff",
+      "amount": 1.0,
+      "minValue": 0.1,
+      "maxValue": 0.8
+    },
+    "macro_1": {
+      "name": "Impact",
+      "destination": "fx.drive",
+      "amount": 1.0,
+      "minValue": 0.0,
+      "maxValue": 0.5
+    }
+  },
+  "modulationMatrix": {}
+}

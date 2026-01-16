@@ -1,0 +1,37 @@
+{
+  "version": "1.0.0",
+  "author": "Kane Marco Design Team",
+  "creationDate": "2025-01-08",
+  "name": "Titan Tom Array",
+  "description": "Tuned set of giant toms with cinematic presence",
+  "category": "Giant Drums",
+  "tags": ["tom", "tuned", "cinematic", "tribal", "ensemble"],
+  "giant_scale": {
+    "scale_meters": 1.8,
+    "mass_bias": 0.6,
+    "air_loss": 0.3,
+    "transient_slowing": 0.5
+  },
+  "gesture": {
+    "force": 0.7,
+    "speed": 0.5,
+    "contact_area": 0.5,
+    "roughness": 0.3
+  },
+  "parameters": {
+    "master_volume": 0.85,
+    "membrane_tension": 0.6,
+    "membrane_diameter": 1.8,
+    "membrane_damping": 0.996,
+    "membrane_inharmonicity": 0.12,
+    "membrane_num_modes": 4,
+    "shell_cavity_freq": 150.0,
+    "shell_formant": 280.0,
+    "shell_coupling": 0.35,
+    "saturation_amount": 0.12,
+    "mass_effect": 0.5,
+    "room_size": 0.65,
+    "reflection_gain": 0.3,
+    "reverb_time": 2.2
+  }
+}

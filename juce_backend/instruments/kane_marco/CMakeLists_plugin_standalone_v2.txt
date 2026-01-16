@@ -1,0 +1,83 @@
+cmake_minimum_required(VERSION 3.22)
+project(KaneMarcoAetherPlugin VERSION 1.0.0 LANGUAGES CXX)
+
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+message(STATUS "")
+message(STATUS "============================================================================")
+message(STATUS "  Kane Marco Aether VST3/AU Plugin for pluginval")
+message(STATUS "============================================================================")
+message(STATUS "")
+
+# JUCE directory - try multiple possible locations
+set(JUCE_POSSIBLE_DIRS
+    "${CMAKE_CURRENT_SOURCE_DIR}/../../../external/JUCE"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../../external/JUCE"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../../JUCE"
+)
+
+set(JUCE_DIR "")
+foreach(dir ${JUCE_POSSIBLE_DIRS})
+    if(EXISTS "${dir}/CMakeLists.txt")
+        set(JUCE_DIR "${dir}")
+        break()
+    endif()
+endforeach()
+
+if(NOT JUCE_DIR)
+    message(FATAL_ERROR "JUCE not found. Tried: ${JUCE_POSSIBLE_DIRS}")
+endif()
+
+message(STATUS "Found JUCE at: ${JUCE_DIR}")
+
+# Add JUCE as subdirectory
+add_subdirectory("${JUCE_DIR}" JUCE)
+
+# Include directories for Kane Marco DSP
+include_directories(
+    "${CMAKE_CURRENT_SOURCE_DIR}/include"
+    "${CMAKE_CURRENT_SOURCE_DIR}/include/dsp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../../../include"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../../../include/dsp"
+)
+
+# Plugin source files
+set(PLUGIN_SOURCES
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/dsp/KaneMarcoAetherPureDSP.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/plugin/KaneMarcoPluginProcessor.cpp"
+)
+
+# Add LookupTables if available
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/../../../src/dsp/LookupTables.cpp")
+    list(APPEND PLUGIN_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/../../../src/dsp/LookupTables.cpp")
+    message(STATUS "Adding LookupTables.cpp")
+endif()
+
+# Create JUCE Plugin
+juce_add_plugin("KaneMarcoAether"
+    SOURCES ${PLUGIN_SOURCES}
+    FORMATS VST3 AU
+    COMPANY_NAME "Schillinger"
+    PLUGIN_NAME "Kane Marco Aether"
+    PLUGIN_DESCRIPTION "Physical modeling string synthesizer"
+    PLUGIN_VERSION 1.0.0
+    PLUGIN_IS_SYNTH 1
+    PLUGIN_AU_EXPORT_PREFIX "KMAU"
+    PLUGIN_VST3_CATEGORY "Instrument|Synth"
+    BUNDLE_ID "com.schillinger.KaneMarcoAether"
+    COPY_PLUGIN_AFTER_BUILD TRUE
+)
+
+target_compile_options(KaneMarcoAether PRIVATE -Wno-deprecated-declarations)
+
+if(APPLE)
+    target_link_libraries(KaneMarcoAether PRIVATE
+        "-framework CoreAudio" "-framework AudioToolbox" "-framework CoreMIDI"
+    )
+endif()
+
+message(STATUS "")
+message(STATUS "  Plugin configured successfully!")
+message(STATUS "============================================================================")
+message(STATUS "")

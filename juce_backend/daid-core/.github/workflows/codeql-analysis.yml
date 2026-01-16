@@ -1,0 +1,84 @@
+name: 'CodeQL'
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+  schedule:
+    - cron: '0 6 * * 1' # Weekly on Mondays at 6 AM UTC
+
+jobs:
+  analyze:
+    name: Analyze
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+
+    strategy:
+      fail-fast: false
+      matrix:
+        language: ['javascript', 'python']
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ github.token }}
+          submodules: false
+          fetch-depth: 0
+
+      - name: Configure Git to skip problematic operations
+        run: |
+          git config --global credential.helper ''
+          git config --global submodule."daid-core".url https://github.com/bretbouchard/daid_core.git
+          git config --global submodule.recurse false
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: ${{ matrix.language }}
+          config-file: ./.github/codeql/codeql-config.yml
+
+      - name: Setup Node.js
+        if: matrix.language == 'javascript'
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Setup Python
+        if: matrix.language == 'python'
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies (JavaScript)
+        if: matrix.language == 'javascript'
+        run: |
+          # Clean install to avoid dependency conflicts
+          rm -rf node_modules package-lock.json
+          npm install
+
+      - name: Build TypeScript (JavaScript)
+        if: matrix.language == 'javascript'
+        run: |
+          npm run build || echo "Build failed, continuing with source analysis..."
+          # Verify dist directory exists for CodeQL
+          ls -la dist/ || echo "No dist directory created"
+
+      - name: Install dependencies (Python)
+        if: matrix.language == 'python'
+        run: |
+          cd python
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt || echo "No requirements.txt found, installing pytest for testing..."
+          pip install pytest || echo "Pytest installation failed, continuing..."
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: '/language:${{matrix.language}}'

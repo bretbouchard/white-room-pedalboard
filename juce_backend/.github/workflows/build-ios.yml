@@ -1,0 +1,129 @@
+name: AUv3 Plugin Build (iOS)
+
+on:
+  push:
+    branches: [main, develop]
+    paths:
+      - 'juce_backend/**'
+      - '.github/workflows/build-ios.yml'
+  pull_request:
+    branches: [main, develop]
+    paths:
+      - 'juce_backend/**'
+
+jobs:
+  build-ios:
+    name: Build AUv3 Plugin (${{ matrix.sdk }})
+    runs-on: macos-14
+    strategy:
+      matrix:
+        sdk: [iphoneos, iphonesimulator]
+        config: [Release, Debug]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Set up Xcode
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
+
+      - name: Install dependencies
+        run: |
+          brew install cmake ninja
+
+      - name: Configure CMake for iOS
+        working-directory: juce_backend
+        run: |
+          cmake -B build-ios \
+            -GNinja \
+            -DCMAKE_SYSTEM_NAME=iOS \
+            -DCMAKE_OSX_DEPLOYMENT_TARGET=14.0 \
+            -DCMAKE_OSX_ARCHITECTURES=arm64 \
+            -DCMAKE_OSX_SYSROOT=${{ matrix.sdk }} \
+            -DCMAKE_BUILD_TYPE=${{ matrix.config }} \
+            -DBUILD_IOS_BACKEND=ON
+
+      - name: Build iOS backend
+        working-directory: juce_backend
+        run: |
+          cmake --build build-ios --target juce_backend_ios -j$(sysctl -n hw.ncpu)
+
+      - name: Run unit tests (simulator only)
+        if: matrix.sdk == 'iphonesimulator' && matrix.config == 'Debug'
+        working-directory: juce_backend
+        run: |
+          ctest --test-dir build-ios --output-on-failure
+
+      - name: Build AUv3 extension
+        run: |
+          xcodebuild -project juce_backend/ios/WhiteRoomAUv3.xcodeproj \
+            -scheme WhiteRoomAUv3 \
+            -configuration ${{ matrix.config }} \
+            -sdk ${{ matrix.sdk }} \
+            -derivedDataPath DerivedData \
+            -archivePath build/WhiteRoomAUv3.xcarchive \
+            clean build
+
+      - name: Export AUv3 app (device only)
+        if: matrix.sdk == 'iphoneos'
+        run: |
+          xcodebuild -exportArchive \
+            -archivePath build/WhiteRoomAUv3.xcarchive \
+            -exportOptionsPlist juce_backend/ios/export-options.plist \
+            -exportPath build/AUv3-Export
+
+      - name: Package AUv3 plugin
+        run: |
+          cd juce_backend
+          mkdir -p artifacts
+
+          if [ "${{ matrix.sdk }}" == "iphoneos" ]; then
+            # Device build
+            zip -r artifacts/whiteroom-auv3-ios-${{ matrix.config }}.zip \
+              build/AUv3-Export/*.appex
+          else
+            # Simulator build
+            find DerivedData -name "*.appex" -exec zip -r artifacts/whiteroom-auv3-sim-${{ matrix.config }}.zip {} \;
+          fi
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: auv3-plugin-${{ matrix.sdk }}-${{ matrix.config }}
+          path: juce_backend/artifacts/*.zip
+          retention-days: 30
+
+  testflight-deploy:
+    name: Deploy to TestFlight
+    needs: build-ios
+    runs-on: macos-14
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Download device artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: auv3-plugin-iphoneos-Release
+          path: artifacts
+
+      - name: Extract and sign
+        run: |
+          unzip artifacts/whiteroom-auv3-ios-Release.zip
+          # Sign with development certificate (for now)
+          codesign --force --deep --sign "-" *.appex
+
+      - name: Upload to TestFlight
+        env:
+          APP_STORE_CONNECT_API_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
+          APP_STORE_CONNECT_API_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_API_ISSUER_ID }}
+          APP_STORE_CONNECT_API_KEY_CONTENT: ${{ secrets.APP_STORE_CONNECT_API_KEY_CONTENT }}
+        run: |
+          xcrun altool --upload-app \
+            --type ios \
+            --file *.appex \
+            --apiKey "$APP_STORE_CONNECT_API_KEY_ID" \
+            --apiIssuer "$APP_STORE_CONNECT_API_ISSUER_ID"

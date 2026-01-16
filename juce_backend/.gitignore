@@ -1,0 +1,51 @@
+# Build directories
+build/
+build_*/
+clean_build/
+CMakeFiles/
+Testing/
+dist/
+*.dSYM/
+**/build/
+
+# Debug and test artifacts
+.debug/
+*.log
+*.a
+*.o
+*.so
+*.dylib
+*.exe
+JuceStandaloneConfig.h
+compile_check.cpp
+**/compile_check.cpp
+
+# Archive
+.archive/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+.pytest_cache/
+
+# Node
+node_modules/
+*.tsbuildinfo
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*~
+
+# Database
+*.db
+*.sqlite
+
+# OS
+.DS_Store
+Thumbs.db

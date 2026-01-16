@@ -1,0 +1,203 @@
+{
+  
+  "scripts": {
+  
+    
+  "test": "npm run -s test:frontend && npm run -s test:sdk && npm run -s test:shared && npm run -s test:integration",
+  
+    
+  "test:frontend": "./node_modules/.bin/vitest run --config vitest.frontend.config.ts",
+  
+    
+  "test:sdk": "vitest run --config vitest.sdk-unit.config.ts",
+  
+    
+  "test:shared": "NODE_OPTIONS=\"--expose-gc\" vitest run --config vitest.shared.config.ts",
+  
+    
+  "test:integration": "vitest run --config vitest.integration.config.ts",
+  
+    
+  "test:performance": "vitest run --config vitest.performance.config.ts",
+  
+    
+  "test:unit": "npm run test:frontend",
+  
+    
+  "test:e2e": "playwright test",
+  
+    
+  "test:e2e:headed": "playwright test --headed",
+  
+    
+  "test:backend": "cd backend && python -m pytest tests/ -v --cov=src --cov-report=html --cov-report=term-missing",
+  
+    
+  "test:backend:performance": "cd backend && python -m pytest tests/test_performance_system.py -v",
+  
+    
+  "test:backend:integration": "cd backend && python -m pytest tests/test_integration_comprehensive.py -v",
+  
+    
+  "test:backend:unit": "cd backend && python -m pytest tests/test_models_audio.py -v",
+  
+    
+  "test:comprehensive": "npm run -s test:all && npm run test:backend",
+  
+    
+  "test:coverage": "npm run test:coverage:frontend && npm run test:coverage:backend",
+  
+    
+  "test:coverage:frontend": "npm run test:frontend -- --coverage",
+  
+    
+  "test:coverage:backend": "cd backend && pytest --cov=src --cov-report=html --cov-report=xml",
+  
+    
+  "test:watch": "vitest watch",
+  
+    
+  "test:vitest:chunks": "bash ./scripts/run-vitest-chunks.sh",
+  
+    
+  "test:vitest:chunks:dry": "DRY_RUN=1 bash ./scripts/run-vitest-chunks.sh",
+  
+    
+  "test:vitest:chunks:memory": "bash ./scripts/run-vitest-memory-optimized.sh",
+  
+    
+  "test:vitest:chunks:memory:dry": "DRY_RUN=1 bash ./scripts/run-vitest-memory-optimized.sh",
+  
+    
+  "test:perf": "npm run test:performance",
+  
+    
+  "test:all": "npm run -s test && npm run -s test:perf && npm run test:backend",
+  
+    
+  "lint": "npm run lint:frontend && npm run lint:backend",
+  
+    
+  "lint:frontend": "eslint . --ext .ts,.tsx",
+  
+    
+  "lint:backend": "cd backend && flake8 src/",
+  
+    
+  "lint:fix": "npm run lint:frontend:fix && npm run lint:backend:fix",
+  
+    
+  "lint:frontend:fix": "eslint . --ext .ts,.tsx --fix",
+  
+    
+  "lint:backend:fix": "cd backend && autopep8 --in-place src/",
+  
+    
+  "type-check": "npm run type-check:frontend && npm run type-check:backend",
+  
+    
+  "type-check:frontend": "tsc --noEmit",
+  
+    
+  "type-check:backend": "cd backend && mypy src/",
+  
+    
+  "build": "npm run build:frontend && npm run build:backend",
+  
+    
+  "build:frontend": "npm run build",
+  
+    
+  "build:backend": "cd backend && python -m build",
+  
+    
+  "dev": "npm run dev:frontend & npm run dev:backend",
+  
+    
+  "dev:frontend": "vite",
+  
+    
+  "dev:backend": "cd backend && uvicorn src.main:app --reload --host 0.0.0.0 --port 8000",
+  
+    
+  "clean": "rm -rf frontend/dist frontend/node_modules backend/__pycache__ backend/.coverage",
+  
+    
+  "docs:build": "cd docs && npm run build",
+  
+    
+  "docs:serve": "cd docs && npm run serve",
+  
+    
+  "postinstall": "npm run install:frontend && npm run install:backend",
+  
+    
+  "install:frontend": "npm install",
+  
+    
+  "install:backend": "cd backend && pip install -r requirements-dev.txt"
+  
+  },
+  
+  "devDependencies": {
+  
+    
+  "@testing-library/jest-dom": "^6.8.0",
+  
+    
+  "@testing-library/react": "^16.3.0",
+  
+    
+  "@types/react": "^19.2.8",
+  
+    
+  "@types/react-dom": "^19.2.3",
+  
+    
+  "@ver0/react-hooks-testing": "latest",
+  
+    
+  "@vitest/ui": "^3.2.4",
+  
+    
+  "happy-dom": "^18.0.1",
+  
+    
+  "jsdom": "^26.1.0",
+  
+    
+  "turbo": "^2.5.6",
+  
+    
+  "typescript": "^5.5.3",
+  
+    
+  "vite-tsconfig-paths": "^5.1.4",
+  
+    
+  "vitest": "^3.2.4"
+  
+  },
+  
+  "dependencies": {
+  
+    
+  "events": "^3.3.0",
+  
+    
+  "pg": "^8.16.3",
+  
+    
+  "react": "^19.1.0",
+  
+    
+  "react-dom": "^19.1.0",
+  
+    
+  "reactflow": "^11.11.4",
+  
+    
+  "sonner": "^2.0.7"
+  
+  }
+}

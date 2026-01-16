@@ -1,0 +1,121 @@
+# Prometheus Recording Rules for White Room Production
+# Pre-compute frequently used queries for better performance
+
+groups:
+  - name: application_rules
+    interval: 30s
+    rules:
+      # HTTP Request Rate
+      - record: job:http_requests_total:rate1m
+        expr: sum(rate(http_requests_total[1m])) by (job, service)
+
+      # HTTP Error Rate
+      - record: job:http_errors_total:rate1m
+        expr: sum(rate(http_requests_total{status=~"5.."}[1m])) by (job, service)
+
+      # HTTP Success Rate
+      - record: job:http_success_rate:1m
+        expr: sum(rate(http_requests_total{status=~"2.."}[1m])) by (job, service) / sum(rate(http_requests_total[1m])) by (job, service)
+
+      # P95 Latency
+      - record: job:http_request_duration_seconds:p95
+        expr: histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket[5m])) by (job, le, service))
+
+      # P99 Latency
+      - record: job:http_request_duration_seconds:p99
+        expr: histogram_quantile(0.99, sum(rate(http_request_duration_seconds_bucket[5m])) by (job, le, service))
+
+  - name: audio_engine_rules
+    interval: 10s
+    rules:
+      # Average Render Time
+      - record: audio_engine:render_time_avg:5m
+        expr: avg(audio_engine_render_time_seconds) by (instance)
+
+      # P95 Render Time
+      - record: audio_engine:render_time_p95:5m
+        expr: histogram_quantile(0.95, rate(audio_engine_render_time_seconds_bucket[5m]))
+
+      # XRUN Rate (Audio Overruns)
+      - record: audio_engine:xrun_rate:1m
+        expr: sum(rate(audio_engine_xruns_total[1m])) by (instance)
+
+      # CPU Usage Per Channel
+      - record: audio_engine:cpu_per_channel:avg
+        expr: avg(audio_channel_cpu_usage) by (channel)
+
+  - name: business_rules
+    interval: 60s
+    rules:
+      # Daily Active Users
+      - record: business:dau:1d
+        expr: count(increase(user_sessions_total[1d])) by (environment)
+
+      # Monthly Active Users
+      - record: business:mau:30d
+        expr: count(increase(user_sessions_total[30d])) by (environment)
+
+      # Songs Created Rate
+      - record: business:songs_created_rate:1h
+        expr: sum(rate(songs_created_total[1h])) by (environment)
+
+      # Average Session Duration
+      - record: business:session_duration_avg:1h
+        expr: avg(session_duration_seconds) by (environment)
+
+      # Retention Rate (Day 7)
+      - record: business:retention_d7
+        expr: sum(increase(user_sessions_total[7d])) by (user_id) / sum(increase(user_sessions_total[1d])) by (user_id)
+
+  - name: infrastructure_rules
+    interval: 30s
+    rules:
+      # CPU Usage by Instance
+      - record: instance:cpu_usage:avg5m
+        expr: 100 - (avg by(instance) (irate(node_cpu_seconds_total{mode="idle"}[5m])) * 100)
+
+      # Memory Usage by Instance
+      - record: instance:memory_usage:avg5m
+        expr: (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100
+
+      # Disk I/O Rate
+      - record: instance:disk_io_rate:5m
+        expr: sum(rate(node_disk_io_time_seconds_total[5m])) by (instance, device)
+
+      # Network Traffic Rate
+      - record: instance:network_traffic_rate:5m
+        expr: sum(rate(node_network_receive_bytes_total[5m])) by (instance, device)
+
+  - name: database_rules
+    interval: 30s
+    rules:
+      # Database Connection Usage
+      - record: database:connection_usage:avg
+        expr: pg_stat_activity_count{datname="white_room"} / pg_settings_max_connections
+
+      # Database Query Performance
+      - record: database:query_duration:p95
+        expr: histogram_quantile(0.95, sum(rate(pg_stat_statements_mean_exec_time_ms_bucket[5m])) by (datname, le))
+
+      # Database Cache Hit Ratio
+      - record: database:cache_hit_ratio
+        expr: sum(pg_stat_database_blks_hit) by (datname) / (sum(pg_stat_database_blks_hit) by (datname) + sum(pg_stat_database_blks_read) by (datname))
+
+  - name: ffi_rules
+    interval: 10s
+    rules:
+      # FFI Call Rate
+      - record: ffi:call_rate:1m
+        expr: sum(rate(ffi_calls_total[1m])) by (function)
+
+      # FFI Average Latency
+      - record: ffi:latency_avg:1m
+        expr: avg(ffi_call_duration_seconds) by (function)
+
+      # FFI P99 Latency
+      - record: ffi:latency_p99:1m
+        expr: histogram_quantile(0.99, rate(ffi_call_duration_seconds_bucket[1m])) by (function)
+
+      # FFI Error Rate
+      - record: ffi:error_rate:1m
+        expr: sum(rate(ffi_errors_total[1m])) by (function) / sum(rate(ffi_calls_total[1m])) by (function)

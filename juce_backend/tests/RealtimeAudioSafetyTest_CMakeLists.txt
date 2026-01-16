@@ -1,0 +1,132 @@
+# CMakeLists.txt for Realtime Audio Safety Tests
+# CRITICAL: These tests must run to verify real-time audio safety
+
+cmake_minimum_required(VERSION 3.26)
+project(RealtimeAudioSafetyTests)
+
+# Set C++ standard for real-time audio safety
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+
+# Enable strict compiler warnings for real-time safety
+if(MSVC)
+    add_compile_options(/W4 /WX)
+else()
+    add_compile_options(-Wall -Wextra -Werror -Wno-unused-parameter)
+endif()
+
+# Find required packages
+find_package(PkgConfig REQUIRED)
+find_package(JUCE CONFIG REQUIRED)
+
+# Google Test for testing framework
+find_package(GTest REQUIRED)
+
+# Include directories for audio safety tests
+include_directories(
+    ${CMAKE_SOURCE_DIR}/../include
+    ${CMAKE_SOURCE_DIR}/../src
+    ${JUCE_LIBRARIES}
+)
+
+# Define real-time audio safety test executable
+add_executable(RealtimeAudioSafetyTest
+    RealtimeAudioSafetyTest.cpp
+
+    # Audio source files under test
+    ../src/audio/DropoutPrevention.cpp
+    ../src/audio/CPUMonitor.cpp
+)
+
+# Link libraries
+target_link_libraries(RealtimeAudioSafetyTest
+    GTest::gtest
+    GTest::gtest_main
+    GTest::gmock
+    ${JUCE_LIBRARIES}
+
+    # Platform-specific real-time libraries
+    pthread  # Required for real-time threading
+)
+
+# Compiler-specific real-time optimizations
+if(MSVC)
+    target_compile_options(RealtimeAudioSafetyTest PRIVATE
+        /O2          # Maximum optimization
+        /Ob2         # Inline function expansion
+        /Ot          # Favor fast code
+        /Oy          # Frame pointer omission
+    )
+else()
+    target_compile_options(RealtimeAudioSafetyTest PRIVATE
+        -O3          # Maximum optimization
+        -march=native# Optimize for current CPU
+        -mtune=native# Tune for current CPU
+        -ffast-math  # Fast floating point math
+        -funroll-loops # Unroll loops
+        -flto        # Link-time optimization
+    )
+
+    # Real-time threading flags
+    target_compile_definitions(RealtimeAudioSafetyTest PRIVATE
+        _REENTRANT
+        _POSIX_C_SOURCE=199309L
+    )
+endif()
+
+# Real-time safety definitions
+target_compile_definitions(RealtimeAudioSafetyTest PRIVATE
+    REALTIME_AUDIO_SAFETY_ENABLED=1
+    JUCE_DISABLE_JUCE_LOGGING=1  # Disable logging for real-time safety
+    JUCE_WEB_BROWSER=0          # Disable web components
+    JUCE_USE_CURL=0            # Disable networking
+    DEBUG_REALTIME_SAFETY=1    # Enable real-time safety debugging
+)
+
+# Set properties for real-time execution
+set_target_properties(RealtimeAudioSafetyTest PROPERTIES
+    CXX_STANDARD 20
+    CXX_STANDARD_REQUIRED ON
+    POSITION_INDEPENDENT_CODE ON
+)
+
+# Add custom test to verify real-time safety
+add_test(NAME RealtimeAudioSafetyVerification
+         COMMAND RealtimeAudioSafetyTest)
+
+# Set test properties for real-time requirements
+set_tests_properties(RealtimeAudioSafetyVerification PROPERTIES
+    TIMEOUT 300  # 5 minute timeout for comprehensive safety tests
+    PASS_REGULAR_EXPRESSION "All real-time audio safety requirements met"
+)
+
+# Custom target for running just the real-time safety tests
+add_custom_target(run_realtime_safety_tests
+    COMMAND ${CMAKE_CTEST_COMMAND} --output-on-failure -R RealtimeAudioSafetyVerification
+    DEPENDS RealtimeAudioSafetyTest
+    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+    COMMENT "Running critical real-time audio safety tests"
+)
+
+# Print critical warning
+message(STATUS "
+╔════════════════════════════════════════════════════════════════════════════════════════════════════╗
+║                                        CRITICAL WARNING                                          ║
+║                     REAL-TIME AUDIO SAFETY TESTS WILL FAIL                                       ║
+║                                HEAP ALLOCATIONS DETECTED                                        ║
+║                                                                                               ║
+║  Current implementation contains CRITICAL real-time audio safety violations:                  ║
+║  • std::make_unique in DropoutPrevention::initializeSampleRateConverter (line 934)           ║
+║  • std::make_unique in DropoutPrevention::initializeSampleRateConverter (line 954)           ║
+║  • std::vector::push_back in DropoutPrevention::handleDropout (line 267)                     ║
+║  • std::vector::push_back in DropoutPrevention::updateBufferLevel (line 778-779)              ║
+║                                                                                               ║
+║  These violations WILL cause:                                                                ║
+║  • Audio dropouts and glitches                                                                ║
+║  • System crashes under audio load                                                           ║
+║  • Professional audio unreliability                                                          ║
+║                                                                                               ║
+║  SOLUTION: Implement lock-free memory pools in GREEN phase                                   ║
+╚════════════════════════════════════════════════════════════════════════════════════════════════════╝
+")

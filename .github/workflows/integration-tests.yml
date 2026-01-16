@@ -1,0 +1,675 @@
+name: Cross-Component Integration Tests
+
+# Comprehensive integration testing across all components
+# Tests SDK → JUCE, Swift → FFI → JUCE, and end-to-end workflows
+
+on:
+  push:
+    branches: [main, develop, 'feature/*']
+  pull_request:
+    branches: [main, develop]
+  workflow_dispatch:
+    inputs:
+      test_suite:
+        description: 'Test suite to run'
+        required: true
+        default: 'all'
+        type: choice
+        options:
+        - all
+        - sdk-juce
+        - swift-ffi-juce
+        - song-rendering
+        - real-time-audio
+      run_performance_tests:
+        description: 'Run performance tests'
+        required: false
+        default: false
+        type: boolean
+
+env:
+  NODE_VERSION: '20'
+  PYTHON_VERSION: '3.11'
+  SWIFT_VERSION: '5.9.2'
+  # Performance regression threshold
+  PERF_THRESHOLD: 5
+  # Cache version
+  CACHE_VERSION: v2
+
+jobs:
+  ################################################################################
+  # SDK → JUCE Integration Tests
+  ################################################################################
+
+  sdk-juce-integration:
+    name: SDK → JUCE Integration
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Setup CMake
+        uses: jwlawson/actions-setup-cmake@v2
+        with:
+          cmake-version: '3.26.4'
+
+      - name: Install system dependencies (Ubuntu)
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libasound2-dev \
+            libx11-dev \
+            libxext-dev \
+            libfreetype6-dev \
+            portaudio19-dev
+
+      - name: Install system dependencies (macOS)
+        if: matrix.os == 'macos-latest'
+        run: brew install portaudio libfreetype
+
+      - name: Install dependencies
+        run: |
+          npm ci
+          cd sdk && npm ci
+
+      - name: Build JUCE backend
+        working-directory: juce_backend
+        run: |
+          cmake -B build \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DBUILD_TESTS=ON \
+            -DSDK_INTEGRATION=ON
+          cmake --build build --config Release -j$(sysctl -n hw.ncpu || nproc)
+
+      - name: Build SDK
+        working-directory: sdk
+        run: npm run build
+
+      - name: Run SDK → JUCE integration tests
+        working-directory: sdk
+        run: |
+          npm test -- tests/integration/juce -- --reporter=verbose
+        env:
+          JUCE_BACKEND_PATH: ${{ github.workspace }}/juce_backend/build
+          INTEGRATION_TEST_MODE: real
+
+      - name: Run type system validation
+        working-directory: sdk
+        run: |
+          npm run test:types -- tests/integration/juce/type-validation.ts
+
+      - name: Run DSP pipeline tests
+        working-directory: sdk
+        run: |
+          npm test -- tests/integration/juce/dsp-pipeline -- --reporter=verbose
+
+      - name: Upload integration results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: sdk-juce-integration-${{ matrix.os }}
+          path: |
+            sdk/test-results/
+            sdk/coverage/
+            juce_backend/build/Testing/
+
+  ################################################################################
+  # Swift → FFI → JUCE Integration Tests
+  ################################################################################
+
+  swift-ffi-juce-integration:
+    name: Swift → FFI → JUCE Integration
+    runs-on: macos-latest
+    timeout-minutes: 35
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          token: ${{ secrets.PAT_TOKEN }}
+
+      - name: Setup Swift
+        uses: swift-actions/setup-swift@v1
+        with:
+          swift-version: ${{ env.SWIFT_VERSION }}
+
+      - name: Setup CMake
+        uses: jwlawson/actions-setup-cmake@v2
+        with:
+          cmake-version: '3.26.4'
+
+      - name: Install dependencies
+        run: brew install libfreetype
+
+      - name: Build JUCE backend
+        working-directory: juce_backend
+        run: |
+          cmake -B build \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DBUILD_FFI_TESTS=ON
+          cmake --build build --config Release -j$(sysctl -n hw.ncpu)
+
+      - name: Build Swift frontend
+        working-directory: swift_frontend
+        run: |
+          swift build -c release
+
+      - name: Run Swift → FFI tests
+        working-directory: swift_frontend
+        run: |
+          swift test --filter "FFIIntegration"
+        env:
+          JUCE_BACKEND_PATH: ${{ github.workspace }}/juce_backend/build
+          FFI_TEST_MODE: real
+
+      - name: Run memory management tests
+        working-directory: swift_frontend
+        run: |
+          swift test --filter "FFIMemory"
+        env:
+          JUCE_BACKEND_PATH: ${{ github.workspace }}/juce_backend/build
+
+      - name: Run thread safety tests
+        working-directory: swift_frontend
+        run: |
+          swift test --filter "FFIThreadSafety"
+        env:
+          JUCE_BACKEND_PATH: ${{ github.workspace }}/juce_backend/build
+
+      - name: Upload Swift FFI results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: swift-ffi-juce-integration
+          path: |
+            swift_frontend/.build/debug/
+            swift_frontend/test-results/
+
+  ################################################################################
+  # Complete Song Rendering Pipeline Tests
+  ################################################################################
+
+  song-rendering-tests:
+    name: Song Rendering Pipeline
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 40
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Setup CMake
+        uses: jwlawson/actions-setup-cmake@v2
+        with:
+          cmake-version: '3.26.4'
+
+      - name: Install system dependencies (Ubuntu)
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libasound2-dev libx11-dev
+
+      - name: Install system dependencies (macOS)
+        if: matrix.os == 'macos-latest'
+        run: brew install portaudio libfreetype
+
+      - name: Install dependencies
+        run: |
+          npm ci
+          cd sdk && npm ci
+
+      - name: Build all components
+        run: |
+          # Build JUCE backend
+          cd juce_backend
+          cmake -B build -DCMAKE_BUILD_TYPE=Release -DBUILD_RENDERER=ON
+          cmake --build build --config Release -j$(sysctl -n hw.ncpu || nproc)
+
+          # Build SDK
+          cd ../sdk
+          npm run build
+
+          # Build test fixtures
+          cd tests/fixtures
+          node generate-songs.js
+
+      - name: Run complete rendering tests
+        working-directory: sdk
+        run: |
+          npm test -- tests/integration/rendering/complete-pipeline -- --reporter=verbose
+        env:
+          JUCE_BACKEND_PATH: ${{ github.workspace }}/juce_backend/build
+          TEST_FIXTURES_PATH: ${{ github.workspace }}/sdk/tests/fixtures
+
+      - name: Run rendering validation tests
+        working-directory: sdk
+        run: |
+          npm test -- tests/integration/rendering/validation -- --reporter=verbose
+
+      - name: Compare output with golden masters
+        working-directory: sdk
+        run: |
+          node scripts/compare-rendering.js \
+            --actual test-output/ \
+            --expected tests/golden/rendering/ \
+            --threshold 0.001
+
+      - name: Generate rendering report
+        if: always()
+        working-directory: sdk
+        run: |
+          node scripts/generate-rendering-report.js \
+            --test-results test-results/ \
+            --output rendering-report.md
+
+      - name: Upload rendering results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: song-rendering-${{ matrix.os }}
+          path: |
+            sdk/test-results/
+            sdk/test-output/
+            sdk/rendering-report.md
+
+  ################################################################################
+  # Real-Time Audio Tests
+  ################################################################################
+
+  real-time-audio-tests:
+    name: Real-Time Audio Tests
+    runs-on: macos-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Setup CMake
+        uses: jwlawson/actions/setup-cmake@v2
+        with:
+          cmake-version: '3.26.4'
+
+      - name: Install dependencies
+        run: |
+          brew install portaudio libfreetype
+          npm ci
+          cd sdk && npm ci
+
+      - name: Build real-time audio components
+        working-directory: juce_backend
+        run: |
+          cmake -B build \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DBUILD_REALTIME_TESTS=ON
+          cmake --build build --config Release -j$(sysctl -n hw.ncpu)
+
+      - name: Run real-time audio tests
+        working-directory: sdk
+        run: |
+          npm test -- tests/integration/realtime -- --reporter=verbose
+        env:
+          JUCE_BACKEND_PATH: ${{ github.workspace }}/juce_backend/build
+          AUDIO_TEST_MODE: real
+
+      - name: Run latency tests
+        working-directory: sdk
+        run: |
+          npm test -- tests/integration/realtime/latency -- --reporter=verbose
+
+      - name: Run concurrency tests
+        working-directory: sdk
+        run: |
+          npm test -- tests/integration/realtime/concurrency -- --reporter=verbose
+
+      - name: Upload real-time results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: real-time-audio-results
+          path: |
+            sdk/test-results/
+            juce_backend/build/Testing/
+
+  ################################################################################
+  # Performance Regression Tests
+  ################################################################################
+
+  performance-regression-tests:
+    name: Performance Regression Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    if: github.event.inputs.run_performance_tests == 'true' || github.event_name == 'schedule'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Setup CMake
+        uses: jwlawson/actions-setup-cmake@v2
+        with:
+          cmake-version: '3.26.4'
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libasound2-dev libx11-dev
+          npm ci
+          cd sdk && npm ci
+
+      - name: Build all components for performance
+        run: |
+          cd juce_backend
+          cmake -B build -DCMAKE_BUILD_TYPE=Release -DBUILD_BENCHMARKS=ON
+          cmake --build build --config Release -j$(nproc)
+
+          cd ../sdk
+          npm run build
+
+      - name: Run integration performance tests
+        working-directory: sdk
+        run: |
+          npm run test:performance -- -- --output integration-perf-results.json
+        env:
+          JUCE_BACKEND_PATH: ${{ github.workspace }}/juce_backend/build
+          PERF_TEST_MODE: integration
+
+      - name: Download previous performance data
+        uses: actions/cache@v4
+        id: perf-cache
+        with:
+          path: sdk/previous-integration-perf-results.json
+          key: integration-perf-${{ runner.os }}-${{ env.CACHE_VERSION }}
+          restore-keys: |
+            integration-perf-${{ runner.os }}-
+
+      - name: Compare performance
+        working-directory: sdk
+        run: |
+          node scripts/compare-performance.js \
+            --baseline previous-integration-perf-results.json \
+            --current integration-perf-results.json \
+            --threshold ${{ env.PERF_THRESHOLD }}
+
+      - name: Save current performance data
+        if: always()
+        run: |
+          cp sdk/integration-perf-results.json sdk/previous-integration-perf-results.json
+
+      - name: Cache performance data
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: sdk/previous-integration-perf-results.json
+          key: integration-perf-${{ runner.os }}-${{ env.CACHE_VERSION }}-${{ github.sha }}
+
+      - name: Upload performance results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: integration-performance-results
+          path: |
+            sdk/integration-perf-results.json
+            sdk/previous-integration-perf-results.json
+
+  ################################################################################
+  # End-to-End Workflow Tests
+  ################################################################################
+
+  end-to-end-tests:
+    name: End-to-End Workflow Tests
+    runs-on: macos-latest
+    timeout-minutes: 50
+    needs: [sdk-juce-integration, swift-ffi-juce-integration]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          token: ${{ secrets.PAT_TOKEN }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Setup Swift
+        uses: swift-actions/setup-swift@v1
+        with:
+          swift-version: ${{ env.SWIFT_VERSION }}
+
+      - name: Setup CMake
+        uses: jwlawson/actions-setup-cmake@v2
+        with:
+          cmake-version: '3.26.4'
+
+      - name: Install dependencies
+        run: |
+          brew install libfreetype portaudio
+          npm ci
+          cd sdk && npm ci
+
+      - name: Build complete system
+        run: |
+          # Build JUCE backend
+          cd juce_backend
+          cmake -B build -DCMAKE_BUILD_TYPE=Release
+          cmake --build build --config Release -j$(sysctl -n hw.ncpu)
+
+          # Build SDK
+          cd ../sdk
+          npm run build
+
+          # Build Swift frontend
+          cd ../swift_frontend
+          swift build -c release
+
+      - name: Run E2E workflow: Create song from scratch
+        working-directory: sdk
+        run: |
+          npm test -- tests/e2e/workflows/create-song -- --reporter=verbose
+        env:
+          JUCE_BACKEND_PATH: ${{ github.workspace }}/juce_backend/build
+          SWIFT_FRONTEND_PATH: ${{ github.workspace }}/swift_frontend/.build/release
+
+      - name: Run E2E workflow: Render complete performance
+        working-directory: sdk
+        run: |
+          npm test -- tests/e2e/workflows/render-performance -- --reporter=verbose
+        env:
+          JUCE_BACKEND_PATH: ${{ github.workspace }}/juce_backend/build
+
+      - name: Run E2E workflow: Export to multiple formats
+        working-directory: sdk
+        run: |
+          npm test -- tests/e2e/workflows/export-formats -- --reporter=verbose
+        env:
+          JUCE_BACKEND_PATH: ${{ github.workspace }}/juce_backend/build
+
+      - name: Generate E2E test report
+        if: always()
+        working-directory: sdk
+        run: |
+          node scripts/generate-e2e-report.js \
+            --test-results test-results/ \
+            --output e2e-report.md
+
+      - name: Upload E2E results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-test-results
+          path: |
+            sdk/test-results/
+            sdk/e2e-report.md
+            sdk/test-output/
+
+  ################################################################################
+  # Quality Gates
+  ################################################################################
+
+  quality-gates:
+    name: Integration Quality Gates
+    runs-on: ubuntu-latest
+    needs: [sdk-juce-integration, swift-ffi-juce-integration, song-rendering-tests, real-time-audio-tests]
+    if: always()
+    timeout-minutes: 10
+
+    steps:
+      - name: Check all integration jobs
+        run: |
+          echo "# Cross-Component Integration Quality Gates" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## Job Status" >> $GITHUB_STEP_SUMMARY
+          echo "- SDK → JUCE: ${{ needs.sdk-juce-integration.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Swift → FFI → JUCE: ${{ needs.swift-ffi-juce-integration.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Song Rendering: ${{ needs.song-rendering-tests.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Real-Time Audio: ${{ needs.real-time-audio-tests.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          # Quality gate checks
+          GATE_STATUS="✅ PASSED"
+
+          if [[ "${{ needs.sdk-juce-integration.result }}" != "success" ]]; then
+            echo "❌ SDK → JUCE integration failed" >> $GITHUB_STEP_SUMMARY
+            GATE_STATUS="❌ FAILED"
+          else
+            echo "✅ SDK → JUCE integration passed" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          if [[ "${{ needs.swift-ffi-juce-integration.result }}" != "success" ]]; then
+            echo "❌ Swift → FFI → JUCE integration failed" >> $GITHUB_STEP_SUMMARY
+            GATE_STATUS="❌ FAILED"
+          else
+            echo "✅ Swift → FFI → JUCE integration passed" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          if [[ "${{ needs.song-rendering-tests.result }}" != "success" ]]; then
+            echo "❌ Song rendering failed" >> $GITHUB_STEP_SUMMARY
+            GATE_STATUS="❌ FAILED"
+          else
+            echo "✅ Song rendering passed" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          if [[ "${{ needs.real-time-audio-tests.result }}" != "success" ]]; then
+            echo "❌ Real-time audio tests failed" >> $GITHUB_STEP_SUMMARY
+            GATE_STATUS="❌ FAILED"
+          else
+            echo "✅ Real-time audio tests passed" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## Final Status: $GATE_STATUS" >> $GITHUB_STEP_SUMMARY
+
+          if [[ "$GATE_STATUS" == *"FAILED"* ]]; then
+            exit 1
+          fi
+
+  ################################################################################
+  # Notifications
+  ################################################################################
+
+  notify:
+    name: Send Integration Test Notifications
+    runs-on: ubuntu-latest
+    needs: [quality-gates, end-to-end-tests, performance-regression-tests]
+    if: always()
+    timeout-minutes: 5
+
+    steps:
+      - name: Determine build status
+        id: status
+        run: |
+          if [[ "${{ needs.quality-gates.result }}" == "success" && "${{ needs.end-to-end-tests.result }}" == "success" ]]; then
+            echo "status=success" >> $GITHUB_OUTPUT
+            echo "emoji=✅" >> $GITHUB_OUTPUT
+            echo "color=good" >> $GITHUB_OUTPUT
+          else
+            echo "status=failure" >> $GITHUB_OUTPUT
+            echo "emoji=❌" >> $GITHUB_OUTPUT
+            echo "color=danger" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Slack notification
+        if: vars.SLACK_WEBHOOK_URL != ''
+        uses: slackapi/slack-github-action@v1
+        with:
+          webhook-url: ${{ vars.SLACK_WEBHOOK_URL }}
+          payload: |
+            {
+              "text": "${{ steps.status.outputs.emoji }} Integration Tests ${{ steps.status.outputs.status }}",
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*${{ steps.status.outputs.emoji }} Integration Tests ${{ steps.status.outputs.status }}*\n\n*Repository:* ${{ github.repository }}\n*Branch:* ${{ github.ref_name }}\n*Commit:* ${{ github.sha }}\n*Author:* ${{ github.actor }}\n\n${{ github.event.head_commit.message }}"
+                  }
+                },
+                {
+                  "type": "actions",
+                  "elements": [
+                    {
+                      "type": "button",
+                      "text": {
+                        "type": "plain_text",
+                        "text": "View Workflow"
+                      },
+                      "url": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+                    }
+                  ]
+                }
+              ]
+            }

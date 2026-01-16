@@ -1,0 +1,129 @@
+name: LV2 Plugin Build (Linux)
+
+on:
+  push:
+    branches: [main, develop]
+    paths:
+      - 'juce_backend/**'
+      - '.github/workflows/build-lv2.yml'
+  pull_request:
+    branches: [main, develop]
+    paths:
+      - 'juce_backend/**'
+
+jobs:
+  build-lv2:
+    name: Build LV2 Plugin (${{ matrix.distro }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        distro: [ubuntu-22.04, ubuntu-24.04]
+        arch: [x86_64]
+
+    container:
+      image: ${{ matrix.distro }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Install system dependencies
+        run: |
+          apt-get update
+          apt-get install -y \
+            cmake \
+            ninja-build \
+            build-essential \
+            liblv2-dev \
+            libnlohmann-json3-dev \
+            libgtest-dev \
+            libasound2-dev \
+            libx11-dev \
+            libxcb1-dev \
+            libxrandr-dev \
+            libxinerama-dev \
+            libxcursor-dev \
+            libfreetype6-dev \
+            pkg-config
+
+      - name: Configure CMake
+        working-directory: juce_backend
+        run: |
+          cmake -B build \
+            -GNinja \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_INSTALL_PREFIX=/usr \
+            -DBUILD_LV2_PLUGINS=ON \
+            -DBUILD_TESTING=OFF
+
+      - name: Build LV2 plugins
+        working-directory: juce_backend
+        run: |
+          cmake --build build --target lv2_plugins -j$(nproc)
+
+      - name: Install LV2 plugins
+        working-directory: juce_backend
+        run: |
+          sudo cmake --install build --strip
+
+      - name: Verify LV2 bundle
+        run: |
+          lv2info /usr/lib/lv2/FilterGate.lv2/ || true
+          ls -la /usr/lib/lv2/
+
+      - name: Package LV2 bundle
+        working-directory: juce_backend
+        run: |
+          mkdir -p artifacts
+          tar -czvf artifacts/whiteroom-lv2-${{ matrix.dro }}-${{ matrix.arch }}.tar.gz \
+            -C /usr/lib/lv2 FilterGate.lv2
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: lv2-plugin-${{ matrix.distro }}-${{ matrix.arch }}
+          path: juce_backend/artifacts/*.tar.gz
+          retention-days: 30
+
+  build-raspberry-pi:
+    name: Build LV2 for Raspberry Pi
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        pi_version: [pi4, pi5]
+        arch: [armv7, arm64]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Set up QEMU for multiarch
+        run: |
+          docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+
+      - name: Build for Raspberry Pi
+        run: |
+          docker build -t whiteroom-lv2-pi \
+            -f juce_backend/.docker/raspberrypi.dockerfile \
+            --build-arg PI_VERSION=${{ matrix.pi_version }} \
+            --build-arg PI_ARCH=${{ matrix.arch }} \
+            .
+
+      - name: Extract artifacts
+        run: |
+          docker run --rm whiteroom-lv2-pi \
+            tar -czvf /tmp/whiteroom-lv2-${{ matrix.pi_version }}-${{ matrix.arch }}.tar.gz \
+              /usr/lib/lv2/FilterGate.lv2
+          docker cp $(docker create whiteroom-lv2-pi):/tmp/*.tar.gz artifacts/
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: lv2-plugin-rpi-${{ matrix.pi_version }}-${{ matrix.arch }}
+          path: artifacts/*.tar.gz
+          retention-days: 30

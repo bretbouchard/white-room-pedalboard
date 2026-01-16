@@ -1,0 +1,47 @@
+# Clang-tidy configuration for safe types verification
+# This configuration focuses on catching swappable parameter issues
+
+---
+# Format version
+FormatVersion: 4
+
+# Global checks
+Checks: >
+  bugprone-swappable-parameters,
+  readability-avoid-swappable-parameters,
+  readability-identifier-naming,
+  modernize-use-trailing-return-type,
+  cppcoreguidelines-avoid-magic-numbers,
+  readability-isolate-declaration,
+
+CheckOptions:
+  # Specific settings for swappable parameter detection
+  - key: bugprone-swappable-parameters.MinimumLength
+    value: 2
+  - key: bugprone-swappable-parameters.IgnoredParameterNames
+    value: ""
+  - key: bugprone-swappable-parameters.IgnoredParameterSuffixes
+    value: "Index,Id,Num"
+
+  # Identifier naming conventions
+  - key: readability-identifier-naming.ClassCase
+    value: CamelCase
+  - key: readability-identifier-naming.FunctionCase
+    value: camelBack
+  - key: readability-identifier-naming.VariableCase
+    value: camelBack
+  - key: readability-identifier-naming.ParameterCase
+    value: camelBack
+
+# Warnings as errors for critical issues
+WarningsAsErrors: >
+  bugprone-swappable-parameters,
+  readability-avoid-swappable-parameters
+
+# Exclude third-party headers
+HeaderFilterRegex: '^(?!.*juce|.*JUCE|.*Test|.*test)'
+
+# Use modern C++ standards
+FormatStyle: file
+UseColor: true
+User: user

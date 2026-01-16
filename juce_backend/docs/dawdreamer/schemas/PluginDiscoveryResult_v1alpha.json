@@ -1,0 +1,26 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://example.com/schemas/PluginDiscoveryResult_v1alpha.json",
+  "title": "PluginDiscoveryResult v1alpha",
+  "type": "object",
+  "properties": {
+    "version": {"type": "string", "const": "v1alpha"},
+    "plugins": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {"type": "string"},
+          "name": {"type": "string"},
+          "supported_sample_rates": {"type": "array", "items": {"type": "integer"}},
+          "latency_samples": {"type": "integer", "minimum": 0},
+          "format": {"type": "string"}
+        },
+        "required": ["id", "name"],
+        "additionalProperties": true
+      }
+    }
+  },
+  "required": ["version", "plugins"],
+  "additionalProperties": false
+}

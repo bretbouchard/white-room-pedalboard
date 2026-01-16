@@ -1,0 +1,25 @@
+{
+  "id": "test-plan-001",
+  "ok": true,
+  "result": {
+    "planHash": "plan-hash-001",
+    "plan": {
+      "planHash": "plan-hash-001",
+      "irHash": "a1b2c3d4",
+      "generatedAt": 1735660800000,
+      "window": {
+        "from": 0,
+        "to": 48000
+      },
+      "operations": [
+        {
+          "type": "note",
+          "pitch": 60,
+          "velocity": 100,
+          "startTime": 0,
+          "duration": 500
+        }
+      ]
+    }
+  }
+}

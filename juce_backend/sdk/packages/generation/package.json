@@ -1,0 +1,35 @@
+{
+  "name": "@schillinger-sdk/generation",
+  "version": "2.0.0",
+  "description": "Schillinger System Generation - Advanced composition generation and AI-assisted tools",
+  "type": "commonjs",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint": "eslint src --ext .ts",
+    "clean": "rm -rf dist",
+    "type-check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@schillinger-sdk/shared": "workspace:*",
+    "@schillinger-sdk/core": "workspace:*",
+    "@schillinger-sdk/analysis": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "eslint": "^8.54.0",
+    "typescript": "^5.3.0",
+    "vitest": "^3.2.4"
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
+  }
+}

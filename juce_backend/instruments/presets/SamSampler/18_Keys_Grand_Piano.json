@@ -1,0 +1,33 @@
+{
+  "version": "1.0.0",
+  "name": "Grand Piano",
+  "author": "Bret Bouchard",
+  "description": "Concert grand piano with rich tone, natural decay, and full dynamics.",
+  "category": "Keys",
+  "tags": ["keys", "piano", "grand", "concert", "rich"],
+  "creationDate": "2025-12-27",
+  "parameters": {
+    "sample.file": "piano_grand_C4.wav",
+    "sample.loop_mode": 0.0,
+    "sample.loop.start": 0.0,
+    "sample.loop.end": 1.0,
+    "pitch.transpose": 0.5,
+    "pitch.detune": 0.5,
+    "pitch.bend": 0.5,
+    "filter.type": 0.0,
+    "filter.cutoff": 0.85,
+    "filter.resonance": 0.1,
+    "env.adsr.a": 0.001,
+    "env.adsr.d": 0.6,
+    "env.adsr.s": 0.1,
+    "env.adsr.r": 0.5,
+    "fx.drive": 0.0,
+    "fx.chorus": 0.1,
+    "fx.delay": 0.08,
+    "fx.reverb": 0.35,
+    "output.level": 0.8,
+    "output.pan": 0.5
+  },
+  "macroMappings": {},
+  "modulationMatrix": {}
+}

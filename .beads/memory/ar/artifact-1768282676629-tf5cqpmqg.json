@@ -1,0 +1,12 @@
+{
+  "id": "artifact-1768282676629-tf5cqpmqg",
+  "type": "pattern",
+  "content": "## Critical Deadlock Bug - Play Button Freeze\n\n**Problem:** iOS app completely froze when hitting play button. Audio rendering continued but UI became unresponsive.\n\n**Root Cause:** Serial queue deadlock in JUCEEngine\n\n**The Deadlock Chain:**\n1. Play button → Task.detached → audioManager.play()\n2. audioManager.play() → queue.async → engine.play()\n3. engine.play() → sch_engine_transport() (FFI call) + startRenderer()\n4. startRenderer() → queue.async on SAME queue → creates DispatchSourceTimer on SAME queue\n5. Event renderer (runs every 100ms) → queue.blocked behind play()\n6. Result: play() waits for startRenderer(), startRenderer() queued behind play() → DEADLOCK\n\n**Fix Applied:**\n```swift\n// Before: Single serial queue for everything\nprivate let queue = DispatchQueue(label: \"com.whiteroom.juceengine\")\n\n// After: Separate queues for control and rendering\nprivate let controlQueue = DispatchQueue(label: \"com.whiteroom.juceengine.control\", qos: .userInteractive)\nprivate let renderQueue = DispatchQueue(label: \"com.whiteroom.juceengine.render\", qos: .userInitiated)\n```\n\n**Key Changes:**\n- Control operations (play, stop, setParameter) use controlQueue\n- Event renderer uses renderQueue\n- DispatchSourceTimer created on renderQueue, not controlQueue\n- refreshState() moved to Task.detached to avoid main thread blocking\n\n**Files Modified:**\n- swift_frontend/src/SwiftFrontendCore/Audio/JUCEEngine.swift (line 249-251, 645-660)\n- swift_frontend/src/SwiftFrontendCore/Audio/AudioManager.swift (line 220-223, 251-254)\n\n**Prevention:** Never use a single serial queue for both control operations and real-time rendering. Always separate concerns.",
+  "metadata": {
+    "scope": "task",
+    "taskId": "bug-2025-01-13-play-freeze",
+    "tags": "deadline",
+    "confidence": 0.5
+  },
+  "timestamp": "2026-01-13T05:37:56.629Z"
+}

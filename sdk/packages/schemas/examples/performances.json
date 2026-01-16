@@ -1,0 +1,244 @@
+{
+  "examples": {
+    "soloPiano": {
+      "version": "1",
+      "id": "550e8400-e29b-41d4-a716-446655440001",
+      "name": "Solo Piano",
+      "arrangementStyle": "SOLO_PIANO",
+      "density": 1.0,
+      "grooveProfileId": "default",
+      "instrumentationMap": {
+        "primary": {
+          "instrumentId": "LocalGal",
+          "presetId": "grand_piano"
+        }
+      },
+      "consoleXProfileId": "default",
+      "mixTargets": {
+        "primary": {
+          "gain": -3,
+          "pan": 0,
+          "stereo": true
+        }
+      },
+      "createdAt": "2026-01-15T12:00:00.000Z",
+      "modifiedAt": "2026-01-15T12:00:00.000Z",
+      "metadata": {
+        "description": "Classic solo piano performance",
+        "genre": "classical",
+        "difficulty": "intermediate"
+      }
+    },
+    "satb": {
+      "version": "1",
+      "id": "550e8400-e29b-41d4-a716-446655440002",
+      "name": "SATB Choir",
+      "arrangementStyle": "SATB",
+      "density": 0.8,
+      "grooveProfileId": "straight",
+      "instrumentationMap": {
+        "soprano": {
+          "instrumentId": "LocalGal",
+          "presetId": "choir_soprano"
+        },
+        "alto": {
+          "instrumentId": "LocalGal",
+          "presetId": "choir_alto"
+        },
+        "tenor": {
+          "instrumentId": "LocalGal",
+          "presetId": "choir_tenor"
+        },
+        "bass": {
+          "instrumentId": "LocalGal",
+          "presetId": "choir_bass"
+        }
+      },
+      "consoleXProfileId": "choir",
+      "mixTargets": {
+        "soprano": {
+          "gain": -6,
+          "pan": -0.3,
+          "stereo": true
+        },
+        "alto": {
+          "gain": -6,
+          "pan": 0.3,
+          "stereo": true
+        },
+        "tenor": {
+          "gain": -6,
+          "pan": -0.2,
+          "stereo": true
+        },
+        "bass": {
+          "gain": -4,
+          "pan": 0.2,
+          "stereo": true
+        }
+      },
+      "createdAt": "2026-01-15T12:00:00.000Z",
+      "modifiedAt": "2026-01-15T12:00:00.000Z",
+      "metadata": {
+        "description": "Traditional 4-part harmony choir",
+        "genre": "classical",
+        "voices": 4
+      }
+    },
+    "ambientTechno": {
+      "version": "1",
+      "id": "550e8400-e29b-41d4-a716-446655440003",
+      "name": "Ambient Techno",
+      "arrangementStyle": "AMBIENT_TECHNO",
+      "density": 0.6,
+      "grooveProfileId": "swing",
+      "instrumentationMap": {
+        "primary": {
+          "instrumentId": "NexSynth",
+          "presetId": "ambient_pad",
+          "parameters": {
+            "attack": 0.8,
+            "release": 2.0,
+            "reverb": 0.7
+          }
+        },
+        "secondary": {
+          "instrumentId": "SamSampler",
+          "presetId": "techno_drums"
+        },
+        "tertiary": {
+          "instrumentId": "NexSynth",
+          "presetId": "bass_synth"
+        }
+      },
+      "consoleXProfileId": "electronic",
+      "mixTargets": {
+        "primary": {
+          "gain": -9,
+          "pan": 0,
+          "stereo": true
+        },
+        "secondary": {
+          "gain": -6,
+          "pan": 0,
+          "stereo": true
+        },
+        "tertiary": {
+          "gain": -5,
+          "pan": 0,
+          "stereo": false
+        }
+      },
+      "createdAt": "2026-01-15T12:00:00.000Z",
+      "modifiedAt": "2026-01-15T12:00:00.000Z",
+      "metadata": {
+        "description": "Sparse electronic atmosphere",
+        "genre": "electronic",
+        "bpm": 120
+      }
+    },
+    "jazzTrio": {
+      "version": "1",
+      "id": "550e8400-e29b-41d4-a716-446655440004",
+      "name": "Jazz Trio",
+      "arrangementStyle": "JAZZ_TRIO",
+      "density": 0.85,
+      "grooveProfileId": "swing",
+      "instrumentationMap": {
+        "piano": {
+          "instrumentId": "LocalGal",
+          "presetId": "jazz_piano"
+        },
+        "bass": {
+          "instrumentId": "KaneMarco",
+          "presetId": "upright_bass"
+        },
+        "drums": {
+          "instrumentId": "DrumMachine",
+          "presetId": "jazz_drums"
+        }
+      },
+      "consoleXProfileId": "jazz",
+      "mixTargets": {
+        "piano": {
+          "gain": -6,
+          "pan": -0.2,
+          "stereo": true
+        },
+        "bass": {
+          "gain": -4,
+          "pan": 0,
+          "stereo": false
+        },
+        "drums": {
+          "gain": -5,
+          "pan": 0.2,
+          "stereo": true
+        }
+      },
+      "createdAt": "2026-01-15T12:00:00.000Z",
+      "modifiedAt": "2026-01-15T12:00:00.000Z",
+      "metadata": {
+        "description": "Classic jazz trio configuration",
+        "genre": "jazz",
+        "instruments": 3
+      }
+    },
+    "fullOrchestra": {
+      "version": "1",
+      "id": "550e8400-e29b-41d4-a716-446655440005",
+      "name": "Full Orchestra",
+      "arrangementStyle": "FULL_ORCHESTRA",
+      "density": 1.0,
+      "grooveProfileId": "straight",
+      "instrumentationMap": {
+        "strings": {
+          "instrumentId": "KaneMarcoAetherString",
+          "presetId": "string_section"
+        },
+        "brass": {
+          "instrumentId": "KaneMarco",
+          "presetId": "brass_section"
+        },
+        "woodwinds": {
+          "instrumentId": "KaneMarco",
+          "presetId": "woodwind_section"
+        },
+        "percussion": {
+          "instrumentId": "DrumMachine",
+          "presetId": "orchestral_percussion"
+        }
+      },
+      "consoleXProfileId": "orchestral",
+      "mixTargets": {
+        "strings": {
+          "gain": -6,
+          "pan": 0,
+          "stereo": true
+        },
+        "brass": {
+          "gain": -8,
+          "pan": 0,
+          "stereo": true
+        },
+        "woodwinds": {
+          "gain": -7,
+          "pan": 0,
+          "stereo": true
+        },
+        "percussion": {
+          "gain": -5,
+          "pan": 0,
+          "stereo": true
+        }
+      },
+      "createdAt": "2026-01-15T12:00:00.000Z",
+      "modifiedAt": "2026-01-15T12:00:00.000Z",
+      "metadata": {
+        "description": "Full symphony orchestra",
+        "genre": "classical",
+        "sections": 4
+      }
+    }
+  }
+}

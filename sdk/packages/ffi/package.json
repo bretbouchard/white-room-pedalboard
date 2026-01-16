@@ -1,0 +1,43 @@
+{
+  "name": "@white-room/ffi",
+  "version": "1.0.0",
+  "description": "White Room NAPI FFI - TypeScript to C++ bridge for audio execution",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "src"
+  ],
+  "scripts": {
+    "build": "tsc && node-gyp rebuild",
+    "build:debug": "node-gyp rebuild --debug",
+    "build:release": "node-gyp rebuild --release",
+    "clean": "rm -rf build dist",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "type-check": "tsc --noEmit"
+  },
+  "keywords": [
+    "napi",
+    "ffi",
+    "audio",
+    "c++",
+    "native-addon",
+    "schillinger"
+  ],
+  "author": "White Room Contributors",
+  "license": "MIT",
+  "dependencies": {
+    "@white-room/schemas": "file:../*",
+    "node-addon-api": "^8.2.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.19.11",
+    "node-gyp": "^10.2.0",
+    "typescript": "^5.3.0",
+    "vitest": "^3.2.4"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

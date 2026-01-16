@@ -1,0 +1,91 @@
+{
+  "version": "1.0.0",
+  "name": "Hip Hop Basic",
+  "author": "Schill Instruments",
+  "description": "Classic hip-hop drum pattern with kick on 1 and 3, snare on 2 and 4",
+  "category": "HipHop",
+  "tags": ["hiphop", "classic", "boom-bap"],
+  "creationDate": "2025-01-07",
+  "pattern": {
+    "tracks": [
+      {
+        "index": 0,
+        "type": "Kick",
+        "timing_role": "Pocket",
+        "volume": 0.85,
+        "pan": 0.0,
+        "pitch": 0,
+        "steps": [
+          {"active":true,"velocity":120,"probability":1.0,"flam":false,"roll":false,"roll_notes":4},
+          {"active":false,"velocity":100,"probability":1.0,"flam":false,"roll":false,"roll_notes":4},
+          {"active":false,"velocity":100,"probability":1.0,"flam":false,"roll":false,"roll_notes":4},
+          {"active":true,"velocity":100,"probability":1.0,"flam":false,"roll":false,"roll_notes":4},
+          {"active":false,"velocity":100,"probability":1.0,"flam":false,"roll":false,"roll_notes":4},
+          {"active":false,"velocity":100,"probability":1.0,"flam":false,"roll":false,"roll_notes":4},
+          {"active":false,"velocity":100,"probability":1.0,"flam":false,"roll":false,"roll_notes":4},
+          {"active":true,"velocity":100,"probability":1.0,"flam":false,"roll":false,"roll_notes":4},
+          {"active":true,"velocity":120,"probability":1.0,"flam":false,"roll":false,"roll_notes":4},
+          {"active":false,"velocity":100,"probability":1.0,"flam":false,"roll":false,"roll_notes":4},
+          {"active":false,"velocity":100,"probability":1.0,"flam":false,"roll":false,"roll_notes":4},
+          {"active":true,"velocity":100,"probability":1.0,"flam":false,"roll":false,"roll_notes":4},
+          {"active":false,"velocity":100,"probability":1.0,"flam":false,"roll":false,"roll_notes":4},
+          {"active":false,"velocity":100,"probability":1.0,"flam":false,"roll":false,"roll_notes":4},
+          {"active":false,"velocity":100,"probability":1.0,"flam":false,"roll":false,"roll_notes":4},
+          {"active":true,"velocity":100,"probability":1.0,"flam":false,"roll":false,"roll_notes":4}
+        ]
+      },
+      {
+        "index": 1,
+        "type": "Snare",
+        "timing_role": "Pull",
+        "volume": 0.8,
+        "pan": 0.0,
+        "pitch": 0,
+        "steps": [
+          {"active":false,"velocity":100,"probability":1.0,"flam":false,"roll":false,"roll_notes":4},
+          {"active":false,"velocity":100,"probability":1.0,"flam":false,"roll":false,"roll_notes":4},
+          {"active":false,"velocity":100,"probability":1.0,"flam":false,"roll":false,"roll_notes":4},
+          {"active":true,"velocity":115,"probability":1.0,"flam":false,"roll":false,"roll_notes":4},
+          {"active":false,"velocity":100,"probability":1.0,"flam":false,"roll":false,"roll_notes":4},
+          {"active":false,"velocity":100,"probability":1.0,"flam":false,"roll":false,"roll_notes":4},
+          {"active":false,"velocity":100,"probability":1.0,"flam":false,"roll":false,"roll_notes":4},
+          {"active":true,"velocity":115,"probability":1.0,"flam":false,"roll":false,"roll_notes":4},
+          {"active":false,"velocity":100,"probability":1.0,"flam":false,"roll":false,"roll_notes":4},
+          {"active":false,"velocity":100,"probability":1.0,"flam":false,"roll":false,"roll_notes":4},
+          {"active":false,"velocity":100,"probability":1.0,"flam":false,"roll":false,"roll_notes":4},
+          {"active":true,"velocity":115,"probability":1.0,"flam":false,"roll":false,"roll_notes":4},
+          {"active":false,"velocity":100,"probability":1.0,"flam":false,"roll":false,"roll_notes":4},
+          {"active":false,"velocity":100,"probability":1.0,"flam":false,"roll":false,"roll_notes":4},
+          {"active":false,"velocity":100,"probability":1.0,"flam":false,"roll":false,"roll_notes":4},
+          {"active":true,"velocity":115,"probability":1.0,"flam":false,"roll":false,"roll_notes":4}
+        ]
+      },
+      {
+        "index": 2,
+        "type": "HiHatClosed",
+        "timing_role": "Push",
+        "volume": 0.6,
+        "pan": 0.0,
+        "pitch": 0,
+        "steps": [
+          {"active":true,"velocity":80,"probability":1.0,"flam":false,"roll":false,"roll_notes":4},
+          {"active":true,"velocity":80,"probability":1.0,"flam":false,"roll":false,"roll_notes":4},
+          {"active":true,"velocity":80,"probability":1.0,"flam":false,"roll":false,"roll_notes":4},
+          {"active":true,"velocity":80,"probability":1.0,"flam":false,"roll":false,"roll_notes":4},
+          {"active":true,"velocity":80,"probability":1.0,"flam":false,"roll":false,"roll_notes":4},
+          {"active":true,"velocity":80,"probability":1.0,"flam":false,"roll":false,"roll_notes":4},
+          {"active":true,"velocity":80,"probability":1.0,"flam":false,"roll":false,"roll_notes":4},
+          {"active":true,"velocity":80,"probability":1.0,"flam":false,"roll":false,"roll_notes":4},
+          {"active":true,"velocity":80,"probability":1.0,"flam":false,"roll":false,"roll_notes":4},
+          {"active":true,"velocity":80,"probability":1.0,"flam":false,"roll":false,"roll_notes":4},
+          {"active":true,"velocity":80,"probability":1.0,"flam":false,"roll":false,"roll_notes":4},
+          {"active":true,"velocity":80,"probability":1.0,"flam":false,"roll":false,"roll_notes":4},
+          {"active":true,"velocity":80,"probability":1.0,"flam":false,"roll":false,"roll_notes":4},
+          {"active":true,"velocity":80,"probability":1.0,"flam":false,"roll":false,"roll_notes":4},
+          {"active":true,"velocity":80,"probability":1.0,"flam":false,"roll":false,"roll_notes":4},
+          {"active":true,"velocity":80,"probability":1.0,"flam":false,"roll":false,"roll_notes":4}
+        ]
+      }
+    ]
+  }
+}

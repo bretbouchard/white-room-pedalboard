@@ -1,0 +1,17 @@
+.git
+.gitmodules
+.node_modules
+frontend/node_modules
+sdk/node_modules
+**/__pycache__
+**/*.pyc
+html
+reports
+htmlcov
+coverage
+frontend/dist
+backend/venv
+venv
+.DS_Store
+.env
+.env.*

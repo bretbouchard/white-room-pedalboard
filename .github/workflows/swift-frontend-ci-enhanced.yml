@@ -1,0 +1,667 @@
+name: Swift Frontend CI/CD
+
+# Comprehensive CI/CD pipeline for Swift Frontend
+# Optimized for multi-platform builds (iOS, macOS, tvOS), automated testing, and quality gates
+
+on:
+  push:
+    branches: [main, develop, 'feature/*']
+    paths:
+      - 'swift_frontend/**'
+      - '.github/workflows/swift-frontend-ci-enhanced.yml'
+  pull_request:
+    branches: [main, develop]
+    paths:
+      - 'swift_frontend/**'
+  workflow_dispatch:
+    inputs:
+      platform:
+        description: 'Target platform'
+        required: true
+        default: 'all'
+        type: choice
+        options:
+        - all
+        - ios
+        - macos
+        - tvos
+      run_performance_tests:
+        description: 'Run performance benchmarks'
+        required: false
+        default: false
+        type: boolean
+
+env:
+  # Use Swift 5.9.2 for stable GitHub Actions compatibility
+  SWIFT_VERSION: "5.9.2"
+  # Coverage threshold for Swift code
+  COVERAGE_THRESHOLD: 85
+  # Performance regression threshold (10%)
+  PERF_THRESHOLD: 10
+  # Cache version
+  CACHE_VERSION: v3
+
+jobs:
+  ################################################################################
+  # Quick Validation (runs first, fast feedback)
+  ################################################################################
+
+  quick-check:
+    name: Quick Validation
+    runs-on: macos-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: swift_frontend
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+          token: ${{ secrets.PAT_TOKEN }}
+
+      - name: Setup Swift
+        uses: swift-actions/setup-swift@v1
+        with:
+          swift-version: ${{ env.SWIFT_VERSION }}
+
+      - name: Cache Swift Package Manager
+        uses: actions/cache@v4
+        with:
+          path: |
+            swift_frontend/.build
+            swift_frontend/.swiftpm
+          key: swift-spm-${{ runner.os }}-${{ env.CACHE_VERSION }}-${{ hashFiles('**/Package.resolved') }}
+          restore-keys: |
+            swift-spm-${{ runner.os }}-${{ env.CACHE_VERSION }}-
+            swift-spm-${{ runner.os }}-
+
+      - name: Resolve Dependencies
+        run: swift package resolve
+
+      - name: Build Check (Fast)
+        run: |
+          swift build -Xswiftc -Onone
+
+      - name: SwiftLint Check
+        run: |
+          # Install swiftlint if not present
+          if ! command -v swiftlint &> /dev/null; then
+            brew install swiftlint
+          fi
+          # Run swiftlint in strict mode
+          swiftformat --lint --strict .
+          swiftlint lint --strict
+
+      - name: SwiftFormat Check
+        run: |
+          # Install swiftformat if not present
+          if ! command -v swiftformat &> /dev/null; then
+            brew install swiftformat
+          fi
+          # Check format (don't auto-fix)
+          swiftformat --lint --strict .
+
+  ################################################################################
+  # Unit Tests with Coverage
+  ################################################################################
+
+  unit-tests:
+    name: Unit Tests (${{ matrix.platform }})
+    runs-on: macos-latest
+    needs: quick-check
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        platform: [ios, macos, tvos]
+        include:
+          - platform: ios
+            destination: 'platform=iOS Simulator,name=iPhone 15 Pro'
+          - platform: macos
+            destination: 'platform=macOS'
+          - platform: tvos
+            destination: 'platform=tvOS Simulator,name=Apple TV'
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+          token: ${{ secrets.PAT_TOKEN }}
+
+      - name: Setup Swift
+        uses: swift-actions/setup-swift@v1
+        with:
+          swift-version: ${{ env.SWIFT_VERSION }}
+
+      - name: Cache Swift Package Manager
+        uses: actions/cache@v4
+        with:
+          path: |
+            swift_frontend/.build
+            swift_frontend/.swiftpm
+          key: swift-spm-${{ runner.os }}-${{ env.CACHE_VERSION }}-${{ hashFiles('**/Package.resolved') }}
+          restore-keys: |
+            swift-spm-${{ runner.os }}-${{ env.CACHE_VERSION }}-
+            swift-spm-${{ runner.os }}-
+
+      - name: Resolve Dependencies
+        working-directory: swift_frontend
+        run: swift package resolve
+
+      - name: Run Unit Tests
+        working-directory: swift_frontend
+        run: |
+          swift test \
+            --enable-code-coverage \
+            --destination "${{ matrix.destination }}" \
+            --filter "not Integration and not UI and not Performance"
+
+      - name: Generate Coverage Report
+        working-directory: swift_frontend
+        run: |
+          # Generate coverage in multiple formats
+          xcr llvm-cov report \
+            .build/debug/*/codecov/*.profdata \
+            -instr-profile=.build/debug/codecov/*.profdata \
+            > coverage-report.txt
+
+          xcr llvm-cov export \
+            .build/debug/*/codecov/*.profdata \
+            -instr-profile=.build/debug/codecov/*.profdata \
+            -format=json \
+            > coverage-report.json
+
+      - name: Check Coverage Threshold
+        working-directory: swift_frontend
+        run: |
+          # Extract line coverage percentage
+          COVERAGE=$(grep -E "Total.*(\d+\.\d+)%" coverage-report.txt | tail -1 | grep -oE "\d+\.\d+" || echo "0")
+          echo "Current coverage: ${COVERAGE}%"
+
+          # Check against threshold
+          if (( $(echo "$COVERAGE < ${{ env.COVERAGE_THRESHOLD }}" | bc -l) )); then
+            echo "❌ Coverage ${COVERAGE}% is below threshold ${{ env.COVERAGE_THRESHOLD }}%"
+            exit 1
+          else
+            echo "✅ Coverage ${COVERAGE}% meets threshold"
+          fi
+
+      - name: Upload Coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          files: swift_frontend/coverage-report.json
+          flags: unittests-${{ matrix.platform }}
+          name: codecov-swift-unit-${{ matrix.platform }}
+          fail_ci_if_error: false
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: unit-test-results-${{ matrix.platform }}
+          path: |
+            swift_frontend/.build/debug/*/codecov/*.profdata
+            swift_frontend/coverage-report.txt
+            swift_frontend/coverage-report.json
+
+  ################################################################################
+  # Integration Tests
+  ################################################################################
+
+  integration-tests:
+    name: Integration Tests
+    runs-on: macos-latest
+    needs: quick-check
+    timeout-minutes: 25
+    defaults:
+      run:
+        working-directory: swift_frontend
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+          token: ${{ secrets.PAT_TOKEN }}
+
+      - name: Setup Swift
+        uses: swift-actions/setup-swift@v1
+        with:
+          swift-version: ${{ env.SWIFT_VERSION }}
+
+      - name: Cache Swift Package Manager
+        uses: actions/cache@v4
+        with:
+          path: |
+            swift_frontend/.build
+            swift_frontend/.swiftpm
+          key: swift-spm-${{ runner.os }}-${{ env.CACHE_VERSION }}-${{ hashFiles('**/Package.resolved') }}
+          restore-keys: |
+            swift-spm-${{ runner.os }}-${{ env.CACHE_VERSION }}-
+            swift-spm-${{ runner.os }}-
+
+      - name: Resolve Dependencies
+        run: swift package resolve
+
+      - name: Run Integration Tests
+        run: |
+          swift test \
+            --enable-code-coverage \
+            --filter "Integration"
+
+      - name: Upload integration results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: integration-test-results
+          path: .build/debug/*/codecov/*.profdata
+
+  ################################################################################
+  # UI Tests with Snapshot Testing
+  ################################################################################
+
+  ui-tests:
+    name: UI Tests
+    runs-on: macos-latest
+    needs: unit-tests
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        platform: [ios, macos, tvos]
+        include:
+          - platform: ios
+            destination: 'platform=iOS Simulator,name=iPhone 15 Pro'
+          - platform: macos
+            destination: 'platform=macOS'
+          - platform: tvos
+            destination: 'platform=tvOS Simulator,name=Apple TV'
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+          token: ${{ secrets.PAT_TOKEN }}
+
+      - name: Setup Swift
+        uses: swift-actions/setup-swift@v1
+        with:
+          swift-version: ${{ env.SWIFT_VERSION }}
+
+      - name: Cache Swift Package Manager
+        uses: actions/cache@v4
+        with:
+          path: |
+            swift_frontend/.build
+            swift_frontend/.swiftpm
+          key: swift-spm-${{ runner.os }}-${{ env.CACHE_VERSION }}-${{ hashFiles('**/Package.resolved') }}
+          restore-keys: |
+            swift-spm-${{ runner.os }}-${{ env.CACHE_VERSION }}-
+            swift-spm-${{ runner.os }}-
+
+      - name: Resolve Dependencies
+        working-directory: swift_frontend
+        run: swift package resolve
+
+      - name: Run UI Tests
+        working-directory: swift_frontend
+        run: |
+          swift test \
+            --destination "${{ matrix.destination }}" \
+            --filter "UI"
+
+      - name: Upload UI test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ui-test-results-${{ matrix.platform }}
+          path: |
+            swift_frontend/.build/debug/*/codecov/*.profdata
+            swift_frontend/tests/snapshots/
+
+  ################################################################################
+  # Accessibility Tests
+  ################################################################################
+
+  accessibility-tests:
+    name: Accessibility Tests
+    runs-on: macos-latest
+    needs: unit-tests
+    timeout-minutes: 20
+    continue-on-error: true
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+          token: ${{ secrets.PAT_TOKEN }}
+
+      - name: Setup Swift
+        uses: swift-actions/setup-swift@v1
+        with:
+          swift-version: ${{ env.SWIFT_VERSION }}
+
+      - name: Cache Swift Package Manager
+        uses: actions/cache@v4
+        with:
+          path: |
+            swift_frontend/.build
+            swift_frontend/.swiftpm
+          key: swift-spm-${{ runner.os }}-${{ env.CACHE_VERSION }}-${{ hashFiles('**/Package.resolved') }}
+          restore-keys: |
+            swift-spm-${{ runner.os }}-${{ env.CACHE_VERSION }}-
+            swift-spm-${{ runner.os }}-
+
+      - name: Resolve Dependencies
+        working-directory: swift_frontend
+        run: swift package resolve
+
+      - name: Run Accessibility Tests
+        working-directory: swift_frontend
+        run: |
+          swift test --filter "Accessibility"
+
+      - name: Upload accessibility results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: accessibility-test-results
+          path: swift_frontend/.build/debug/codecov/*.profdata
+
+  ################################################################################
+  # Performance Benchmarks
+  ################################################################################
+
+  performance-tests:
+    name: Performance Benchmarks
+    runs-on: macos-latest
+    needs: unit-tests
+    timeout-minutes: 30
+    if: github.event.inputs.run_performance_tests == 'true' || github.event_name == 'schedule'
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+          token: ${{ secrets.PAT_TOKEN }}
+          fetch-depth: 0
+
+      - name: Setup Swift
+        uses: swift-actions/setup-swift@v1
+        with:
+          swift-version: ${{ env.SWIFT_VERSION }}
+
+      - name: Cache Swift Package Manager
+        uses: actions/cache@v4
+        with:
+          path: |
+            swift_frontend/.build
+            swift_frontend/.swiftpm
+          key: swift-spm-${{ runner.os }}-${{ env.CACHE_VERSION }}-${{ hashFiles('**/Package.resolved') }}
+          restore-keys: |
+            swift-spm-${{ runner.os }}-${{ env.CACHE_VERSION }}-
+            swift-spm-${{ runner.os }}-
+
+      - name: Resolve Dependencies
+        working-directory: swift_frontend
+        run: swift package resolve
+
+      - name: Build for performance testing
+        working-directory: swift_frontend
+        run: |
+          swift build -c release
+
+      - name: Run performance benchmarks
+        working-directory: swift_frontend
+        run: |
+          .build/release/SwiftFrontendCore benchmark \
+            --format json \
+            --output benchmark-results.json
+
+      - name: Download previous benchmarks
+        uses: actions/cache@v4
+        id: benchmark-cache
+        with:
+          path: swift_frontend/previous-benchmarks.json
+          key: swift-benchmarks-${{ runner.os }}-${{ env.CACHE_VERSION }}
+          restore-keys: |
+            swift-benchmarks-${{ runner.os }}-
+
+      - name: Compare performance
+        working-directory: swift_frontend
+        run: |
+          # Compare with previous benchmarks and detect regressions
+          python3 ../infrastructure/scripts/compare_benchmarks.py \
+            --baseline previous-benchmarks.json \
+            --current benchmark-results.json \
+            --threshold ${{ env.PERF_THRESHOLD }}
+
+      - name: Save current benchmarks
+        if: always()
+        run: |
+          cp swift_frontend/benchmark-results.json swift_frontend/previous-benchmarks.json
+
+      - name: Cache benchmarks
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: swift_frontend/previous-benchmarks.json
+          key: swift-benchmarks-${{ runner.os }}-${{ env.CACHE_VERSION }}-${{ github.sha }}
+
+      - name: Upload benchmark results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: swift-benchmark-results
+          path: |
+            swift_frontend/benchmark-results.json
+            swift_frontend/benchmark-report.html
+
+  ################################################################################
+  # Multi-Platform Builds
+  ################################################################################
+
+  build-matrix:
+    name: Build (${{ matrix.platform }})
+    runs-on: macos-latest
+    needs: [unit-tests, integration-tests]
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: ios
+            destination: 'generic/platform=iOS'
+            sdk: iphoneos
+            arch: arm64
+          - platform: ios-simulator
+            destination: 'generic/platform=iOS Simulator'
+            sdk: iphonesimulator
+            arch: x86_64
+          - platform: macos
+            destination: 'generic/platform=macOS'
+            sdk: macosx
+            arch: arm64
+          - platform: tvos
+            destination: 'generic/platform=tvOS'
+            sdk: appletvos
+            arch: arm64
+          - platform: tvos-simulator
+            destination: 'generic/platform=tvOS Simulator'
+            sdk: appletvsimulator
+            arch: x86_64
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+          token: ${{ secrets.PAT_TOKEN }}
+
+      - name: Setup Swift
+        uses: swift-actions/setup-swift@v1
+        with:
+          swift-version: ${{ env.SWIFT_VERSION }}
+
+      - name: Cache Swift Package Manager
+        uses: actions/cache@v4
+        with:
+          path: |
+            swift_frontend/.build
+            swift_frontend/.swiftpm
+          key: swift-spm-${{ runner.os }}-${{ env.CACHE_VERSION }}-${{ hashFiles('**/Package.resolved') }}
+          restore-keys: |
+            swift-spm-${{ runner.os }}-${{ env.CACHE_VERSION }}-
+            swift-spm-${{ runner.os }}-
+
+      - name: Resolve Dependencies
+        working-directory: swift_frontend
+        run: swift package resolve
+
+      - name: Build for platform
+        working-directory: swift_frontend
+        run: |
+          swift build \
+            -c release \
+            --destination "${{ matrix.destination }}" \
+            -Xswiftc -arch \
+            -Xswiftc ${{ matrix.arch }}
+
+      - name: Archive build
+        working-directory: swift_frontend
+        run: |
+          mkdir -p artifacts/${{ matrix.platform }}
+          # Copy built artifacts
+          find .build -name "*.framework" -exec cp -r {} artifacts/${{ matrix.platform }}/ \; || true
+          find .build -name "*.app" -exec cp -r {} artifacts/${{ matrix.platform }}/ \; || true
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: swift-build-artifacts-${{ matrix.platform }}
+          path: swift_frontend/artifacts/${{ matrix.platform }}/
+
+  ################################################################################
+  # Quality Gates
+  ################################################################################
+
+  quality-gates:
+    name: Quality Gates
+    runs-on: macos-latest
+    needs: [unit-tests, integration-tests, ui-tests, accessibility-tests]
+    if: always()
+    timeout-minutes: 10
+
+    steps:
+      - name: Check all required jobs
+        run: |
+          echo "# Swift Frontend Quality Gates" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## Job Status" >> $GITHUB_STEP_SUMMARY
+          echo "- Unit Tests: ${{ needs.unit-tests.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Integration Tests: ${{ needs.integration-tests.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "- UI Tests: ${{ needs.ui-tests.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Accessibility Tests: ${{ needs.accessibility-tests.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          # Quality gate checks
+          GATE_STATUS="✅ PASSED"
+
+          if [[ "${{ needs.unit-tests.result }}" != "success" ]]; then
+            echo "❌ Unit tests failed" >> $GITHUB_STEP_SUMMARY
+            GATE_STATUS="❌ FAILED"
+          else
+            echo "✅ Unit tests passed" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          if [[ "${{ needs.integration-tests.result }}" != "success" ]]; then
+            echo "❌ Integration tests failed" >> $GITHUB_STEP_SUMMARY
+            GATE_STATUS="❌ FAILED"
+          else
+            echo "✅ Integration tests passed" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          if [[ "${{ needs.ui-tests.result }}" != "success" ]]; then
+            echo "❌ UI tests failed" >> $GITHUB_STEP_SUMMARY
+            GATE_STATUS="❌ FAILED"
+          else
+            echo "✅ UI tests passed" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## Final Status: $GATE_STATUS" >> $GITHUB_STEP_SUMMARY
+
+          if [[ "$GATE_STATUS" == *"FAILED"* ]]; then
+            exit 1
+          fi
+
+  ################################################################################
+  # Notifications
+  ################################################################################
+
+  notify:
+    name: Send Notifications
+    runs-on: macos-latest
+    needs: [quality-gates, build-matrix, performance-tests]
+    if: always()
+    timeout-minutes: 5
+
+    steps:
+      - name: Determine build status
+        id: status
+        run: |
+          if [[ "${{ needs.quality-gates.result }}" == "success" && "${{ needs.build-matrix.result }}" == "success" ]]; then
+            echo "status=success" >> $GITHUB_OUTPUT
+            echo "emoji=✅" >> $GITHUB_OUTPUT
+            echo "color=good" >> $GITHUB_OUTPUT
+          else
+            echo "status=failure" >> $GITHUB_OUTPUT
+            echo "emoji=❌" >> $GITHUB_OUTPUT
+            echo "color=danger" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Slack notification
+        if: vars.SLACK_WEBHOOK_URL != ''
+        uses: slackapi/slack-github-action@v1
+        with:
+          webhook-url: ${{ vars.SLACK_WEBHOOK_URL }}
+          payload: |
+            {
+              "text": "${{ steps.status.outputs.emoji }} Swift Frontend Build ${{ steps.status.outputs.status }}",
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*${{ steps.status.outputs.emoji }} Swift Frontend Build ${{ steps.status.outputs.status }}*\n\n*Repository:* ${{ github.repository }}\n*Branch:* ${{ github.ref_name }}\n*Commit:* ${{ github.sha }}\n*Author:* ${{ github.actor }}\n\n${{ github.event.head_commit.message }}"
+                  }
+                },
+                {
+                  "type": "actions",
+                  "elements": [
+                    {
+                      "type": "button",
+                      "text": {
+                        "type": "plain_text",
+                        "text": "View Workflow"
+                      },
+                      "url": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+                    },
+                    {
+                      "type": "button",
+                      "text": {
+                        "type": "plain_text",
+                        "text": "View Commit"
+                      },
+                      "url": "${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}"
+                    }
+                  ]
+                }
+              ]
+            }

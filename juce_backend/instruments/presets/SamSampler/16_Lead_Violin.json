@@ -1,0 +1,33 @@
+{
+  "version": "1.0.0",
+  "name": "Violin Lead",
+  "author": "Bret Bouchard",
+  "description": "Solo violin with slow attack, vibrato, and singing tone.",
+  "category": "Lead",
+  "tags": ["lead", "violin", "strings", "singing", "expressive"],
+  "creationDate": "2025-12-27",
+  "parameters": {
+    "sample.file": "strings_violin_C4.wav",
+    "sample.loop_mode": 1.0,
+    "sample.loop.start": 0.25,
+    "sample.loop.end": 0.75,
+    "pitch.transpose": 0.5,
+    "pitch.detune": 0.5,
+    "pitch.bend": 0.52,
+    "filter.type": 0.0,
+    "filter.cutoff": 0.72,
+    "filter.resonance": 0.15,
+    "env.adsr.a": 0.1,
+    "env.adsr.d": 0.15,
+    "env.adsr.s": 0.7,
+    "env.adsr.r": 0.25,
+    "fx.drive": 0.03,
+    "fx.chorus": 0.3,
+    "fx.delay": 0.12,
+    "fx.reverb": 0.55,
+    "output.level": 0.75,
+    "output.pan": 0.5
+  },
+  "macroMappings": {},
+  "modulationMatrix": {}
+}

@@ -1,0 +1,122 @@
+{
+  "auditReportVersion": 2,
+  "vulnerabilities": {
+    "diff": {
+      "name": "diff",
+      "severity": "low",
+      "isDirect": false,
+      "via": [
+        {
+          "source": 1112148,
+          "name": "diff",
+          "dependency": "diff",
+          "title": "jsdiff has a Denial of Service vulnerability in parsePatch and applyPatch",
+          "url": "https://github.com/advisories/GHSA-73rr-hh4g-fpgx",
+          "severity": "low",
+          "cwe": [
+            "CWE-400",
+            "CWE-1333"
+          ],
+          "cvss": {
+            "score": 0,
+            "vectorString": null
+          },
+          "range": "<8.0.3"
+        }
+      ],
+      "effects": [
+        "sinon"
+      ],
+      "range": "<8.0.3",
+      "nodes": [
+        "node_modules/diff"
+      ],
+      "fixAvailable": {
+        "name": "sinon",
+        "version": "21.0.1",
+        "isSemVerMajor": true
+      }
+    },
+    "hono": {
+      "name": "hono",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        {
+          "source": 1112134,
+          "name": "hono",
+          "dependency": "hono",
+          "title": "Hono JWK Auth Middleware has JWT algorithm confusion when JWK lacks \"alg\" (untrusted header.alg fallback)",
+          "url": "https://github.com/advisories/GHSA-3vhc-576x-3qv4",
+          "severity": "high",
+          "cwe": [
+            "CWE-347"
+          ],
+          "cvss": {
+            "score": 8.2,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+          },
+          "range": "<4.11.4"
+        },
+        {
+          "source": 1112135,
+          "name": "hono",
+          "dependency": "hono",
+          "title": "Hono JWT Middleware's JWT Algorithm Confusion via Unsafe Default (HS256) Allows Token Forgery and Auth Bypass",
+          "url": "https://github.com/advisories/GHSA-f67f-6cw9-8mq4",
+          "severity": "high",
+          "cwe": [
+            "CWE-347"
+          ],
+          "cvss": {
+            "score": 8.2,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:H/A:N"
+          },
+          "range": "<4.11.4"
+        }
+      ],
+      "effects": [],
+      "range": "<=4.11.3",
+      "nodes": [
+        "node_modules/hono"
+      ],
+      "fixAvailable": true
+    },
+    "sinon": {
+      "name": "sinon",
+      "severity": "low",
+      "isDirect": true,
+      "via": [
+        "diff"
+      ],
+      "effects": [],
+      "range": "2.0.0-pre - 21.0.0",
+      "nodes": [
+        "node_modules/sinon"
+      ],
+      "fixAvailable": {
+        "name": "sinon",
+        "version": "21.0.1",
+        "isSemVerMajor": true
+      }
+    }
+  },
+  "metadata": {
+    "vulnerabilities": {
+      "info": 0,
+      "low": 2,
+      "moderate": 0,
+      "high": 1,
+      "critical": 0,
+      "total": 3
+    },
+    "dependencies": {
+      "prod": 302,
+      "dev": 361,
+      "optional": 252,
+      "peer": 330,
+      "peerOptional": 0,
+      "total": 993
+    }
+  }
+}

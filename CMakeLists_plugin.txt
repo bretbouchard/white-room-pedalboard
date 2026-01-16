@@ -1,0 +1,222 @@
+cmake_minimum_required(VERSION 3.22)
+project(WhiteRoomPedalboard VERSION 1.0.0 LANGUAGES CXX)
+
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+#==============================================================================
+# White Room Pedalboard - Standalone VST3/AU Plugin
+#==============================================================================
+# Virtual pedalboard with 10 guitar effects
+# Builds standalone plugin for DAW testing and pluginval validation
+#==============================================================================
+
+# Find JUCE
+# Get the pedalboard directory (parent of build_plugin/)
+get_filename_component(PEDALBOARD_DIR "${CMAKE_CURRENT_SOURCE_DIR}" DIRECTORY)
+set(JUCE_DIR "${PEDALBOARD_DIR}/../../external/JUCE")
+if(NOT EXISTS "${JUCE_DIR}")
+    message(FATAL_ERROR "JUCE not found at ${JUCE_DIR}")
+endif()
+
+add_subdirectory(${JUCE_DIR} ${CMAKE_CURRENT_BINARY_DIR}/JUCE)
+
+#==============================================================================
+# Include directories
+#==============================================================================
+include_directories(
+    ${PEDALBOARD_DIR}/include
+    ${PEDALBOARD_DIR}
+    ${PEDALBOARD_DIR}/../pedals/include
+    /opt/homebrew/Cellar/nlohmann-json/3.12.0/include
+)
+
+#==============================================================================
+# Plugin Source Files
+#==============================================================================
+set(PEDALBOARD_PLUGIN_SOURCES
+    # Pedalboard processor and editor
+    ${PEDALBOARD_DIR}/src/PedalboardProcessor.cpp
+    ${PEDALBOARD_DIR}/PedalboardEditor.cpp
+
+    # All 10 pedal DSP implementations (excluding BiPhase due to linking issues)
+    ${PEDALBOARD_DIR}/../pedals/src/dsp/GuitarPedalPureDSP.cpp
+    ${PEDALBOARD_DIR}/../pedals/src/dsp/VolumePedalPureDSP.cpp
+    ${PEDALBOARD_DIR}/../pedals/src/dsp/FuzzPedalPureDSP.cpp
+    ${PEDALBOARD_DIR}/../pedals/src/dsp/OverdrivePedalPureDSP.cpp
+    ${PEDALBOARD_DIR}/../pedals/src/dsp/CompressorPedalPureDSP.cpp
+    ${PEDALBOARD_DIR}/../pedals/src/dsp/EQPedalPureDSP.cpp
+    ${PEDALBOARD_DIR}/../pedals/src/dsp/NoiseGatePedalPureDSP.cpp
+    ${PEDALBOARD_DIR}/../pedals/src/dsp/ChorusPedalPureDSP.cpp
+    ${PEDALBOARD_DIR}/../pedals/src/dsp/DelayPedalPureDSP.cpp
+    ${PEDALBOARD_DIR}/../pedals/src/dsp/ReverbPedalPureDSP.cpp
+    # ${PEDALBOARD_DIR}/../pedals/src/dsp/BiPhasePedalPureDSP.cpp  # TODO: Fix BiPhaseDSP linking issues
+)
+
+#==============================================================================
+# Create JUCE Plugin
+#==============================================================================
+juce_add_plugin("WhiteRoomPedalboard"
+    PRODUCT_NAME "WhiteRoomPedalboard"
+    COMPANY_NAME "White Room Audio"
+    COMPANY_WEBSITE "https://whiteroom.audio"
+    COMPANY_EMAIL "info@whiteroom.audio"
+    PLUGIN_MANUFACTURER_CODE "WHTR"
+    PLUGIN_CODE "WHPB"
+    IS_SYNTH 0
+    NEEDS_MIDI_INPUT 1
+    PRODUCES_MIDI_OUTPUT 0
+    IS_MIDI_EFFECT 0
+    AU_MAIN_TYPE 0x61756678  # 'aufx' in hex
+    VST3_CATEGORY "Fx|Modulation"
+    COPY_PLUGIN_AFTER_BUILD ON
+    BUNDLE_ID "com.whiteroom.audio.pedalboard"
+    FORMATS VST3 AU LV2 Standalone
+)
+
+target_sources(WhiteRoomPedalboard
+    PRIVATE
+        ${PEDALBOARD_PLUGIN_SOURCES}
+)
+
+target_include_directories(WhiteRoomPedalboard PRIVATE
+    ${PEDALBOARD_DIR}/include
+    ${PEDALBOARD_DIR}
+    ${PEDALBOARD_DIR}/../pedals/include
+    /opt/homebrew/Cellar/nlohmann-json/3.12.0/include
+)
+
+target_link_libraries(WhiteRoomPedalboard
+    PRIVATE
+        juce::juce_audio_processors
+        juce::juce_audio_utils
+        juce::juce_audio_devices
+        juce::juce_audio_formats
+        juce::juce_audio_basics
+        juce::juce_core
+        juce::juce_data_structures
+        juce::juce_events
+        juce::juce_graphics
+        juce::juce_gui_basics
+        juce::juce_gui_extra
+        juce::juce_dsp
+)
+
+# Enable WebView for plugin UI
+target_compile_definitions(WhiteRoomPedalboard PRIVATE
+    JUCE_WEB_BROWSER=1
+    JUCE_USE_CURL=0
+    JUCE_VST3_CAN_REPLACE_VST2=1
+)
+
+# Fix AU main type (JUCE CMake doesn't always set this correctly)
+target_compile_definitions(WhiteRoomPedalboard PRIVATE
+    JucePlugin_AUMainType=0x61756678
+)
+
+# Plugin description
+target_compile_definitions(WhiteRoomPedalboard PRIVATE
+    JUCE_PLUGIN_HOST_VST=1
+    JUCE_PLUGIN_HOST_AU=1
+)
+
+#==============================================================================
+# Embed WebView UI (copy to plugin bundle)
+#==============================================================================
+if(APPLE)
+    # Copy WebView UI to VST3 bundle
+    add_custom_command(TARGET WhiteRoomPedalboard_VST3 POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+            ${PEDALBOARD_DIR}/web_ui
+            $<TARGET_BUNDLE_DIR:WhiteRoomPedalboard_VST3>/Contents/Resources/web_ui
+        COMMENT "Copying WebView UI for VST3"
+    )
+
+    # Copy WebView UI to AU bundle
+    add_custom_command(TARGET WhiteRoomPedalboard_AU POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+            ${PEDALBOARD_DIR}/web_ui
+            $<TARGET_BUNDLE_DIR:WhiteRoomPedalboard_AU>/Contents/Resources/web_ui
+        COMMENT "Copying WebView UI for AU"
+    )
+
+    # Copy WebView UI to AUv3 bundle (iOS only - if target exists)
+    if(TARGET WhiteRoomPedalboard_AUv3)
+        add_custom_command(TARGET WhiteRoomPedalboard_AUv3 POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy_directory
+                ${PEDALBOARD_DIR}/web_ui
+                $<TARGET_BUNDLE_DIR:WhiteRoomPedalboard_AUv3>/Contents/Resources/web_ui
+            COMMENT "Copying WebView UI for AUv3"
+        )
+    endif()
+
+    # Copy WebView UI to Standalone app
+    add_custom_command(TARGET WhiteRoomPedalboard_Standalone POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+            ${PEDALBOARD_DIR}/web_ui
+            $<TARGET_BUNDLE_DIR:WhiteRoomPedalboard_Standalone>/Contents/Resources/web_ui
+        COMMENT "Copying WebView UI for Standalone"
+    )
+
+    # Copy WebView UI to LV2 bundle
+    add_custom_command(TARGET WhiteRoomPedalboard_LV2 POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+            ${PEDALBOARD_DIR}/web_ui
+            ${CMAKE_CURRENT_BINARY_DIR}/WhiteRoomPedalboard_artefacts/LV2/WhiteRoomPedalboard.lv2/web_ui
+        COMMENT "Copying WebView UI for LV2"
+    )
+endif()
+
+#==============================================================================
+# Build Summary
+#==============================================================================
+message(STATUS "")
+message(STATUS "============================================================================")
+message(STATUS "  White Room Pedalboard - Multi-Format Plugin Build")
+message(STATUS "============================================================================")
+message(STATUS "")
+message(STATUS "  Plugin Formats: VST3, AU, AUv3 (iOS), LV2, Standalone")
+message(STATUS "  Plugin Name: White Room Pedalboard")
+message(STATUS "  Description: Virtual pedalboard with 10 guitar effects")
+message(STATUS "  Version: 1.0.0")
+message(STATUS "  Company: White Room Audio")
+message(STATUS "")
+message(STATUS "  Effects Included:")
+message(STATUS "    - Volume (Boost)")
+message(STATUS "    - Fuzz")
+message(STATUS "    - Overdrive")
+message(STATUS "    - Compressor")
+message(STATUS "    - EQ")
+message(STATUS "    - Noise Gate")
+message(STATUS "    - Chorus")
+message(STATUS "    - Delay")
+message(STATUS "    - Reverb")
+message(STATUS "    - BiPhase Phaser")
+message(STATUS "")
+message(STATUS "  Build Outputs:")
+if(APPLE)
+    message(STATUS "    VST3:      build/WhiteRoomPedalboard_artefacts/VST3/WhiteRoomPedalboard.vst3")
+    message(STATUS "    AU:        build/WhiteRoomPedalboard_artefacts/AU/WhiteRoomPedalboard.component")
+    message(STATUS "    AUv3:      build/WhiteRoomPedalboard_artefacts/AUv3/WhiteRoomPedalboard.appex")
+    message(STATUS "    LV2:       build/WhiteRoomPedalboard_artefacts/LV2/WhiteRoomPedalboard.lv2")
+    message(STATUS "    Standalone: build/WhiteRoomPedalboard_artefacts/Standalone/WhiteRoomPedalboard.app")
+elseif(WIN32)
+    message(STATUS "    VST3:      build/WhiteRoomPedalboard_artefacts/VST3/WhiteRoomPedalboard.vst3")
+endif()
+message(STATUS "")
+message(STATUS "  Installation:")
+if(APPLE)
+    message(STATUS "    VST3:      ~/Library/Audio/Plug-Ins/VST3/")
+    message(STATUS "    AU:        ~/Library/Audio/Plug-Ins/Components/")
+    message(STATUS "    AUv3:      iOS App (embedded in host app)")
+    message(STATUS "    LV2:       ~/Library/Audio/Plug-Ins/LV2/")
+    message(STATUS "    Standalone: /Applications/")
+endif()
+message(STATUS "")
+message(STATUS "  To validate with pluginval:")
+if(APPLE)
+    message(STATUS "    pluginval --validate-in-place build/WhiteRoomPedalboard_artefacts/VST3/WhiteRoomPedalboard.vst3")
+endif()
+message(STATUS "")
+message(STATUS "============================================================================")
+message(STATUS "")

@@ -1,0 +1,9 @@
+include *.md
+include *.txt
+include LICENSE
+recursive-include schillinger_sdk *.py
+recursive-include tests *.py
+recursive-include examples *.py
+global-exclude __pycache__
+global-exclude *.py[cod]
+global-exclude .DS_Store

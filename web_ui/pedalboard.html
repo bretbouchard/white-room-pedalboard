@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>White Room Pedalboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+            color: #fff;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .pedalboard-container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+        }
+
+        .title {
+            font-size: 28px;
+            font-weight: bold;
+            color: #FF6B35;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .control-label {
+            font-size: 10px;
+            color: #888;
+            text-transform: uppercase;
+        }
+
+        .knob-container {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .knob {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: linear-gradient(145deg, #3a3a3a, #2a2a2a);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            position: relative;
+            cursor: pointer;
+        }
+
+        .knob-indicator {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 40%;
+            height: 2px;
+            background: #FF6B35;
+            transform-origin: left center;
+            box-shadow: 0 0 10px #FF6B35;
+        }
+
+        .pedal-chain {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-bottom: 30px;
+            min-height: 400px;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+            border: 2px dashed #444;
+        }
+
+        .pedal-slot {
+            width: 200px;
+            background: linear-gradient(145deg, #2a2a2a, #1f1f1f);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            cursor: move;
+            transition: transform 0.2s;
+            position: relative;
+        }
+
+        .pedal-slot:hover {
+            transform: scale(1.05);
+        }
+
+        .pedal-slot.dragging {
+            opacity: 0.5;
+        }
+
+        .pedal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .pedal-name {
+            font-size: 16px;
+            font-weight: bold;
+            color: #FF6B35;
+            text-transform: uppercase;
+        }
+
+        .bypass-btn {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: #333;
+            border: 2px solid #00FF00;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .bypass-btn.bypassed {
+            background: #00FF00;
+            box-shadow: 0 0 20px #00FF00;
+        }
+
+        .pedal-controls {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+
+        .pedal-knob {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .pedal-knob .knob {
+            width: 40px;
+            height: 40px;
+        }
+
+        .pedal-knob-label {
+            font-size: 10px;
+            color: #aaa;
+            margin-top: 5px;
+        }
+
+        .pedal-knob-value {
+            font-size: 10px;
+            color: #FF6B35;
+        }
+
+        .remove-pedal {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #ff4444;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            font-size: 12px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .pedal-slot:hover .remove-pedal {
+            opacity: 1;
+        }
+
+        .pedal-palette {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+        }
+
+        .palette-pedal {
+            padding: 10px 20px;
+            background: linear-gradient(145deg, #3a3a3a, #2a2a2a);
+            border: 2px solid #444;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 12px;
+            text-transform: uppercase;
+            transition: all 0.3s;
+        }
+
+        .palette-pedal:hover {
+            border-color: #FF6B35;
+            transform: translateY(-2px);
+        }
+
+        .scene-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .scene-btn {
+            flex: 1;
+            padding: 15px;
+            background: linear-gradient(145deg, #3a3a3a, #2a2a2a);
+            border: 2px solid #444;
+            border-radius: 10px;
+            color: #fff;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .scene-btn:hover {
+            border-color: #FF6B35;
+            background: linear-gradient(145deg, #4a4a4a, #3a3a3a);
+        }
+
+        .scene-btn.active {
+            border-color: #00FF00;
+            background: linear-gradient(145deg, #2a4a2a, #1a3a1a);
+        }
+
+        .preset-controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .preset-input {
+            flex: 1;
+            padding: 10px;
+            background: #2a2a2a;
+            border: 2px solid #444;
+            border-radius: 8px;
+            color: #fff;
+            font-size: 14px;
+        }
+
+        .action-btn {
+            padding: 10px 20px;
+            background: #FF6B35;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            text-transform: uppercase;
+            transition: all 0.3s;
+        }
+
+        .action-btn:hover {
+            background: #FF8555;
+            transform: translateY(-2px);
+        }
+
+        .add-pedal-btn {
+            width: 100%;
+            padding: 20px;
+            background: rgba(255, 107, 53, 0.1);
+            border: 2px dashed #FF6B35;
+            border-radius: 10px;
+            color: #FF6B35;
+            cursor: pointer;
+            font-size: 16px;
+            text-transform: uppercase;
+            transition: all 0.3s;
+        }
+
+        .add-pedal-btn:hover {
+            background: rgba(255, 107, 53, 0.2);
+            border-color: #FF8555;
+        }
+
+        .led {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #333;
+            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.5);
+        }
+
+        .led.on {
+            background: #00FF00;
+            box-shadow: 0 0 10px #00FF00, inset 0 1px 3px rgba(255, 255, 255, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <div class="pedalboard-container">
+        <div class="header">
+            <div class="title">White Room Pedalboard</div>
+            <div class="controls">
+                <div class="control-group">
+                    <div class="control-label">Input</div>
+                    <div class="knob-container">
+                        <div class="knob" id="inputLevel">
+                            <div class="knob-indicator"></div>
+                        </div>
+                        <div class="led on"></div>
+                    </div>
+                </div>
+                <div class="control-group">
+                    <div class="control-label">Output</div>
+                    <div class="knob-container">
+                        <div class="knob" id="outputLevel">
+                            <div class="knob-indicator"></div>
+                        </div>
+                        <div class="led on"></div>
+                    </div>
+                </div>
+                <div class="control-group">
+                    <div class="control-label">Dry/Wet</div>
+                    <div class="knob-container">
+                        <div class="knob" id="dryWet">
+                            <div class="knob-indicator"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="scene-buttons">
+            <button class="scene-btn active" data-scene="0">Scene 1</button>
+            <button class="scene-btn" data-scene="1">Scene 2</button>
+            <button class="scene-btn" data-scene="2">Scene 3</button>
+            <button class="scene-btn" data-scene="3">Scene 4</button>
+            <button class="scene-btn" data-scene="4">Scene 5</button>
+            <button class="scene-btn" data-scene="5">Scene 6</button>
+            <button class="scene-btn" data-scene="6">Scene 7</button>
+            <button class="scene-btn" data-scene="7">Scene 8</button>
+        </div>
+
+        <div class="preset-controls">
+            <input type="text" class="preset-input" id="presetName" placeholder="Preset name...">
+            <button class="action-btn" onclick="savePreset()">Save Preset</button>
+            <button class="action-btn" onclick="loadPreset()">Load Preset</button>
+        </div>
+
+        <div class="pedal-palette">
+            <div class="palette-pedal" draggable="true" data-pedal="Boost">Boost</div>
+            <div class="palette-pedal" draggable="true" data-pedal="Fuzz">Fuzz</div>
+            <div class="palette-pedal" draggable="true" data-pedal="Overdrive">Overdrive</div>
+            <div class="palette-pedal" draggable="true" data-pedal="Compressor">Compressor</div>
+            <div class="palette-pedal" draggable="true" data-pedal="EQ">EQ</div>
+            <div class="palette-pedal" draggable="true" data-pedal="Noise Gate">Gate</div>
+            <div class="palette-pedal" draggable="true" data-pedal="Chorus">Chorus</div>
+            <div class="palette-pedal" draggable="true" data-pedal="Delay">Delay</div>
+            <div class="palette-pedal" draggable="true" data-pedal="Reverb">Reverb</div>
+            <div class="palette-pedal" draggable="true" data-pedal="Phaser">Phaser</div>
+        </div>
+
+        <div class="pedal-chain" id="pedalChain">
+            <!-- Pedals will be added here dynamically -->
+            <button class="add-pedal-btn" onclick="showAddPedalDialog()">+ Add Pedal</button>
+        </div>
+    </div>
+
+    <script>
+        let pedalCount = 0;
+        let draggedPedal = null;
+        let draggedSource = null;
+
+        // Initialize pedal chain with default pedals
+        document.addEventListener('DOMContentLoaded', () => {
+            addPedalToChain('Compressor');
+            addPedalToChain('EQ');
+            addPedalToChain('Chorus');
+            addPedalToChain('Delay');
+            addPedalToChain('Reverb');
+        });
+
+        // Add pedal to chain
+        function addPedalToChain(pedalType) {
+            const pedalChain = document.getElementById('pedalChain');
+            const addButton = pedalChain.querySelector('.add-pedal-btn');
+
+            const pedalSlot = document.createElement('div');
+            pedalSlot.className = 'pedal-slot';
+            pedalSlot.draggable = true;
+            pedalSlot.dataset.pedal = pedalType;
+            pedalSlot.dataset.id = `pedal-${pedalCount++}`;
+
+            pedalSlot.innerHTML = `
+                <button class="remove-pedal" onclick="removePedal('${pedalSlot.dataset.id}')">×</button>
+                <div class="pedal-header">
+                    <div class="pedal-name">${pedalType}</div>
+                    <div class="bypass-btn" id="bypass-${pedalSlot.dataset.id}"></div>
+                </div>
+                <div class="pedal-controls" id="controls-${pedalSlot.dataset.id}">
+                    <!-- Pedal controls will be added here -->
+                </div>
+            `;
+
+            // Add drag and drop handlers
+            pedalSlot.addEventListener('dragstart', handleDragStart);
+            pedalSlot.addEventListener('dragover', handleDragOver);
+            pedalSlot.addEventListener('drop', handleDrop);
+            pedalSlot.addEventListener('dragend', handleDragEnd);
+
+            // Add bypass toggle
+            const bypassBtn = pedalSlot.querySelector('.bypass-btn');
+            bypassBtn.addEventListener('click', () => {
+                bypassBtn.classList.toggle('bypassed');
+            });
+
+            // Add default controls based on pedal type
+            addPedalControls(pedalSlot, pedalType);
+
+            // Insert before the add button
+            pedalChain.insertBefore(pedalSlot, addButton);
+        }
+
+        // Add controls based on pedal type
+        function addPedalControls(pedalSlot, pedalType) {
+            const controlsContainer = pedalalSlot.querySelector('.pedal-controls');
+
+            const controls = {
+                'Boost': ['Level'],
+                'Fuzz': ['Volume', 'Tone'],
+                'Overdrive': ['Drive', 'Tone', 'Level'],
+                'Compressor': ['Threshold', 'Ratio', 'Attack', 'Release'],
+                'EQ': ['Bass', 'Mid', 'Treble'],
+                'Noise Gate': ['Threshold', 'Release'],
+                'Chorus': ['Rate', 'Depth', 'Mix'],
+                'Delay': ['Time', 'Feedback', 'Mix'],
+                'Reverb': ['Decay', 'PreDelay', 'Mix'],
+                'Phaser': ['Rate', 'Depth', 'Feedback']
+            };
+
+            const pedalControls = controls[pedalType] || ['Parameter'];
+
+            pedalControls.forEach((control, index) => {
+                const knobDiv = document.createElement('div');
+                knobDiv.className = 'pedal-knob';
+                knobDiv.innerHTML = `
+                    <div class="knob">
+                        <div class="knob-indicator"></div>
+                    </div>
+                    <div class="pedal-knob-label">${control}</div>
+                    <div class="pedal-knob-value">50%</div>
+                `;
+                controlsContainer.appendChild(knobDiv);
+            });
+        }
+
+        // Remove pedal from chain
+        function removePedal(pedalId) {
+            const pedalSlot = document.querySelector(`[data-id="${pedalId}"]`);
+            if (pedalSlot) {
+                pedalSlot.remove();
+            }
+        }
+
+        // Drag and drop handlers
+        function handleDragStart(e) {
+            draggedPedal = this;
+            draggedSource = this.parentElement.id;
+            this.classList.add('dragging');
+        }
+
+        function handleDragOver(e) {
+            e.preventDefault();
+        }
+
+        function handleDrop(e) {
+            e.preventDefault();
+
+            if (draggedSource === 'pedalChain') {
+                // Reordering within chain
+                if (this !== draggedPedal) {
+                    const allPedals = [...document.querySelectorAll('.pedal-slot')];
+                    const draggedIndex = allPedals.indexOf(draggedPedal);
+                    const targetIndex = allPedals.indexOf(this);
+
+                    if (draggedIndex < targetIndex) {
+                        this.parentNode.insertBefore(draggedPedal, this.nextSibling);
+                    } else {
+                        this.parentNode.insertBefore(draggedPedal, this);
+                    }
+                }
+            } else {
+                // Adding from palette
+                const pedalType = draggedPedal.dataset.pedal;
+                addPedalToChain(pedalType);
+            }
+        }
+
+        function handleDragEnd() {
+            this.classList.remove('dragging');
+            draggedPedal = null;
+            draggedSource = null;
+        }
+
+        // Palette drag handlers
+        document.querySelectorAll('.palette-pedal').forEach(pedal => {
+            pedal.addEventListener('dragstart', (e) => {
+                draggedPedal = pedal;
+                draggedSource = 'palette';
+            });
+        });
+
+        // Scene switching
+        document.querySelectorAll('.scene-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.scene-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                // Load scene logic here
+                const sceneNumber = btn.dataset.scene;
+                console.log('Loading scene:', sceneNumber);
+            });
+        });
+
+        // Preset management
+        function savePreset() {
+            const presetName = document.getElementById('presetName').value;
+            if (!presetName) {
+                alert('Please enter a preset name');
+                return;
+            }
+
+            // Collect pedal chain data
+            const presetData = {
+                name: presetName,
+                pedals: []
+            };
+
+            document.querySelectorAll('.pedal-slot').forEach(slot => {
+                presetData.pedals.push({
+                    type: slot.dataset.pedal,
+                    bypassed: slot.querySelector('.bypass-btn').classList.contains('bypassed')
+                });
+            });
+
+            // Save to localStorage (in production, save to file)
+            localStorage.setItem(`preset_${presetName}`, JSON.stringify(presetData));
+            alert(`Preset "${presetName}" saved!`);
+        }
+
+        function loadPreset() {
+            const presetName = document.getElementById('presetName').value;
+            if (!presetName) {
+                alert('Please enter a preset name');
+                return;
+            }
+
+            const presetData = localStorage.getItem(`preset_${presetName}`);
+            if (!presetData) {
+                alert(`Preset "${presetName}" not found`);
+                return;
+            }
+
+            const preset = JSON.parse(presetData);
+
+            // Clear current chain
+            document.querySelectorAll('.pedal-slot').forEach(slot => slot.remove());
+
+            // Load pedals
+            preset.pedals.forEach(pedalData => {
+                addPedalToChain(pedalData.type);
+                const pedalSlot = document.querySelector('.pedal-slot:last-child');
+                if (pedalData.bypassed) {
+                    pedalSlot.querySelector('.bypass-btn').classList.add('bypassed');
+                }
+            });
+
+            alert(`Preset "${presetName}" loaded!`);
+        }
+
+        // Make palette pedals draggable
+        document.querySelectorAll('.palette-pedal').forEach(pedal => {
+            pedal.addEventListener('dragstart', (e) => {
+                draggedPedal = pedal;
+                draggedSource = 'palette';
+            });
+        });
+
+        // Allow dropping on pedal chain
+        const pedalChain = document.getElementById('pedalChain');
+        pedalChain.addEventListener('dragover', (e) => {
+            e.preventDefault();
+        });
+
+        pedalChain.addEventListener('drop', (e) => {
+            e.preventDefault();
+            if (draggedSource === 'palette') {
+                const pedalType = draggedPedal.dataset.pedal;
+                addPedalToChain(pedalType);
+            }
+        });
+
+        // Show add pedal dialog
+        function showAddPedalDialog() {
+            // For now, just drag from palette
+            alert('Drag a pedal from the palette above to add it to your chain!');
+        }
+    </script>
+</body>
+</html>

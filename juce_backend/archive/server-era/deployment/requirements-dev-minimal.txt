@@ -1,0 +1,18 @@
+# Minimal development requirements to run pytest collection and basic tests
+pytest
+pytest-asyncio
+pytest-mock
+langgraph
+librosa
+mutagen
+psutil
+httpx
+fastapi
+uvicorn
+pydantic
+PyJWT
+numpy
+aiohttp
+markdown
+tomli
+# Add more if pytest reports additional missing packages

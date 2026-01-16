@@ -1,0 +1,50 @@
+# CMakeLists.txt for Realtime Audio Safety SUCCESS Tests
+
+cmake_minimum_required(VERSION 3.26)
+project(RealtimeAudioSafetySuccessTests)
+
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+
+# Compiler optimizations for real-time testing
+if(MSVC)
+    add_compile_options(/W4 /O2)
+else()
+    add_compile_options(-Wall -Wextra -O3 -march=native -ffast-math)
+endif()
+
+# Find Google Test
+find_package(GTest REQUIRED)
+
+# Success test executable
+add_executable(RealtimeAudioSafetySuccessTest
+    RealtimeAudioSafetySuccessTest.cpp
+
+    # Include our real-time safe implementations
+    ../src/audio/LockFreeMemoryPool.cpp
+    ../src/audio/RealtimeSafeDropoutPrevention.cpp
+)
+
+target_include_directories(RealtimeAudioSafetySuccessTest PRIVATE
+    ../include
+)
+
+target_link_libraries(RealtimeAudioSafetySuccessTest
+    GTest::gtest
+    GTest::gtest_main
+)
+
+# Set properties
+set_target_properties(RealtimeAudioSafetySuccessTest PROPERTIES
+    CXX_STANDARD 20
+    CXX_STANDARD_REQUIRED ON
+)
+
+# Custom target to run success test
+add_custom_target(run_success_test
+    COMMAND RealtimeAudioSafetySuccessTest
+    DEPENDS RealtimeAudioSafetySuccessTest
+    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+    COMMENT "Running GREEN PHASE real-time audio safety success tests"
+)

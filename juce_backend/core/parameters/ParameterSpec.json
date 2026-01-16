@@ -1,0 +1,220 @@
+{
+  "version": "1.0",
+  "format": "parameter-specification",
+  "description": "Single source of truth for all plugin parameters. Platform-agnostic, DSP-pure parameter definitions.",
+
+  "schema": {
+    "parameter": {
+      "id": "string - Unique parameter identifier (e.g., 'distance_m', 'airAmount')",
+      "name": "string - Human-readable display name",
+      "shortName": "string - Short name for UI (optional)",
+      "label": "string - Unit label (e.g., 'm', 'Hz', '%', 'dB')",
+
+      "range": {
+        "min": "number - Minimum value",
+        "max": "number - Maximum value",
+        "default": "number - Default value"
+      },
+
+      "rate": "enum - 'audio' (sample rate), 'control' (control rate), 'startup' (initialize only)",
+      "polyphonic": "boolean - True if parameter has per-voice instances",
+
+      "type": "enum - 'float', 'int', 'bool', 'enum'",
+      "enumValues": "array - For enum types, list of {value, label} objects",
+
+      "mapping": "enum - 'linear', 'log', 'sqrt', 'exp' - Normalized to raw mapping",
+
+      "group": "string - Parameter group for organization",
+      "advanced": "boolean - True if parameter is advanced/hidden by default",
+
+      "automation": "boolean - True if parameter can be automated",
+      "modulatable": "boolean - True if parameter can be modulation target"
+    }
+  },
+
+  "examples": {
+    "farfaraway": {
+      "pluginId": "farfaraway",
+      "pluginName": "Far Far Away - Distance Renderer",
+      "parameters": [
+        {
+          "id": "distance_m",
+          "name": "Distance",
+          "shortName": "Dist",
+          "label": "m",
+          "range": { "min": 0.0, "max": 300.0, "default": 10.0 },
+          "rate": "control",
+          "polyphonic": false,
+          "type": "float",
+          "mapping": "linear",
+          "group": "Distance",
+          "advanced": false,
+          "automation": true,
+          "modulatable": true
+        },
+        {
+          "id": "airAmount",
+          "name": "Air Absorption",
+          "shortName": "Air",
+          "label": "%",
+          "range": { "min": 0.0, "max": 1.0, "default": 0.7 },
+          "rate": "control",
+          "polyphonic": false,
+          "type": "float",
+          "mapping": "linear",
+          "group": "Atmosphere",
+          "advanced": false,
+          "automation": true,
+          "modulatable": true
+        },
+        {
+          "id": "width",
+          "name": "Stereo Width",
+          "shortName": "Width",
+          "label": "%",
+          "range": { "min": 0.0, "max": 1.0, "default": 1.0 },
+          "rate": "control",
+          "polyphonic": false,
+          "type": "float",
+          "mapping": "linear",
+          "group": "Stereo",
+          "advanced": false,
+          "automation": true,
+          "modulatable": true
+        }
+      ]
+    },
+
+    "monument": {
+      "pluginId": "monument",
+      "pluginName": "Monument - Open Air Reverb",
+      "parameters": [
+        {
+          "id": "wet",
+          "name": "Wet Level",
+          "shortName": "Wet",
+          "label": "%",
+          "range": { "min": 0.0, "max": 1.0, "default": 0.5 },
+          "rate": "control",
+          "polyphonic": false,
+          "type": "float",
+          "mapping": "linear",
+          "group": "Master",
+          "advanced": false,
+          "automation": true,
+          "modulatable": true
+        },
+        {
+          "id": "surface",
+          "name": "Ground Surface",
+          "shortName": "Surface",
+          "label": "",
+          "range": { "min": 0, "max": 7, "default": 0 },
+          "rate": "control",
+          "polyphonic": false,
+          "type": "enum",
+          "enumValues": [
+            { "value": 0, "label": "Grass" },
+            { "value": 1, "label": "Soil" },
+            { "value": 2, "label": "Wood" },
+            { "value": 3, "label": "Concrete" },
+            { "value": 4, "label": "Marble" },
+            { "value": 5, "label": "Stone" },
+            { "value": 6, "label": "Snow" },
+            { "value": 7, "label": "Ice" }
+          ],
+          "mapping": "linear",
+          "group": "Ground",
+          "advanced": false,
+          "automation": true,
+          "modulatable": false
+        },
+        {
+          "id": "tailDecay",
+          "name": "Tail Decay",
+          "shortName": "Decay",
+          "label": "s",
+          "range": { "min": 0.1, "max": 5.0, "default": 2.0 },
+          "rate": "control",
+          "polyphonic": false,
+          "type": "float",
+          "mapping": "linear",
+          "group": "Tail",
+          "advanced": false,
+          "automation": true,
+          "modulatable": true
+        }
+      ]
+    },
+
+    "filtergate": {
+      "pluginId": "filtergate",
+      "pluginName": "Filter Gate - Dual Processor",
+      "parameters": [
+        {
+          "id": "filterCutoff",
+          "name": "Filter Cutoff",
+          "shortName": "Cutoff",
+          "label": "Hz",
+          "range": { "min": 20.0, "max": 20000.0, "default": 1000.0 },
+          "rate": "audio",
+          "polyphonic": true,
+          "type": "float",
+          "mapping": "log",
+          "group": "Filter",
+          "advanced": false,
+          "automation": true,
+          "modulatable": true
+        },
+        {
+          "id": "gateThreshold",
+          "name": "Gate Threshold",
+          "shortName": "Thresh",
+          "label": "dB",
+          "range": { "min": -100.0, "max": 0.0, "default": -60.0 },
+          "rate": "control",
+          "polyphonic": true,
+          "type": "float",
+          "mapping": "linear",
+          "group": "Gate",
+          "advanced": false,
+          "automation": true,
+          "modulatable": true
+        }
+      ]
+    }
+  },
+
+  "rules": {
+    "naming": {
+      "parameterId": "Use camelCase for IDs (e.g., 'distance_m', 'airAmount')",
+      "enumValues": "Use PascalCase for enum labels (e.g., 'Grass', 'Soil', 'Wood')"
+    },
+
+    "rates": {
+      "audio": "Updated at sample rate - for filters, oscillators, etc.",
+      "control": "Updated at control rate (~block size) - for most parameters",
+      "startup": "Set once at initialization - for buffer sizes, etc."
+    },
+
+    "polyphonic": {
+      "true": "Each voice has its own instance (e.g., filter cutoff, oscillator pitch)",
+      "false": "Single global instance (e.g., master level, reverb decay)"
+    },
+
+    "mappings": {
+      "linear": "Direct linear mapping from normalized 0-1 to raw value",
+      "log": "Logarithmic mapping for frequency-related parameters",
+      "sqrt": "Square root mapping for perceived volume/parameters",
+      "exp": "Exponential mapping for acceleration/sensitivity"
+    },
+
+    "critical": [
+      "NO platform conditionals inside DSP",
+      "DSP must be 100% independent of plugin format (VST, AU, AAX)",
+      "All plugins share same DSP core and parameter model",
+      "ParameterSpec.json is the SINGLE source of truth",
+      "No hardcoded parameter values in DSP code"
+    ]
+  }
+}

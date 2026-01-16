@@ -1,0 +1,25 @@
+export * from './client';
+export * from './rhythm';
+export * from './harmony';
+export * from './melody';
+export * from './counterpoint';
+export * from './expansion';
+export * from './contour';
+export * from './harmonic-expansion';
+export * from './orchestration';
+export * from './form';
+export * from './composition-pipeline';
+export * from './composition';
+export * from './cache';
+export * from './offline';
+export * from './error-handling';
+export * from './audio-export';
+export * from './visual-editor';
+export * from './generators';
+// Realtime exports: prefer modular path; selectively re-export legacy types to avoid ambiguity
+export * from './realtime/index';
+export type { ConflictResolution } from './realtime';
+export type { ConflictResolution as CollaborationConflictResolution } from './collaboration';
+export * from './collaboration';
+export * from './documentation';
+export { SchillingerSDK } from './client';

@@ -1,0 +1,23 @@
+{
+  "name": "@schillinger-sdk/core",
+  "version": "2.0.0",
+  "private": true,
+  "description": "Schillinger System Core - Authoritative TypeScript Implementation",
+  "main": "index.ts",
+  "types": "index.ts",
+  "scripts": {
+    "build": "tsc",
+    "clean": "rm -rf dist"
+  },
+  "keywords": [
+    "schillinger",
+    "music",
+    "composition",
+    "theory",
+    "rhythm",
+    "harmony",
+    "melody"
+  ],
+  "author": "Schillinger SDK Contributors",
+  "license": "MIT"
+}

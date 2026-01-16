@@ -1,0 +1,27 @@
+{
+  "id": "req-determinism-001",
+  "ok": true,
+  "result": {
+    "planHash": "deterministic-hash-42",
+    "irHash": "abc123def456",
+    "generatedAt": 1234567890,
+    "window": {
+      "from": 0,
+      "to": 48000
+    },
+    "operations": [
+      {
+        "type": "note",
+        "time": 0,
+        "pitch": 60,
+        "duration": 1.0
+      },
+      {
+        "type": "note",
+        "time": 12000,
+        "pitch": 64,
+        "duration": 0.5
+      }
+    ]
+  }
+}

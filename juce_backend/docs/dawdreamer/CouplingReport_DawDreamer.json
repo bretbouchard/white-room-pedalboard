@@ -1,0 +1,211 @@
+{
+  "generated": "2025-09-16T00:00:00Z",
+  "tool": "Discovery Guide ripgrep checklist",
+  "summary": {
+    "total_matches": 200,
+    "hard_couplings": 28,
+    "soft_couplings": 44
+  },
+  "couplings": [
+    {
+      "file": "src/audio_agent/engine/dawdreamer_engine.py",
+      "lines": [1, 220],
+      "snippet": "class DawDreamerEngine: ... get_engine() -> DawDreamerEngine",
+      "pattern": "DawDreamerEngine / singleton",
+      "category": "engine-init",
+      "coupling_type": "hard",
+      "severity": "blocker",
+      "remediation": "Replace direct engine construction with EngineBootstrapper; provide EngineClient facade."
+    },
+    {
+      "file": "src/audio_agent/core/dawdreamer_engine.py",
+      "lines": [500, 620],
+      "snippet": "def render_audio(self, duration, input_audio=None): ...",
+      "pattern": "render_audio",
+      "category": "render",
+      "coupling_type": "hard",
+      "severity": "blocker",
+      "remediation": "Define a RenderRequest/RenderResult contract and move heavy render loop into engine process."
+    },
+    {
+      "file": "src/audio_agent/main.py",
+      "lines": [70, 100],
+      "snippet": "app_state['dawdreamer_engine'] = DawDreamerEngine()",
+      "pattern": "app_state initialization",
+      "category": "lifecycle",
+      "coupling_type": "hard",
+      "severity": "blocker",
+      "remediation": "Use EngineBootstrapper at app start to either spawn or connect to an engine process and populate app_state['engine_client']."
+    },
+    {
+      "file": "src/audio_agent/core/mixing_console.py",
+      "lines": [1540, 1560],
+      "snippet": "def render_audio(self, duration: float) -> np.ndarray | None: ... result = self.engine.render_audio(duration=duration)",
+      "pattern": "MixingConsole.render_audio -> engine.render_audio",
+      "category": "graph/render",
+      "coupling_type": "hard",
+      "severity": "major",
+      "remediation": "Expose a RenderService in the engine process and have MixingConsole call EngineClient.render_async."
+    },
+    {
+      "file": "src/audio_agent/core/real_time_processing.py",
+      "lines": [720, 740],
+      "snippet": "output_samples = self.engine.render_audio(...)",
+      "pattern": "real_time render call",
+      "category": "real-time",
+      "coupling_type": "hard",
+      "severity": "blocker",
+      "remediation": "Keep low-latency real-time path inside engine process using shared-memory ring buffers for audio frames."
+    },
+    {
+      "file": "src/audio_agent/core/advanced_plugin_management.py",
+      "lines": [1, 120],
+      "snippet": "discover_plugins(self, search_paths: list[str], formats: list[PluginFormat] | None = None, rescan: bool = False)",
+      "pattern": "discover_plugins / plugin scanning",
+      "category": "plugin-scan",
+      "coupling_type": "hard",
+      "severity": "major",
+      "remediation": "Move plugin discovery into the engine process; return normalized PluginDiscoveryResult list via control plane."
+    },
+    {
+      "file": "src/audio_agent/core/advanced_plugin_management.py",
+      "lines": [300, 420],
+      "snippet": "_plugin_scan_cache, PluginScanResult, result.plugins.append(...)",
+      "pattern": "plugin scan cache",
+      "category": "plugin-scan-cache",
+      "coupling_type": "soft",
+      "severity": "major",
+      "remediation": "Centralize scan cache in engine process; expose cache management API."
+    },
+    {
+      "file": "src/audio_agent/models/plugin.py",
+      "lines": [120, 220],
+      "snippet": "PluginMetadata(... latency_samples: int = Field(default=0, ge=0, description=\"Plugin latency in samples\"))",
+      "pattern": "plugin metadata / latency_samples",
+      "category": "plugin-metadata",
+      "coupling_type": "soft",
+      "severity": "minor",
+      "remediation": "Agree on v1alpha plugin descriptor schema used by both app and engine (supported_sample_rates, latency_samples)."
+    },
+    {
+      "file": "src/audio_agent/models/validation.py",
+      "lines": [1, 140],
+      "snippet": "AudioDataValidator.validate_sample_rate(sample_rate)",
+      "pattern": "sample rate validation",
+      "category": "validation",
+      "coupling_type": "soft",
+      "severity": "minor",
+      "remediation": "Document validation rules as part of the contract; share TypeAdapter for audio buffers if needed."
+    },
+    {
+      "file": "src/audio_agent/core/analyzer_integration.py",
+      "lines": [1, 200],
+      "snippet": "analyzer glue uses get_engine() singleton to run analysis processors",
+      "pattern": "analyzer / get_engine",
+      "category": "analysis",
+      "coupling_type": "hard",
+      "severity": "major",
+      "remediation": "Refactor analyzers to call into EngineClient to run processors remotely."
+    },
+    {
+      "file": "src/audio_agent/core/audio_source_manager.py",
+      "lines": [350, 420],
+      "snippet": "PluginAudioSource(config, self.dawdreamer_engine)",
+      "pattern": "PluginAudioSource / engine reference",
+      "category": "audio-source",
+      "coupling_type": "hard",
+      "severity": "major",
+      "remediation": "Serve PluginAudioSource from engine process and return a lightweight proxy in app process."
+    },
+    {
+      "file": "src/audio_agent/core/dawdreamer_error_handling.py",
+      "lines": [1, 200],
+      "snippet": "plugin_blacklist and recovery logic referencing engine internals",
+      "pattern": "blacklist / recovery",
+      "category": "error-handling",
+      "coupling_type": "soft",
+      "severity": "major",
+      "remediation": "Surface error and recovery events over control plane; persist blacklist centrally in engine config."
+    },
+    {
+      "file": "src/audio_agent/core/system_health_monitor.py",
+      "lines": [420, 580],
+      "snippet": "queries get_engine_status() and inspects blacklisted_plugins",
+      "pattern": "health monitor / engine status",
+      "category": "monitoring",
+      "coupling_type": "soft",
+      "severity": "minor",
+      "remediation": "Read telemetry from EngineClient rather than importing engine internals."
+    },
+    {
+      "file": "src/audio_agent/core/wam_bridge.py",
+      "lines": [1, 240],
+      "snippet": "WebSocket bridge for real-time communication between DawDreamer and WebAudio",
+      "pattern": "wam bridge / websocket",
+      "category": "web-bridge",
+      "coupling_type": "soft",
+      "severity": "minor",
+      "remediation": "Point WAM bridge at EngineClient endpoints or relay via engine process when necessary."
+    },
+    {
+      "file": "src/audio_agent/core/plugin_specialist.py",
+      "lines": [1, 200],
+      "snippet": "configure plugin scan paths for OS-specific discovery",
+      "pattern": "plugin scan paths",
+      "category": "plugin-config",
+      "coupling_type": "soft",
+      "severity": "minor",
+      "remediation": "Expose plugin search paths via config API and let engine process perform discovery."
+    },
+    {
+      "file": "src/audio_agent/engine/__init__.py",
+      "lines": [1, 40],
+      "snippet": "from .dawdreamer_engine import DawDreamerEngine",
+      "pattern": "engine export / direct import",
+      "category": "module-export",
+      "coupling_type": "hard",
+      "severity": "major",
+      "remediation": "Introduce src.audio_agent.engine.client.EngineClient in the package root that routes to in-process or IPC client."
+    },
+    {
+      "file": "tests/test_dawdreamer_engine.py",
+      "lines": [260, 320],
+      "snippet": "result = engine.render_audio(duration=1.0)  # many tests call engine.render_audio",
+      "pattern": "tests calling render_audio",
+      "category": "tests",
+      "coupling_type": "soft",
+      "severity": "major",
+      "remediation": "Provide EngineClient test harness and update tests to use client or a lightweight IPC-backed fake."
+    },
+    {
+      "file": "tests/test_mixing_console.py",
+      "lines": [570, 600],
+      "snippet": "@patch.object(DawDreamerEngine, 'render_audio')\ndef test_render_audio(self, mock_render, mixing_console):\n    result = mixing_console.render_audio(duration=1.0)",
+      "pattern": "tests patching engine.render_audio",
+      "category": "tests",
+      "coupling_type": "soft",
+      "severity": "major",
+      "remediation": "Switch tests to patch EngineClient.render_async or use an in-process EngineBootstrapper test mode."
+    },
+    {
+      "file": "TODO_TEST_FIXES.md",
+      "lines": [1, 200],
+      "snippet": "notes: Make mock processors compatible with real dawdreamer API; remove hard dependencies",
+      "pattern": "test fixes / mocks",
+      "category": "tests",
+      "coupling_type": "soft",
+      "severity": "major",
+      "remediation": "Prioritize adding EngineClient test harness entry points and update test fixtures."
+    },
+    {
+      "file": "pytest_output.txt",
+      "lines": [600, 660],
+      "snippet": "tests/test_dawdreamer_engine.py::...::test_render_audio_success PASSED",
+      "pattern": "pytest logs / render_audio",
+      "category": "tests/logs",
+      "coupling_type": "soft",
+      "severity": "minor",
+      "remediation": "Use CI hooks to validate EngineClient integration once implemented."
+    }
+  ]
+}

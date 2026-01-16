@@ -1,0 +1,33 @@
+{
+  "bullets": {
+    "common-00001": {
+      "id": "common-00001",
+      "metadata": {
+        "relatedFiles": [],
+        "tags": [
+          "manual"
+        ],
+        "timestamp": "2026-01-15T23:18:56.602Z"
+      },
+      "section": "Common Errors"
+    },
+    "common-00002": {
+      "id": "common-00002",
+      "metadata": {
+        "relatedFiles": [],
+        "tags": [
+          "manual"
+        ],
+        "timestamp": "2026-01-16T00:02:45.309Z"
+      },
+      "section": "Common Errors"
+    }
+  },
+  "nextId": 3,
+  "sections": {
+    "Common Errors": [
+      "common-00001",
+      "common-00002"
+    ]
+  }
+}

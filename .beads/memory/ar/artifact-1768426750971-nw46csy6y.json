@@ -1,0 +1,19 @@
+{
+  "id": "artifact-1768426750971-nw46csy6y",
+  "type": "pattern",
+  "content": "# RhythmToMIDIConverter TDD Implementation Pattern\n\n## What Worked\n**TDD Approach for Algorithm Implementation**: Write comprehensive test suites FIRST, then implement algorithm to make tests pass.\n\n## Test Structure\n- Swift: tests/SwiftFrontendCoreTests/Rhythm/RhythmToMIDITests.swift\n- C++: tests/rhythm/RhythmToMIDITests.cpp\n- Both cover: basic conversion, resultants, variations, timing, edge cases\n\n## Implementation Pattern\n1. Create data models (RhythmModels.h/.swift)\n2. Create converter interface (RhythmToMIDIConverter.h)\n3. Implement converter (RhythmToMIDIConverter.cpp/.swift)\n4. Follow TDD: tests → implementation → refactor\n\n## Core Algorithm\n- Convert binary pattern → MIDI events\n- Calculate timing: samplesPerBeat = (sampleRate * 60) / tempo\n- Schillinger resultants: LCM(generatorA, generatorB)\n- Apply variations: syncopation (offset), displacement (invert), rotation (shift)\n\n## File Locations\n- Swift Models: src/SwiftFrontendCore/Models/\n- Swift Algorithms: src/SwiftFrontendCore/Algorithms/\n- C++ Headers: include/algorithms/\n- C++ Source: src/algorithms/\n- C++ Models: src/models/\n\n## Key Learnings\n- Always create directory structure before writing files\n- Use Math utilities for GCD/LCM calculations\n- Sample-accurate timing requires double precision intermediate calculations\n- Test both simple and complex patterns (3:2, 5:3 resultants)\n- Document algorithm theory in markdown (docs/algorithms/)",
+  "metadata": {
+    "scope": "repository",
+    "tags": [
+      "tdd",
+      "rhythm",
+      "midi",
+      "algorithm",
+      "schillinger",
+      "swift",
+      "cpp"
+    ],
+    "confidence": 0.95
+  },
+  "timestamp": "2026-01-14T21:39:10.971Z"
+}

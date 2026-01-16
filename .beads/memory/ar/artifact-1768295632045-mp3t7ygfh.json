@@ -1,0 +1,18 @@
+{
+  "id": "artifact-1768295632045-mp3t7ygfh",
+  "type": "pattern",
+  "content": "# JUCE Parameter Telemetry Recording Pattern\n\n## Problem\nNeed to record parameter changes from JUCE audio thread without blocking audio processing.\n\n## Solution: Lock-Free Parameter Event Queue\n\n### Architecture\n- **ParameterChangeEvent struct**: Captures parameter ID, previous/new values, delta, timestamp, undo flag, duration\n- **ParameterEventQueue**: Lock-free ring buffer using juce::AbstractFifo (power-of-2 capacity)\n- **ParameterTelemetryRecorder**: Implements AudioProcessorValueTreeState::Listener\n\n### Implementation Details\n\n**File**: juce_backend/src/frontend/telemetry/ParameterTelemetryRecorder.h\n\nKey pattern: Split audio-thread and message-thread operations\n- Audio thread: queue.push() - non-blocking, drops if full\n- Message thread: queue.pop() - batch flush for JSONL serialization\n\n**Integration in NexSynthPluginProcessor**:\n```cpp\n// Constructor (line 34)\nsetupParameterCallbacks();\n\n// Implementation\nvoid NexSynthPluginProcessor::setupParameterCallbacks() {\n    telemetryRecorder = std::make_unique<ParameterTelemetryRecorder>(256);\n    if (parameters) {\n        parameters->addListener(telemetryRecorder.get());\n    }\n}\n```\n\n### Critical Design Decisions\n\n1. **juce::AbstractFifo**: Provides wait-free ring buffer for audio thread safety\n2. **256-event capacity**: Balances memory usage vs. event burst handling\n3. **Drop-on-full**: Queue drops events when full (logged with DBG) rather than blocking\n4. **JSONL serialization**: Line-delimited JSON for batch upload compatibility\n5. **SpinLock for previousValues**: Only used for delta calculation, not in audio callback\n\n### Thread Safety Guarantees\n\n- parameterChanged() called from AUDIO THREAD - must be wait-free\n- flushEvents() called from MESSAGE THREAD - can allocate/serialize\n- Queue operations use AbstractFifo - wait-free for both producer/consumer\n\n### Build Verification\n\niOS backend compiles successfully with this pattern integrated.\nPre-existing AppKit error in FFI layer is unrelated to telemetry code.\n\n## When to Use This Pattern\n\nUse when you need to:\n- Record JUCE parameter changes from audio thread\n- Serialize parameter events for telemetry/upload\n- Bridge real-time audio thread to message thread processing\n- Implement non-blocking parameter monitoring\n\n## Related Files\n\n- juce_backend/plugins/NexSynthPlugin/NexSynthPluginProcessor.h:96 - telemetryRecorder member\n- juce_backend/plugins/NexSynthPlugin/NexSynthPluginProcessor.cpp:388 - setupParameterCallbacks()\n- plans/ui-telemetry-constraints-testing/data-model.md - ParameterChangeEvent specification",
+  "metadata": {
+    "scope": "repository",
+    "tags": [
+      "juce",
+      "parameter-telemetry",
+      "audio-thread",
+      "lock-free",
+      "audio-plugin",
+      "telemetry"
+    ],
+    "confidence": 1
+  },
+  "timestamp": "2026-01-13T09:13:52.045Z"
+}

@@ -1,0 +1,210 @@
+# Prometheus Alert Rules for White Room Production
+# Severity Levels: P0 (critical), P1 (high), P2 (medium), P3 (low)
+
+groups:
+  # Critical System Alerts (P0)
+  - name: critical_system
+    interval: 30s
+    rules:
+      - alert: ServiceDown
+        expr: up == 0
+        for: 1m
+        labels:
+          severity: critical
+          priority: P0
+        annotations:
+          summary: "Service {{ $labels.service }} is down"
+          description: "{{ $labels.job }} on {{ $labels.instance }} has been down for more than 1 minute."
+          runbook: "https://runbooks.white-room.ai/service-down"
+
+      - alert: HighCPUUsage
+        expr: 100 - (avg by(instance) (irate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 90
+        for: 5m
+        labels:
+          severity: critical
+          priority: P0
+        annotations:
+          summary: "High CPU usage on {{ $labels.instance }}"
+          description: "CPU usage is {{ $value }}%, which is above 90% for 5 minutes."
+          runbook: "https://runbooks.white-room.ai/high-cpu"
+
+      - alert: HighMemoryUsage
+        expr: (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100 > 90
+        for: 5m
+        labels:
+          severity: critical
+          priority: P0
+        annotations:
+          summary: "High memory usage on {{ $labels.instance }}"
+          description: "Memory usage is {{ $value }}%, which is above 90% for 5 minutes."
+          runbook: "https://runbooks.white-room.ai/high-memory"
+
+      - alert: DiskSpaceLow
+        expr: (node_filesystem_avail_bytes{mountpoint="/"} / node_filesystem_size_bytes{mountpoint="/"}) * 100 < 10
+        for: 5m
+        labels:
+          severity: critical
+          priority: P0
+        annotations:
+          summary: "Low disk space on {{ $labels.instance }}"
+          description: "Disk space is {{ $value }}% free, which is below 10%."
+          runbook: "https://runbooks.white-room.ai/low-disk-space"
+
+  # Application Performance Alerts (P1)
+  - name: application_performance
+    interval: 30s
+    rules:
+      - alert: HighErrorRate
+        expr: (rate(http_requests_total{status=~"5.."}[5m]) / rate(http_requests_total[5m])) * 100 > 5
+        for: 5m
+        labels:
+          severity: high
+          priority: P1
+        annotations:
+          summary: "High error rate on {{ $labels.service }}"
+          description: "Error rate is {{ $value }}%, which is above 5% for 5 minutes."
+          runbook: "https://runbooks.white-room.ai/high-error-rate"
+
+      - alert: HighLatency
+        expr: histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m])) > 1
+        for: 5m
+        labels:
+          severity: high
+          priority: P1
+        annotations:
+          summary: "High latency on {{ $labels.service }}"
+          description: "95th percentile latency is {{ $value }}s, which is above 1s."
+          runbook: "https://runbooks.white-room.ai/high-latency"
+
+      - alert: AudioProcessingOverload
+        expr: audio_engine_render_time_seconds > 0.025
+        for: 2m
+        labels:
+          severity: high
+          priority: P1
+        annotations:
+          summary: "Audio processing overload detected"
+          description: "Audio render time is {{ $value }}s, which exceeds 25ms threshold."
+          runbook: "https://runbooks.white-room.ai/audio-overload"
+
+      - alert: FFILatencyHigh
+        expr: ffi_call_duration_seconds{quantile="0.99"} > 0.1
+        for: 5m
+        labels:
+          severity: high
+          priority: P1
+        annotations:
+          summary: "High FFI latency detected"
+          description: "99th percentile FFI call duration is {{ $value }}s, which exceeds 100ms."
+          runbook: "https://runbooks.white-room.ai/ffi-latency"
+
+  # Business Metrics Alerts (P1-P2)
+  - name: business_metrics
+    interval: 60s
+    rules:
+      - alert: LowActiveUsers
+        expr: active_users_total < 10
+        for: 15m
+        labels:
+          severity: warning
+          priority: P2
+        annotations:
+          summary: "Low active users count"
+          description: "Only {{ $value }} active users in the last 15 minutes."
+          runbook: "https://runbooks.white-room.ai/low-active-users"
+
+      - alert: SongsCreatedDrop
+        expr: rate(songs_created_total[1h]) < 0.1
+        for: 1h
+        labels:
+          severity: warning
+          priority: P2
+        annotations:
+          summary: "Song creation rate dropped"
+          description: "Songs are being created at {{ $value }} per second, below expected rate."
+          runbook: "https://runbooks.white-room.ai/low-song-creation"
+
+  # Database Alerts (P0-P1)
+  - name: database_performance
+    interval: 30s
+    rules:
+      - alert: DatabaseDown
+        expr: pg_up == 0
+        for: 1m
+        labels:
+          severity: critical
+          priority: P0
+        annotations:
+          summary: "Database is down"
+          description: "PostgreSQL database on {{ $labels.instance }} is not responding."
+          runbook: "https://runbooks.white-room.ai/database-down"
+
+      - alert: DatabaseConnectionPoolExhausted
+        expr: pg_stat_activity_count{datname="white_room"} / pg_settings_max_connections > 0.9
+        for: 5m
+        labels:
+          severity: high
+          priority: P1
+        annotations:
+          summary: "Database connection pool nearly exhausted"
+          description: "Database connection pool usage is {{ $value }}%, above 90%."
+          runbook: "https://runbooks.white-room.ai/db-pool-exhausted"
+
+      - alert: DatabaseSlowQueries
+        expr: rate(pg_stat_statements_calls_total{datname="white_room"}[5m]) > 100
+        for: 5m
+        labels:
+          severity: warning
+          priority: P2
+        annotations:
+          summary: "Database experiencing slow queries"
+          description: "Database slow query rate is {{ $value }} calls per second."
+          runbook: "https://runbooks.white-room.ai/db-slow-queries"
+
+  # Security Alerts (P0)
+  - name: security
+    interval: 30s
+    rules:
+      - alert: UnusualAuthenticationFailures
+        expr: rate(authentication_failures_total[5m]) > 10
+        for: 2m
+        labels:
+          severity: critical
+          priority: P0
+        annotations:
+          summary: "Unusual authentication failure rate"
+          description: "Authentication failures are occurring at {{ $value }} per second."
+          runbook: "https://runbooks.white-room.ai/auth-failures"
+
+      - alert: SecurityVulnerabilityDetected
+        expr: security_vulnerabilities_total{severity="CRITICAL"} > 0
+        for: 1m
+        labels:
+          severity: critical
+          priority: P0
+        annotations:
+          summary: "Critical security vulnerability detected"
+          description: "{{ $value }} critical security vulnerabilities detected."
+          runbook: "https://runbooks.white-room.ai/security-vulnerability"
+
+  # Info Alerts (P3)
+  - name: informational
+    interval: 60s
+    rules:
+      - alert: NewUserSignup
+        expr: increase(user_signups_total[5m]) > 0
+        labels:
+          severity: info
+          priority: P3
+        annotations:
+          summary: "New user signup detected"
+          description: "{{ $value }} new users signed up in the last 5 minutes."
+
+      - alert: DeploymentCompleted
+        expr: changes(deployment_version[1m]) > 0
+        labels:
+          severity: info
+          priority: P3
+        annotations:
+          summary: "New deployment detected"
+          description: "Deployment version changed to {{ $labels.version }}."

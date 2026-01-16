@@ -1,0 +1,17 @@
+// White Room Centralized Build Configuration
+// This ensures all Xcode builds use .build/ directory
+
+// Build locations
+BUILD_ROOT = $(SRCROOT)/../.build/xcode
+DERIVED_DATA_DIR = $(SRCROOT)/../.build/xcode/DerivedData
+
+// Intermediate build files
+OBJROOT = $(BUILD_ROOT)/Intermediates
+SYMROOT = $(BUILD_ROOT)/Products
+SHARED_PRECOMPS_DIR = $(BUILD_ROOT)/PrecompiledHeaders
+
+// Module cache
+MODULE_CACHE_DIR = $(BUILD_ROOT)/ModuleCache
+
+// Archive locations
+ARCHIVE_PATH = $(SRCROOT)/../.artifacts/$(PLATFORM_NAME)

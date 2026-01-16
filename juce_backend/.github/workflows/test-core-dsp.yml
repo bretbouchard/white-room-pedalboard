@@ -1,0 +1,292 @@
+name: Core DSP Tests
+
+on:
+  push:
+    branches: [main, develop]
+    paths:
+      - 'juce_backend/**'
+      - '.github/workflows/test-core-dsp.yml'
+  pull_request:
+    branches: [main, develop]
+    paths:
+      - 'juce_backend/**'
+
+jobs:
+  test-core-dsp:
+    name: Test Core DSP (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-14, ubuntu-latest, windows-2022]
+        build_type: [Debug, Release]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Install dependencies (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          brew install cmake ninja nlohmann-json googletest
+
+      - name: Install dependencies (Ubuntu)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            cmake ninja-build \
+            libnlohmann-json3-dev \
+            libgtest-dev \
+            libasound2-dev
+
+      - name: Install dependencies (Windows)
+        if: runner.os == 'Windows'
+        run: |
+          choco install cmake ninja
+          choco install nlohmann-json
+
+      - name: Configure CMake
+        working-directory: juce_backend
+        run: |
+          cmake -B build \
+            -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
+            -DBUILD_TESTING=ON
+
+      - name: Build tests
+        working-directory: juce_backend
+        run: |
+          cmake --build build --target all_tests -j
+
+      - name: Run unit tests
+        working-directory: juce_backend
+        run: |
+          ctest --test-dir build --output-on-failure --verbose
+
+      - name: Run instrument tests
+        working-directory: juce_backend
+        run: |
+          # Run all synthesizer integration tests
+          ./build/tests/NexSynthIntegrationTests
+          ./build/tests/SamSamplerIntegrationTests
+          ./build/tests/LocalGalIntegrationTests
+
+      - name: Run DSP tests
+        working-directory: juce_backend
+        run: |
+          # Run all DSP unit tests
+          ./build/tests/dsp/SamSamplerDSPTest
+          ./build/tests/dsp/KaneMarcoTests
+          ./build/tests/dsp/KaneMarcoAetherTests
+          ./build/tests/dsp/KaneMarcoAetherStringTest
+          ./build/tests/dp/SF2Test
+
+      - name: Run giant instruments tests
+        working-directory: juce_backend
+        run: |
+          ./build/tests/dsp/AetherGiantDrumsTests
+          ./build/tests/dsp/AetherGiantVoiceTests
+          ./build/tests/dsp/AetherGiantHornsTests
+          ./build/tests/dsp/AetherGiantPercussionTests
+
+      - name: Generate coverage report (Debug only)
+        if: matrix.build_type == 'Debug' && runner.os == 'Linux'
+        working-directory: juce_backend
+        run: |
+          gcov build/tests/**/*.gcda
+          lcov --capture --directory . --output-file coverage.info
+          genhtml coverage.info --output-directory coverage_html
+
+      - name: Upload coverage to Codecov
+        if: matrix.build_type == 'Debug' && runner.os == 'Linux'
+        uses: codecov/codecov-action@v3
+        with:
+          files: juce_backend/coverage.info
+          flags: core-dsp
+
+  golden-render-tests:
+    name: Golden Render Tests
+    runs-on: macos-14
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Install dependencies
+        run: |
+          brew install cmake ninja nlohmann-json googletest
+
+      - name: Configure CMake
+        working-directory: juce_backend
+        run: |
+          cmake -B build \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DBUILD_TESTING=ON
+
+      - name: Build golden tests
+        working-directory: juce_backend
+        run: |
+          cmake --build build --target GoldenTest
+
+      - name: Generate golden references
+        working-directory: juce_backend
+        run: |
+          ./build/tests/golden/GenerateGoldenReferences
+
+      - name: Run golden tests
+        working-directory: juce_backend
+        run: |
+          ./build/tests/golden/GoldenTest
+
+      - name: Run parameter golden tests
+        working-directory: juce_backend
+        run: |
+          ./build/tests/golden/ParameterGoldenTest
+
+      - name: Upload golden test results
+        uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: golden-test-failures
+          path: juce_backend/tests/golden/failures/
+          retention-days: 7
+
+  performance-tests:
+    name: Performance Tests
+    runs-on: macos-14
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Install dependencies
+        run: |
+          brew install cmake ninja nlohmann-json googletest
+
+      - name: Configure CMake
+        working-directory: juce_backend
+        run: |
+          cmake -B build \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DBUILD_TESTING=ON
+
+      - name: Build performance tests
+        working-directory: juce_backend
+        run: |
+          cmake --build build --target KaneMarcoPerformanceTests
+          cmake --build build --target KaneMarcoAetherPerformanceTest
+
+      - name: Run performance tests
+        working-directory: juce_backend
+        run: |
+          ./build/tests/dsp/KaneMarcoPerformanceTests > performance_results.txt
+          ./build/tests/dsp/KaneMarcoAetherPerformanceTest >> performance_results.txt
+
+      - name: Upload performance results
+        uses: actions/upload-artifact@v4
+        with:
+          name: performance-results
+          path: juce_backend/performance_results.txt
+          retention-days: 30
+
+      - name: Comment performance results on PR
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const results = fs.readFileSync('juce_backend/performance_results.txt', 'utf8');
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `## Performance Test Results\n\n\`\`\`\n${results}\n\`\`\``
+            });
+
+  integration-tests:
+    name: Integration Tests
+    runs-on: macos-14
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Install dependencies
+        run: |
+          brew install cmake ninja nlohmann-json googletest
+
+      - name: Configure CMake
+        working-directory: juce_backend
+        run: |
+          cmake -B build \
+            -DCMAKE_BUILD_TYPE=Debug \
+            -DBUILD_TESTING=ON
+
+      - name: Build integration tests
+        working-directory: juce_backend
+        run: |
+          cmake --build build --target run_integration_tests
+
+      - name: Run integration tests
+        working-directory: juce_backend
+        run: |
+          ctest --test-dir build -L integration --output-on-failure
+
+  memory-safety-tests:
+    name: Memory Safety Tests (AddressSanitizer)
+    runs-on: macos-14
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Install dependencies
+        run: |
+          brew install cmake ninja nlohmann-json googletest
+
+      - name: Configure CMake with sanitizers
+        working-directory: juce_backend
+        run: |
+          cmake -B build \
+            -DCMAKE_BUILD_TYPE=Debug \
+            -DCMAKE_CXX_FLAGS="-fsanitize=address -fno-omit-frame-pointer -g" \
+            -DCMAKE_EXE_LINKER_FLAGS="-fsanitize=address" \
+            -DBUILD_TESTING=ON
+
+      - name: Build tests with sanitizers
+        working-directory: juce_backend
+        run: |
+          cmake --build build --target all_tests
+
+      - name: Run tests under AddressSanitizer
+        working-directory: juce_backend
+        run: |
+          ASAN_OPTIONS=detect_leaks=1:halt_on_error=0:log_path=asan.log \
+            ctest --test-dir build --output-on-failure
+
+      - name: Check for sanitizer errors
+        working-directory: juce_backend
+        run: |
+          if ls asan.log.* 1> /dev/null 2>&1; then
+            echo "AddressSanitizer detected errors:"
+            cat asan.log.*
+            exit 1
+          fi
+
+      - name: Upload sanitizer logs
+        uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: asan-logs
+          path: juce_backend/asan.log.*
+          retention-days: 7

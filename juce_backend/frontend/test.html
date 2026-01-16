@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSS Test</title>
+    <style>
+        /* Inline Tailwind-like styles for testing */
+        :root {
+            --daw-bg-primary: #1a1a1a;
+            --daw-surface-primary: #2d2d2d;
+            --daw-surface-secondary: #3d3d3d;
+            --daw-surface-tertiary: #4d4d4d;
+            --daw-accent-primary: #00ff88;
+            --daw-text-primary: #ffffff;
+            --daw-text-secondary: #cccccc;
+            --daw-text-tertiary: #999999;
+        }
+        
+        body {
+            margin: 0;
+            padding: 20px;
+            background-color: var(--daw-bg-primary);
+            color: var(--daw-text-primary);
+            font-family: system-ui, -apple-system, sans-serif;
+            min-height: 100vh;
+        }
+        
+        .daw-panel {
+            background-color: var(--daw-surface-primary);
+            border: 1px solid var(--daw-surface-tertiary);
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        .daw-button {
+            background-color: var(--daw-surface-secondary);
+            color: var(--daw-text-primary);
+            border: 1px solid var(--daw-surface-tertiary);
+            border-radius: 4px;
+            padding: 8px 16px;
+            margin: 4px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        
+        .daw-button:hover {
+            background-color: var(--daw-surface-tertiary);
+            border-color: var(--daw-accent-primary);
+        }
+        
+        .daw-button.primary {
+            background-color: var(--daw-accent-primary);
+            color: #000;
+        }
+        
+        .flex {
+            display: flex;
+        }
+        
+        .flex-col {
+            flex-direction: column;
+        }
+        
+        .gap-4 {
+            gap: 1rem;
+        }
+        
+        .text-center {
+            text-align: center;
+        }
+        
+        .text-4xl {
+            font-size: 2.25rem;
+        }
+        
+        .font-bold {
+            font-weight: 700;
+        }
+        
+        .mb-2 {
+            margin-bottom: 0.5rem;
+        }
+        
+        .mb-8 {
+            margin-bottom: 2rem;
+        }
+        
+        .text-accent {
+            color: var(--daw-accent-primary);
+        }
+        
+        .text-secondary {
+            color: var(--daw-text-secondary);
+        }
+    </style>
+</head>
+<body>
+    <div class="text-center mb-8">
+        <h1 class="text-4xl font-bold mb-2 text-accent">
+            DAW UI Component Library
+        </h1>
+        <p class="text-secondary">
+            Professional audio interface components - CSS Test
+        </p>
+    </div>
+
+    <div class="daw-panel">
+        <h2 class="mb-2">Basic Components</h2>
+        <div class="flex gap-4">
+            <button class="daw-button">Secondary</button>
+            <button class="daw-button primary">Primary</button>
+            <button class="daw-button">Accent</button>
+        </div>
+    </div>
+
+    <div class="daw-panel">
+        <h2 class="mb-2">Status</h2>
+        <p class="text-secondary">
+            If you can see styled buttons and panels with dark theme colors, 
+            the CSS is working correctly.
+        </p>
+    </div>
+</body>
+</html>

@@ -1,0 +1,33 @@
+{
+  "version": "1.0.0",
+  "name": "Saxophone Lead",
+  "author": "Bret Bouchard",
+  "description": "Jazz saxophone with warm tone, vibrato, and expressive dynamics.",
+  "category": "Lead",
+  "tags": ["lead", "saxophone", "jazz", "warm", "expressive"],
+  "creationDate": "2025-12-27",
+  "parameters": {
+    "sample.file": "wind_sax_C4.wav",
+    "sample.loop_mode": 1.0,
+    "sample.loop.start": 0.18,
+    "sample.loop.end": 0.82,
+    "pitch.transpose": 0.5,
+    "pitch.detune": 0.5,
+    "pitch.bend": 0.58,
+    "filter.type": 0.0,
+    "filter.cutoff": 0.62,
+    "filter.resonance": 0.2,
+    "env.adsr.a": 0.07,
+    "env.adsr.d": 0.18,
+    "env.adsr.s": 0.58,
+    "env.adsr.r": 0.22,
+    "fx.drive": 0.06,
+    "fx.chorus": 0.25,
+    "fx.delay": 0.1,
+    "fx.reverb": 0.42,
+    "output.level": 0.78,
+    "output.pan": 0.5
+  },
+  "macroMappings": {},
+  "modulationMatrix": {}
+}

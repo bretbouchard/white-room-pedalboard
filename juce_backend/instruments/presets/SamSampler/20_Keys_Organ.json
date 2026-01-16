@@ -1,0 +1,33 @@
+{
+  "version": "1.0.0",
+  "name": "Organ",
+  "author": "Bret Bouchard",
+  "description": "Pipe organ with drawbar harmonics and rotary speaker effect.",
+  "category": "Keys",
+  "tags": ["keys", "organ", "pipe", "rotary", "harmonics"],
+  "creationDate": "2025-12-27",
+  "parameters": {
+    "sample.file": "organ_pipe_C4.wav",
+    "sample.loop_mode": 1.0,
+    "sample.loop.start": 0.1,
+    "sample.loop.end": 0.9,
+    "pitch.transpose": 0.5,
+    "pitch.detune": 0.5,
+    "pitch.bend": 0.5,
+    "filter.type": 0.0,
+    "filter.cutoff": 0.78,
+    "filter.resonance": 0.1,
+    "env.adsr.a": 0.008,
+    "env.adsr.d": 0.1,
+    "env.adsr.s": 0.85,
+    "env.adsr.r": 0.15,
+    "fx.drive": 0.05,
+    "fx.chorus": 0.55,
+    "fx.delay": 0.0,
+    "fx.reverb": 0.4,
+    "output.level": 0.8,
+    "output.pan": 0.5
+  },
+  "macroMappings": {},
+  "modulationMatrix": {}
+}

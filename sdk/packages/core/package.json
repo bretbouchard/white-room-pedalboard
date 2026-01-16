@@ -1,0 +1,75 @@
+{
+  "name": "@schillinger-sdk/core-v1",
+  "version": "1.0.0-alpha.1",
+  "private": true,
+  "description": "Schillinger SDK v1 - Theory-First Architecture with Deterministic Realization",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    },
+    "./theory": {
+      "types": "./dist/theory/index.d.ts",
+      "import": "./dist/theory/index.js"
+    },
+    "./realize": {
+      "types": "./dist/realize/index.d.ts",
+      "import": "./dist/realize/index.js"
+    },
+    "./reconcile": {
+      "types": "./dist/reconcile/index.d.ts",
+      "import": "./dist/reconcile/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "build:watch": "tsc -p tsconfig.json --watch",
+    "build:swift": "node scripts/build-swift-bundle.js",
+    "clean": "rm -rf dist",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "type-check": "tsc --noEmit -p tsconfig.json",
+    "lint": "eslint src/**/*.ts",
+    "lint:fix": "eslint src/**/*.ts --fix",
+    "format": "prettier --write \"src/**/*.ts\"",
+    "format:check": "prettier --check \"src/**/*.ts\""
+  },
+  "keywords": [
+    "schillinger",
+    "music theory",
+    "composition",
+    "deterministic",
+    "cross-platform",
+    "rhythm",
+    "melody",
+    "harmony",
+    "form",
+    "orchestration"
+  ],
+  "author": "Schillinger SDK Contributors",
+  "license": "MIT",
+  "dependencies": {
+    "ajv": "^8.17.1",
+    "ajv-formats": "^3.0.1",
+    "pcg-random": "^1.0.0",
+    "uuid": "^11.0.3"
+  },
+  "devDependencies": {
+    "@types/uuid": "^10.0.0",
+    "@typescript-eslint/eslint-plugin": "^6.21.0",
+    "@typescript-eslint/parser": "^6.21.0",
+    "@vitest/coverage-v8": "^3.2.4",
+    "eslint": "^8.57.1",
+    "prettier": "^3.1.0",
+    "typescript": "^5.3.0",
+    "vite-tsconfig-paths": "^6.0.4",
+    "vitest": "^3.2.4"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

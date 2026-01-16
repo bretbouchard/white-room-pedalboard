@@ -1,0 +1,10 @@
+{
+  "op": "init",
+  "id": "test-init-001",
+  "payload": {
+    "sessionSeed": 12345,
+    "graphInstanceId": "test-graph-001",
+    "schemaVersion": "1.0.0",
+    "sdkBuildHash": "dev-build"
+  }
+}

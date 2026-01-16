@@ -1,0 +1,317 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://schemas.schillinger.sdk/v1/reconciliation-report",
+  "title": "ReconciliationReport_v1",
+  "description": "Report on round-trip reconciliation, explaining what changed and with what confidence.",
+  "type": "object",
+  "required": [
+    "reportId",
+    "sourceSongId",
+    "editedModelId",
+    "confidenceSummary",
+    "systemMatches",
+    "losses",
+    "suggestedActions"
+  ],
+  "properties": {
+    "reportId": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Unique identifier for this reconciliation report"
+    },
+    "sourceSongId": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Original SchillingerSong that was realized"
+    },
+    "editedModelId": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Edited SongModel being reconciled"
+    },
+    "confidenceSummary": {
+      "type": "object",
+      "description": "Confidence metrics for reconciliation",
+      "required": ["overall", "byBook"],
+      "properties": {
+        "overall": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Weighted average confidence (0-1)"
+        },
+        "byBook": {
+          "type": "object",
+          "required": ["rhythm", "melody", "harmony", "form", "orchestration"],
+          "properties": {
+            "rhythm": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1,
+              "description": "Book I confidence"
+            },
+            "melody": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1,
+              "description": "Book II confidence"
+            },
+            "harmony": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1,
+              "description": "Book III confidence"
+            },
+            "form": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1,
+              "description": "Book IV confidence"
+            },
+            "orchestration": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1,
+              "description": "Book V confidence"
+            }
+          }
+        }
+      }
+    },
+    "systemMatches": {
+      "type": "array",
+      "description": "Match analysis for each system",
+      "items": {
+        "type": "object",
+        "required": ["systemId", "systemType", "confidence", "inferredParameters", "originalParameters", "changes"],
+        "properties": {
+          "systemId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "systemType": {
+            "type": "string",
+            "enum": ["rhythm", "melody", "harmony", "form", "orchestration"]
+          },
+          "confidence": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1,
+            "description": "Confidence in this match (0-1)"
+          },
+          "inferredParameters": {
+            "type": "object",
+            "description": "Parameters inferred from edited model"
+          },
+          "originalParameters": {
+            "type": "object",
+            "description": "Original parameters from source song"
+          },
+          "changes": {
+            "type": "array",
+            "description": "Parameter changes detected",
+            "items": {
+              "type": "object",
+              "required": ["parameter", "originalValue", "inferredValue", "confidence"],
+              "properties": {
+                "parameter": {
+                  "type": "string"
+                },
+                "originalValue": true,
+                "inferredValue": true,
+                "confidence": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 1
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "losses": {
+      "type": "array",
+      "description": "Information lost during reconciliation",
+      "items": {
+        "type": "object",
+        "required": ["systemId", "lossType", "description", "impact"],
+        "properties": {
+          "systemId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "lossType": {
+            "type": "string",
+            "enum": ["destructive", "ambiguous", "unrecoverable"],
+            "description": "Type of information loss"
+          },
+          "description": {
+            "type": "string",
+            "description": "What was lost"
+          },
+          "impact": {
+            "type": "string",
+            "description": "How this loss affects the song"
+          }
+        }
+      }
+    },
+    "suggestedActions": {
+      "type": "array",
+      "description": "Actions recommended by reconciliation system",
+      "items": {
+        "type": "object",
+        "required": ["actionType", "systemId", "reason"],
+        "properties": {
+          "actionType": {
+            "type": "string",
+            "enum": ["update", "split", "reject", "keep_decorative"],
+            "description": "Recommended action"
+          },
+          "systemId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "reason": {
+            "type": "string",
+            "description": "Why this action is recommended"
+          },
+          "proposedUpdate": {
+            "description": "New system parameters if actionType is 'update'"
+          }
+        }
+      }
+    }
+  },
+  "additionalProperties": false,
+  "examples": [
+    {
+      "description": "Reconciliation report with high confidence",
+      "reportId": "6ba7b810-9dad-11d1-80b4-00c04fd430c8",
+      "sourceSongId": "550e8400-e29b-41d4-a716-446655440000",
+      "editedModelId": "7f9b8e10-9dad-11d1-80b4-00c04fd430c8",
+      "confidenceSummary": {
+        "overall": 0.92,
+        "byBook": {
+          "rhythm": 0.95,
+          "melody": 0.90,
+          "harmony": 0.88,
+          "form": 1.0,
+          "orchestration": 0.87
+        }
+      },
+      "systemMatches": [
+        {
+          "systemId": "8ba09020-9dad-11d1-80b4-00c04fd430c8",
+          "systemType": "rhythm",
+          "confidence": 0.95,
+          "inferredParameters": {
+            "generators": [
+              {
+                "period": 3,
+                "phase": 0,
+                "weight": 1.0
+              },
+              {
+                "period": 4,
+                "phase": 0,
+                "weight": 1.0
+              }
+            ],
+            "resultantMethod": "interference"
+          },
+          "originalParameters": {
+            "generators": [
+              {
+                "period": 3,
+                "phase": 0,
+                "weight": 1.0
+              },
+              {
+                "period": 4,
+                "phase": 0,
+                "weight": 1.0
+              }
+            ],
+            "resultantMethod": "interference"
+          },
+          "changes": []
+        }
+      ],
+      "losses": [
+        {
+          "systemId": "9ca1a030-9dad-11d1-80b4-00c04fd430c8",
+          "lossType": "ambiguous",
+          "description": "Subtle timing variations may indicate performance expression",
+          "impact": "Low - Rhythmic feel preserved, micro-timing details ambiguous"
+        }
+      ],
+      "suggestedActions": [
+        {
+          "actionType": "update",
+          "systemId": "8ba09020-9dad-11d1-80b4-00c04fd430c8",
+          "reason": "High confidence (95%) that rhythm system parameters are unchanged",
+          "proposedUpdate": null
+        },
+        {
+          "actionType": "keep_decorative",
+          "systemId": "9ca1a030-9dad-11d1-80b4-00c04fd430c8",
+          "reason": "Timing variations are likely decorative (performance expression)"
+        }
+      ]
+    },
+    {
+      "description": "Reconciliation report with destructive edits",
+      "reportId": "7f9b8e10-9dad-11d1-80b4-00c04fd430c8",
+      "sourceSongId": "550e8400-e29b-41d4-a716-446655440000",
+      "editedModelId": "8ba09020-9dad-11d1-80b4-00c04fd430c8",
+      "confidenceSummary": {
+        "overall": 0.45,
+        "byBook": {
+          "rhythm": 0.50,
+          "melody": 0.40,
+          "harmony": 0.55,
+          "form": 0.35,
+          "orchestration": 0.45
+        }
+      },
+      "systemMatches": [
+        {
+          "systemId": "9ca1a030-9dad-11d1-80b4-00c04fd430c8",
+          "systemType": "form",
+          "confidence": 0.35,
+          "inferredParameters": {
+            "ratioTree": [1, 2, 1]
+          },
+          "originalParameters": {
+            "ratioTree": [1, 1, 2]
+          },
+          "changes": [
+            {
+              "parameter": "ratioTree",
+              "originalValue": [1, 1, 2],
+              "inferredValue": [1, 2, 1],
+              "confidence": 0.35
+            }
+          ]
+        }
+      ],
+      "losses": [
+        {
+          "systemId": "9ca1a030-9dad-11d1-80b4-00c04fd430c8",
+          "lossType": "destructive",
+          "description": "Form structure completely reorganized (AAB → ABA)",
+          "impact": "High - Original form architecture lost, new form cannot be reliably mapped"
+        }
+      ],
+      "suggestedActions": [
+        {
+          "actionType": "reject",
+          "systemId": "9ca1a030-9dad-11d1-80b4-00c04fd430c8",
+          "reason": "Form changes are too destructive to reconcile reliably. Consider creating new song or treating edits as purely decorative."
+        }
+      ]
+    }
+  ]
+}

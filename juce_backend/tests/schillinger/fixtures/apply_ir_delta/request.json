@@ -1,0 +1,12 @@
+{
+  "op": "applyIR",
+  "id": "req-apply-001",
+  "payload": {
+    "sessionId": "session-test-001",
+    "irDelta": {
+      "type": "add",
+      "path": "songGraph.tempo",
+      "value": 120
+    }
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "id": "artifact-1768420127870-o3mjued6d",
+  "type": "pattern",
+  "content": "# CloudKit API Migration: Completion Blocks to Result Blocks\n\n## Pattern\nWhen updating CloudKit operations from deprecated completion blocks to new Result-based API:\n\n### Old API (Deprecated)\n```swift\noperation.modifyRecordsCompletionBlock = { savedRecords, deletedIDs, error in\n    if let error = error {\n        // Handle error\n    } else {\n        // Success\n    }\n}\n```\n\n### New API (Result-based)\n```swift\noperation.modifyRecordsResultBlock = { result in\n    switch result {\n    case .success:\n        // Handle success\n    case .failure(let error):\n        // Handle error\n    }\n}\n```\n\n## API Migrations\n\n### 1. CKModifyRecordsOperation\n- Old: `modifyRecordsCompletionBlock`\n- New: `modifyRecordsResultBlock`\n- Returns: `Result<Void, Error>` (or `Result<[CKRecord.ID: CKRecord.Result], Error>`)\n\n### 2. CKModifyRecordZonesOperation\n- Old: `modifyRecordZonesCompletionBlock`\n- New: `modifyRecordZonesResultBlock`\n- Returns: `Result<Void, Error>`\n\n### 3. CKFetchRecordsOperation\n- Old: `fetchRecordsCompletionBlock`\n- New: `fetchRecordsResultBlock`\n- Returns: `Result<Void, Error>`\n- Note: Also has `perRecordResultBlock` for individual record results\n\n### 4. CKFetchRecordZonesOperation\n- Old: `fetchRecordZonesCompletionBlock`\n- New: `fetchRecordZonesResultBlock`\n- Returns: `Result<Void, Error>`\n- Note: Also has `perRecordZoneResultBlock` for individual zone results\n\n## Key Differences\n\n1. **Error Handling**: Errors are now wrapped in Result.failure instead of optional Error parameter\n2. **Success Data**: Some operations return dictionaries of results instead of arrays\n3. **Partial Failures**: Result type better represents partial success/failure scenarios\n4. **Type Safety**: Swift's Result type provides better type safety\n\n## Best Practices\n\n1. Always handle both .success and .failure cases\n2. Use per-record/per-zone result blocks when available for granular error handling\n3. Maintain existing error wrapping (e.g., CloudKitError.from(error))\n4. Test zone existence checks with both success and error cases\n\n## Minimum Platform Version\n- macOS 12.0+\n- iOS 15.0+\n- tvOS 15.0+\n\n## Files Updated\n- swift_frontend/src/SwiftFrontendCore/Infra/CloudSync/CloudKitManager.swift\n\n## Validation\nAfter migration, verify:\n1. No deprecation warnings in build output\n2. Error handling works identically to before\n3. Partial failures handled correctly\n4. CloudKitError wrapping maintained",
+  "metadata": {
+    "scope": "repository",
+    "tags": [
+      "cloudkit",
+      "api-migration",
+      "swift",
+      "deprecation",
+      "result-type",
+      "error-handling"
+    ],
+    "confidence": 0.95
+  },
+  "timestamp": "2026-01-14T19:48:47.870Z"
+}

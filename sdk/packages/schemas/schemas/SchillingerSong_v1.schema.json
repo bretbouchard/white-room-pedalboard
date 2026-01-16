@@ -1,0 +1,447 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://whiteroom.dev/schemas/SchillingerSong_v1.schema.json",
+  "title": "SchillingerSong_v1",
+  "description": "Canonical theory representation - source of truth for all musical decisions",
+  "type": "object",
+  "required": [
+    "version",
+    "id",
+    "createdAt",
+    "modifiedAt",
+    "author",
+    "name",
+    "seed",
+    "ensemble",
+    "bindings",
+    "constraints",
+    "console"
+  ],
+  "properties": {
+    "version": {
+      "type": "string",
+      "const": "1.0",
+      "description": "Schema version"
+    },
+    "id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Unique identifier for this song"
+    },
+    "createdAt": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Creation timestamp (Unix ms)"
+    },
+    "modifiedAt": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Last modification timestamp (Unix ms)"
+    },
+    "author": {
+      "type": "string",
+      "description": "User identifier"
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256,
+      "description": "Song name"
+    },
+    "seed": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 4294967295,
+      "description": "PRNG seed for reproducibility"
+    },
+    "book1": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/RhythmSystem" },
+      "description": "Book I - Rhythm systems"
+    },
+    "book2": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/MelodySystem" },
+      "description": "Book II - Melody systems"
+    },
+    "book3": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/HarmonySystem" },
+      "description": "Book III - Harmony systems"
+    },
+    "book4": {
+      "$ref": "#/definitions/FormSystem",
+      "description": "Book IV - Form system"
+    },
+    "book5": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/OrchestrationSystem" },
+      "description": "Book V - Orchestration systems"
+    },
+    "ensemble": {
+      "$ref": "#/definitions/EnsembleModel"
+    },
+    "bindings": {
+      "$ref": "#/definitions/BindingModel"
+    },
+    "constraints": {
+      "$ref": "#/definitions/ConstraintModel"
+    },
+    "instrumentAssignments": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/InstrumentAssignment" },
+      "description": "Role to instrument mappings"
+    },
+    "presets": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/PresetAssignment" },
+      "description": "Instrument to preset mappings"
+    },
+    "console": {
+      "$ref": "#/definitions/ConsoleModel"
+    },
+    "automation": {
+      "$ref": "#/definitions/AutomationTimeline"
+    }
+  },
+  "definitions": {
+    "RhythmSystem": {
+      "type": "object",
+      "required": ["id", "type", "generators"],
+      "properties": {
+        "id": { "type": "string", "format": "uuid" },
+        "type": { "type": "string", "enum": ["resultant", "permutation", "density"] },
+        "generators": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/Generator" }
+        },
+        "resultant": { "type": "object" },
+        "permutations": { "type": "array" },
+        "density": { "type": "number", "minimum": 0, "maximum": 1 }
+      }
+    },
+    "Generator": {
+      "type": "object",
+      "required": ["period", "phaseOffset"],
+      "properties": {
+        "period": { "type": "integer", "minimum": 1 },
+        "phaseOffset": { "type": "number", "minimum": 0 }
+      }
+    },
+    "MelodySystem": {
+      "type": "object",
+      "required": ["id", "type"],
+      "properties": {
+        "id": { "type": "string", "format": "uuid" },
+        "type": { "type": "string", "enum": ["pitch_cycle", "interval_seed"] },
+        "cycleLength": { "type": "integer", "minimum": 1 },
+        "intervalSeeds": {
+          "type": "array",
+          "items": { "type": "array", "items": { "type": "integer" } }
+        },
+        "contour": { "type": "object" },
+        "register": { "type": "object" }
+      }
+    },
+    "HarmonySystem": {
+      "type": "object",
+      "required": ["id", "type"],
+      "properties": {
+        "id": { "type": "string", "format": "uuid" },
+        "type": { "type": "string", "enum": ["distribution", "chord_class"] },
+        "distribution": { "type": "object" },
+        "chordClass": { "type": "string" },
+        "harmonicRhythm": { "type": "string", "format": "uuid" }
+      }
+    },
+    "FormSystem": {
+      "type": "object",
+      "required": ["id", "ratioTree"],
+      "properties": {
+        "id": { "type": "string", "format": "uuid" },
+        "ratioTree": {
+          "type": "array",
+          "items": { "type": "number" }
+        },
+        "sections": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/FormSection" }
+        }
+      }
+    },
+    "FormSection": {
+      "type": "object",
+      "required": ["id", "name", "ratio"],
+      "properties": {
+        "id": { "type": "string", "format": "uuid" },
+        "name": { "type": "string" },
+        "ratio": { "type": "number" }
+      }
+    },
+    "OrchestrationSystem": {
+      "type": "object",
+      "required": ["id", "type"],
+      "properties": {
+        "id": { "type": "string", "format": "uuid" },
+        "type": { "type": "string", "enum": ["role_assignment", "register", "density"] },
+        "roleHierarchy": { "type": "object" },
+        "functionalClasses": { "type": "array" },
+        "register": { "type": "object" },
+        "density": { "type": "object" },
+        "reinforcement": { "type": "object" }
+      }
+    },
+    "EnsembleModel": {
+      "type": "object",
+      "required": ["version", "id", "voices", "voiceCount"],
+      "properties": {
+        "version": { "type": "string", "const": "1.0" },
+        "id": { "type": "string", "format": "uuid" },
+        "voices": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/Voice" }
+        },
+        "voiceCount": { "type": "integer", "minimum": 1, "maximum": 100 },
+        "groups": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/VoiceGroup" }
+        },
+        "balance": { "$ref": "#/definitions/BalanceRules" }
+      }
+    },
+    "Voice": {
+      "type": "object",
+      "required": ["id", "name", "rolePools"],
+      "properties": {
+        "id": { "type": "string", "format": "uuid" },
+        "name": { "type": "string" },
+        "rolePools": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/RolePool" }
+        },
+        "groupIds": {
+          "type": "array",
+          "items": { "type": "string", "format": "uuid" }
+        }
+      }
+    },
+    "VoiceGroup": {
+      "type": "object",
+      "required": ["id", "name", "voiceIds"],
+      "properties": {
+        "id": { "type": "string", "format": "uuid" },
+        "name": { "type": "string" },
+        "voiceIds": {
+          "type": "array",
+          "items": { "type": "string", "format": "uuid" }
+        }
+      }
+    },
+    "RolePool": {
+      "type": "object",
+      "required": ["role", "functionalClass"],
+      "properties": {
+        "role": { "type": "string", "enum": ["primary", "secondary", "tertiary"] },
+        "functionalClass": { "type": "string", "enum": ["foundation", "motion", "ornament", "reinforcement"] },
+        "enabled": { "type": "boolean" }
+      }
+    },
+    "BalanceRules": {
+      "type": "object",
+      "properties": {
+        "priority": { "type": "array", "items": { "type": "integer" } },
+        "limits": {
+          "type": "object",
+          "properties": {
+            "maxVoices": { "type": "integer", "minimum": 1, "maximum": 100 },
+            "maxPolyphony": { "type": "integer", "minimum": 1, "maximum": 200 }
+          }
+        }
+      }
+    },
+    "ConsoleModel": {
+      "type": "object",
+      "required": ["version", "id", "voiceBusses", "mixBusses", "masterBus"],
+      "properties": {
+        "version": { "type": "string", "const": "1.0" },
+        "id": { "type": "string", "format": "uuid" },
+        "voiceBusses": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/Bus" }
+        },
+        "mixBusses": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/Bus" }
+        },
+        "masterBus": { "$ref": "#/definitions/Bus" },
+        "sendEffects": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/SendEffect" }
+        },
+        "routing": { "$ref": "#/definitions/RoutingMatrix" },
+        "metering": { "$ref": "#/definitions/MeteringConfig" }
+      }
+    },
+    "Bus": {
+      "type": "object",
+      "required": ["id", "name", "type"],
+      "properties": {
+        "id": { "type": "string", "format": "uuid" },
+        "name": { "type": "string" },
+        "type": { "type": "string", "enum": ["voice", "mix", "master"] },
+        "inserts": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/EffectSlot" }
+        },
+        "gain": { "type": "number", "maximum": 0 },
+        "pan": { "type": "number", "minimum": -1, "maximum": 1 },
+        "muted": { "type": "boolean" },
+        "solo": { "type": "boolean" }
+      }
+    },
+    "EffectSlot": {
+      "type": "object",
+      "required": ["id", "effectType"],
+      "properties": {
+        "id": { "type": "string", "format": "uuid" },
+        "effectType": { "$ref": "#/definitions/EffectType" },
+        "enabled": { "type": "boolean" },
+        "bypassed": { "type": "boolean" },
+        "parameters": { "type": "object" },
+        "automation": { "type": "string" }
+      }
+    },
+    "EffectType": {
+      "type": "string",
+      "enum": [
+        "compressor", "limiter", "gate", "expander",
+        "parametric_eq", "graphic_eq", "lowpass_filter", "highpass_filter", "bandpass_filter",
+        "reverb", "delay", "chorus", "flanger", "phaser",
+        "overdrive", "distortion", "bitcrusher",
+        "tremolo", "vibrato", "auto_pan"
+      ]
+    },
+    "SendEffect": {
+      "type": "object",
+      "required": ["id", "busId", "effectType"],
+      "properties": {
+        "id": { "type": "string", "format": "uuid" },
+        "busId": { "type": "string", "format": "uuid" },
+        "effectType": { "$ref": "#/definitions/EffectType" },
+        "enabled": { "type": "boolean" },
+        "parameters": { "type": "object" },
+        "sends": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/Send" }
+        }
+      }
+    },
+    "Send": {
+      "type": "object",
+      "required": ["sourceBusId", "level"],
+      "properties": {
+        "sourceBusId": { "type": "string", "format": "uuid" },
+        "level": { "type": "number", "maximum": 0 },
+        "pan": { "type": "number", "minimum": -1, "maximum": 1 }
+      }
+    },
+    "RoutingMatrix": {
+      "type": "object",
+      "required": ["routes"],
+      "properties": {
+        "routes": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/Route" }
+        }
+      }
+    },
+    "Route": {
+      "type": "object",
+      "required": ["sourceBusId", "destinationBusId"],
+      "properties": {
+        "sourceBusId": { "type": "string", "format": "uuid" },
+        "destinationBusId": { "type": "string", "format": "uuid" },
+        "level": { "type": "number", "maximum": 0 },
+        "enabled": { "type": "boolean" }
+      }
+    },
+    "MeteringConfig": {
+      "type": "object",
+      "properties": {
+        "enabled": { "type": "boolean" },
+        "refreshRate": { "type": "integer", "minimum": 10, "maximum": 60 },
+        "meterType": { "type": "string", "enum": ["peak", "rms", "both"] },
+        "holdTime": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "BindingModel": {
+      "type": "object",
+      "properties": {
+        "rhythmBindings": { "type": "array", "items": { "type": "string", "format": "uuid" } },
+        "melodyBindings": { "type": "array", "items": { "type": "string", "format": "uuid" } },
+        "harmonyBindings": { "type": "array", "items": { "type": "string", "format": "uuid" } }
+      }
+    },
+    "ConstraintModel": {
+      "type": "object",
+      "properties": {
+        "constraints": { "type": "array", "items": { "type": "object" } }
+      }
+    },
+    "InstrumentAssignment": {
+      "type": "object",
+      "required": ["voiceId", "instrumentType"],
+      "properties": {
+        "voiceId": { "type": "string", "format": "uuid" },
+        "instrumentType": { "$ref": "#/definitions/InstrumentType" },
+        "presetId": { "type": "string" },
+        "busId": { "type": "string", "format": "uuid" }
+      }
+    },
+    "InstrumentType": {
+      "type": "string",
+      "enum": ["LocalGal", "KaneMarco", "KaneMarcoAether", "KaneMarcoAetherString", "NexSynth", "SamSampler", "DrumMachine"]
+    },
+    "PresetAssignment": {
+      "type": "object",
+      "required": ["instrumentType", "presetId"],
+      "properties": {
+        "instrumentType": { "$ref": "#/definitions/InstrumentType" },
+        "presetId": { "type": "string" }
+      }
+    },
+    "AutomationTimeline": {
+      "type": "object",
+      "required": ["version", "tracks"],
+      "properties": {
+        "version": { "type": "string", "const": "1.0" },
+        "tracks": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/AutomationTrack" }
+        }
+      }
+    },
+    "AutomationTrack": {
+      "type": "object",
+      "required": ["id", "target", "events"],
+      "properties": {
+        "id": { "type": "string", "format": "uuid" },
+        "target": { "type": "string" },
+        "events": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/AutomationPoint" }
+        },
+        "interpolation": { "type": "string", "enum": ["linear", "curve", "step"] }
+      }
+    },
+    "AutomationPoint": {
+      "type": "object",
+      "required": ["time", "value"],
+      "properties": {
+        "time": { "type": "integer", "minimum": 0 },
+        "value": { "type": "number" },
+        "curve": { "type": "number" }
+      }
+    }
+  }
+}

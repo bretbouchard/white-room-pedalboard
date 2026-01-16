@@ -1,0 +1,176 @@
+{
+  "dashboard": {
+    "title": "White Room - Application Performance",
+    "tags": ["application", "performance", "production"],
+    "timezone": "browser",
+    "schemaVersion": 38,
+    "version": 1,
+    "refresh": "15s",
+    "panels": [
+      {
+        "id": 1,
+        "title": "Request Rate",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "sum(rate(http_requests_total{service=~\"juce-backend|swift-frontend\"}[5m])) by (service)",
+            "legendFormat": "{{ service }}"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 0},
+        "yAxes": [
+          {"format": "reqps", "label": "Requests per Second"}
+        ]
+      },
+      {
+        "id": 2,
+        "title": "Error Rate",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "sum(rate(http_requests_total{status=~\"5..\"}[5m])) by (service) / sum(rate(http_requests_total[5m])) by (service) * 100",
+            "legendFormat": "{{ service }}"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 0},
+        "yAxes": [
+          {"format": "percent", "label": "Error Rate", "max": 100, "min": 0}
+        ]
+      },
+      {
+        "id": 3,
+        "title": "P95 Latency",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket[5m])) by (service, le))",
+            "legendFormat": "{{ service }}"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8},
+        "yAxes": [
+          {"format": "s", "label": "Latency (seconds)"}
+        ]
+      },
+      {
+        "id": 4,
+        "title": "P99 Latency",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.99, sum(rate(http_request_duration_seconds_bucket[5m])) by (service, le))",
+            "legendFormat": "{{ service }}"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 8},
+        "yAxes": [
+          {"format": "s", "label": "Latency (seconds)"}
+        ]
+      },
+      {
+        "id": 5,
+        "title": "Audio Engine Render Time",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "audio_engine_render_time_seconds",
+            "legendFormat": "{{ instance }}"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 16},
+        "yAxes": [
+          {"format": "s", "label": "Render Time (seconds)"}
+        ],
+        "alert": {
+          "conditions": [
+            {
+              "evaluator": {"params": [0.025], "type": "gt"},
+              "operator": {"type": "and"},
+              "query": {"params": ["A", "5m", "now"]},
+              "reducer": {"params": [], "type": "avg"},
+              "type": "query"
+            }
+          ],
+          "name": "Audio Render Time Alert",
+          "message": "Audio render time exceeds 25ms threshold"
+        }
+      },
+      {
+        "id": 6,
+        "title": "Audio XRUN Rate",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "rate(audio_engine_xruns_total[1m])",
+            "legendFormat": "{{ instance }}"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 16},
+        "yAxes": [
+          {"format": "ops", "label": "XRUNs per Second"}
+        ]
+      },
+      {
+        "id": 7,
+        "title": "FFI Call Latency (P99)",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.99, rate(ffi_call_duration_seconds_bucket[5m])) by (function)",
+            "legendFormat": "{{ function }}"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 24},
+        "yAxes": [
+          {"format": "s", "label": "FFI Latency (seconds)"}
+        ]
+      },
+      {
+        "id": 8,
+        "title": "FFI Error Rate",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "sum(rate(ffi_errors_total[5m])) by (function) / sum(rate(ffi_calls_total[5m])) by (function) * 100",
+            "legendFormat": "{{ function }}"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 24},
+        "yAxes": [
+          {"format": "percent", "label": "Error Rate", "max": 100, "min": 0}
+        ]
+      },
+      {
+        "id": 9,
+        "title": "Active Connections",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "http_active_connections",
+            "legendFormat": "{{ service }}"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 32},
+        "yAxes": [
+          {"format": "short", "label": "Connections"}
+        ]
+      },
+      {
+        "id": 10,
+        "title": "Response Code Distribution",
+        "type": "piechart",
+        "targets": [
+          {
+            "expr": "sum by (status) (http_requests_total)",
+            "legendFormat": "{{ status }}"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 32},
+        "options": {
+          "pieType": "pie",
+          "legend": {"showLegend": true}
+        }
+      }
+    ]
+  }
+}

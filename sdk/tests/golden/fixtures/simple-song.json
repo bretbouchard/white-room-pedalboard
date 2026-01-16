@@ -1,0 +1,175 @@
+{
+  "model": {
+    "version": "1.0",
+    "id": "simple-song",
+    "createdAt": 1735392000000,
+    "metadata": {
+      "name": "Simple Song",
+      "description": "Basic rhythm + melody test case",
+      "duration": 30,
+      "expectedEventCount": 24
+    },
+    "transport": {
+      "tempoMap": [
+        { "time": 0, "tempo": 120 }
+      ],
+      "timeSignatureMap": [
+        { "time": 0, "signature": [4, 4] }
+      ],
+      "loopPolicy": {
+        "enabled": false,
+        "start": 0,
+        "end": 30,
+        "count": 1
+      },
+      "playbackSpeed": 1.0
+    },
+    "sections": [
+      {
+        "id": "section-A",
+        "name": "Verse",
+        "start": { "seconds": 0, "beats": 0, "measures": 0 },
+        "end": { "seconds": 16, "beats": 32, "measures": 8 },
+        "roles": ["rhythm-1", "melody-1"]
+      },
+      {
+        "id": "section-B",
+        "name": "Chorus",
+        "start": { "seconds": 16, "beats": 32, "measures": 8 },
+        "end": { "seconds": 30, "beats": 60, "measures": 15 },
+        "roles": ["rhythm-1", "melody-1", "bass-1"]
+      }
+    ],
+    "roles": [
+      {
+        "id": "rhythm-1",
+        "name": "Basic Rhythm",
+        "type": "rhythm",
+        "generatorConfig": {
+          "type": "rhythm",
+          "generators": [2, 3],
+          "complexity": 0.3,
+          "density": 0.5
+        },
+        "parameters": {
+          "tempo": 120,
+          "timeSignature": [4, 4],
+          "swing": 0.0,
+          "patternLength": 4
+        }
+      },
+      {
+        "id": "melody-1",
+        "name": "Simple Melody",
+        "type": "melody",
+        "generatorConfig": {
+          "type": "melody",
+          "contour": "wave",
+          "key": "C",
+          "scale": "major",
+          "range": [60, 72]
+        },
+        "parameters": {
+          "key": "C",
+          "scale": "major",
+          "range": [60, 72],
+          "rhythmIntegration": true
+        }
+      },
+      {
+        "id": "bass-1",
+        "name": "Bass Line",
+        "type": "bass",
+        "generatorConfig": {
+          "type": "harmony",
+          "style": "minimal",
+          "key": "C",
+          "scale": "major"
+        },
+        "parameters": {
+          "key": "C",
+          "scale": "major",
+          "range": [36, 48],
+          "rhythmIntegration": true
+        }
+      }
+    ],
+    "projections": [
+      {
+        "id": "proj-rhythm",
+        "roleId": "rhythm-1",
+        "target": {
+          "type": "track",
+          "id": "track-drums"
+        }
+      },
+      {
+        "id": "proj-melody",
+        "roleId": "melody-1",
+        "target": {
+          "type": "track",
+          "id": "track-synth"
+        }
+      },
+      {
+        "id": "proj-bass",
+        "roleId": "bass-1",
+        "target": {
+          "type": "track",
+          "id": "track-bass"
+        }
+      }
+    ],
+    "mixGraph": {
+      "tracks": [
+        {
+          "id": "track-drums",
+          "name": "Drums",
+          "instrument": "drums",
+          "output": { "format": "audio", "bus": "master" },
+          "parameters": {
+            "volume": 0.8,
+            "pan": 0.0
+          }
+        },
+        {
+          "id": "track-synth",
+          "name": "Synth",
+          "instrument": "synth",
+          "output": { "format": "audio", "bus": "master" },
+          "parameters": {
+            "volume": 0.7,
+            "pan": -0.3
+          }
+        },
+        {
+          "id": "track-bass",
+          "name": "Bass",
+          "instrument": "bass",
+          "output": { "format": "audio", "bus": "master" },
+          "parameters": {
+            "volume": 0.75,
+            "pan": 0.3
+          }
+        }
+      ],
+      "buses": [],
+      "sends": [],
+      "master": {
+        "id": "master",
+        "volume": 1.0,
+        "parameters": {}
+      }
+    },
+    "realizationPolicy": {
+      "windowSize": { "seconds": 2.0, "beats": 4, "measures": 1 },
+      "lookaheadDuration": { "seconds": 0.5, "beats": 1, "measures": 0.25 },
+      "determinismMode": "strict"
+    },
+    "determinismSeed": "simple-song-test-seed-v1"
+  },
+  "goldenHash": "simple-song-v1-hash-placeholder",
+  "description": "Simple Song: Basic rhythm + melody (30s)",
+  "expectedEventCount": 24,
+  "expectedHash": "to-be-generated-after-implementation"
+}

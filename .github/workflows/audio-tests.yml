@@ -1,0 +1,143 @@
+name: Audio Tests
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+  workflow_dispatch:
+
+jobs:
+  audio-validation:
+    name: Real-Time Audio Validation
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: |
+          npm ci
+          cd sdk && npm ci
+
+      - name: Build JUCE engine (headless mode)
+        run: |
+          brew install cmake
+          cd juce_backend
+          mkdir -p build && cd build
+          cmake .. -DCMAKE_BUILD_TYPE=Release -DHEADLESS=ON
+          make -j$(sysctl -n hw.ncpu)
+
+      - name: Run audio tests
+        run: |
+          cd sdk
+          npm test -- audio -- --reporter=verbose --reporter=json --outputFile=test-results/audio-results.json
+
+      - name: Upload audio test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: audio-test-results
+          path: |
+            sdk/test-results/audio-results.json
+            test-output/audio/
+
+      - name: Generate audio test report
+        if: always()
+        run: |
+          cd sdk
+          node scripts/generate-audio-report.js test-results/audio-results.json > test-results/audio-report.md
+
+      - name: Upload audio report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: audio-test-report
+          path: sdk/test-results/audio-report.md
+
+      - name: Comment PR with results
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const report = fs.readFileSync('sdk/test-results/audio-report.md', 'utf8');
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: report
+            });
+
+  audio-regression:
+    name: Audio Regression Tests
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: |
+          npm ci
+          cd sdk && npm ci
+
+      - name: Run regression tests
+        run: |
+          cd sdk
+          npm test -- audio -- --grep="regression"
+
+      - name: Compare with baseline
+        run: |
+          cd sdk
+          node scripts/compare-audio-baseline.js test-results/audio-results.json test-results/baseline.json
+
+  audio-stress:
+    name: Audio Stress Tests
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: |
+          npm ci
+          cd sdk && npm ci
+
+      - name: Run stress tests
+        run: |
+          cd sdk
+          npm test -- audio -- --grep="stress"
+
+      - name: Upload stress test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: stress-test-results
+          path: sdk/test-results/stress-test-results.json

@@ -1,0 +1,59 @@
+{
+  "version": "1.0.0",
+  "name": "Pad Init",
+  "author": "Bret Bouchard",
+  "description": "Soft, evolving pad with slow attack, detuned oscillators, and generous reverb for atmospheric textures.",
+  "category": "Pad",
+  "tags": ["pad", "soft", "evolving", "atmospheric"],
+  "creationDate": "2025-12-26",
+  "parameters": {
+    "osc1.waveform": 0.0,
+    "osc1.pitch": 0.5,
+    "osc1.detune": 0.48,
+    "osc1.level": 0.65,
+    "osc2.waveform": 0.0,
+    "osc2.pitch": 0.5,
+    "osc2.detune": 0.52,
+    "osc2.level": 0.65,
+    "filter.type": 0.0,
+    "filter.cutoff": 0.4,
+    "filter.resonance": 0.25,
+    "filter.env.amount": 0.5,
+    "filter.lfo.rate": 0.2,
+    "filter.lfo.amount": 0.2,
+    "env.adsr.a": 0.4,
+    "env.adsr.d": 0.3,
+    "env.adsr.s": 0.7,
+    "env.adsr.r": 0.8,
+    "fx.drive": 0.0,
+    "fx.chorus": 0.45,
+    "fx.delay": 0.3,
+    "fx.reverb": 0.7,
+    "output.level": 0.75,
+    "output.pan": 0.5
+  },
+  "macroMappings": {
+    "macro_0": {
+      "name": "Evolution",
+      "destination": "filter.lfo.amount",
+      "amount": 1.0,
+      "minValue": 0.0,
+      "maxValue": 0.5
+    },
+    "macro_1": {
+      "name": "Space",
+      "destination": "fx.reverb",
+      "amount": 1.0,
+      "minValue": 0.3,
+      "maxValue": 0.9
+    }
+  },
+  "modulationMatrix": {
+    "slot_0": {
+      "source": "lfo",
+      "destination": "filter.cutoff",
+      "amount": 0.2,
+      "curve": "sine"
+    }
+  }
+}

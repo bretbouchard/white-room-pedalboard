@@ -1,0 +1,36 @@
+name: 'CodeQL Configuration'
+
+# Use default queries with additional security focus
+disable-default-queries: false
+
+# Include only well-known query suites
+queries:
+  - uses: security-and-quality
+
+# Paths to ignore during analysis
+paths-ignore:
+  - 'dist/**'
+  - 'coverage/**'
+  - 'node_modules/**'
+  - '**/*.test.ts'
+  - '**/*.test.js'
+  - '**/*.spec.ts'
+  - '**/*.spec.js'
+  - '**/test/**'
+  - '**/tests/**'
+  - '**/__tests__/**'
+  - '**/*.d.ts'
+  - '*.config.js'
+  - '*.config.ts'
+  - 'vitest.config.ts'
+  - 'tsconfig.json'
+  - 'examples/**'
+  - 'scripts/**'
+  - 'docs/**'
+  - 'integrations/**/test/**'
+
+# Focus analysis on source code directories
+paths:
+  - 'src/**'
+  - 'python/**'
+  - 'integrations/**'

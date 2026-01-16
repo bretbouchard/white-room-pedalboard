@@ -1,0 +1,123 @@
+# Global gitignore for performance optimization
+# This file contains patterns that should be ignored across all projects
+
+# Dependency directories
+**/node_modules/
+**/bower_components/
+**/jspm_packages/
+
+# Build outputs
+**/dist/
+**/build/
+**/out/
+**/.next/
+**/.nuxt/
+**/.output/
+
+# Coverage and test reports
+**/coverage/
+**/htmlcov/
+**/.coverage
+**/.pytest_cache/
+**/.mypy_cache/
+**/.cache/
+**/nosetests.xml
+**/coverage.xml
+**/*.cover
+**/.tox/
+
+# Python artifacts
+**/__pycache__/
+**/*.py[cod]
+**/*$py.class
+**/*.so
+**/.Python
+**/build/
+**/develop-eggs/
+**/dist/
+**/downloads/
+**/eggs/
+**/.eggs/
+**/lib/
+**/lib64/
+**/parts/
+**/sdist/
+**/var/
+**/wheels/
+**/*.egg-info/
+**/.installed.cfg
+**/*.egg
+
+# Virtual environments
+**/venv/
+**/.venv/
+**/env/
+**/ENV/
+**/env.bak/
+**/venv.bak/
+
+# Log files
+**/*.log
+**/logs/
+**/log/
+
+# Temporary files
+**/tmp/
+**/temp/
+**/*.tmp
+**/*.temp
+
+# Audio files (typically large)
+**/*.wav
+**/*.mp3
+**/*.flac
+**/*.aiff
+**/*.ogg
+**/*.m4a
+**/*.wma
+
+# System files
+**/.DS_Store
+**/Thumbs.db
+**/Desktop.ini
+
+# IDE files
+**/.idea/
+**/.vscode/
+**/*.swp
+**/*.swo
+**/*~
+
+# Lock files
+**/*.lock
+**/package-lock.json
+**/yarn.lock
+**/pnpm-lock.yaml
+
+# OS generated files
+**/.DS_Store?
+**/.DS_Store
+**/._*
+**/.Spotlight-V100
+**/.Trashes
+**/ehthumbs.db
+**/Thumbs.db
+
+# Project-specific exclusions for this audio agent project
+**/daid-core/node_modules/
+**/daid-core/dist/
+**/daid-core/build/
+**/daid-core/.pytest_cache/
+**/daid-core/coverage/
+**/daid-core/htmlcov/
+**/frontend/node_modules/
+**/frontend/dist/
+**/frontend/.next/
+**/frontend/coverage/
+**/backend/node_modules/
+**/backend/dist/
+**/backend/coverage/
+**/wav/
+**/html/
+**/reports/
+**/test-reports/

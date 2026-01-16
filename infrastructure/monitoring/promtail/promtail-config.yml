@@ -1,0 +1,160 @@
+# Promtail Configuration for White Room Log Collection
+
+server:
+  http_listen_port: 9080
+  grpc_listen_port: 0
+
+positions:
+  filename: /tmp/positions.yaml
+
+clients:
+  - url: http://loki:3100/loki/api/v1/push
+
+# Scrape configurations
+scrape_configs:
+  # Application logs
+  - job_name: juce-backend-logs
+    static_configs:
+      - targets:
+          - localhost
+        labels:
+          job: juce-backend
+          environment: production
+          __path__: /var/log/juce_backend/*.log
+
+  - job_name: swift-frontend-logs
+    static_configs:
+      - targets:
+          - localhost
+        labels:
+          job: swift-frontend
+          environment: production
+          __path__: /var/log/swift_frontend/*.log
+
+  # System logs
+  - job_name: system-logs
+    static_configs:
+      - targets:
+          - localhost
+        labels:
+          job: system
+          environment: production
+          __path__: /var/log/syslog
+
+  # Docker container logs
+  - job_name: docker-logs
+    docker_sd_configs:
+      - host: unix:///var/run/docker.sock
+        refresh_interval: 5s
+        filters:
+          - name: name
+            values: ["white-room-*"]
+    relabel_configs:
+      - source_labels: ['__meta_docker_container_name']
+        regex: '/(.*)'
+        target_label: 'container_name'
+      - source_labels: ['__meta_docker_container_log_stream']
+        target_label: 'stream'
+      - source_labels: ['__meta_docker_container_label_logging_job']
+        target_label: 'job'
+      - replacement: 'production'
+        target_label: 'environment'
+
+  # Journal logs
+  - job_name: journal-logs
+    journal:
+      max_age: 12h
+      labels:
+        job: systemd-journal
+        environment: production
+    relabel_configs:
+      - source_labels: ['__journal__systemd_unit']
+        target_label: 'unit'
+      - source_labels: ['__journal__hostname']
+        target_label: 'hostname'
+      - source_labels: ['__journal_priority']
+        target_label: 'priority'
+
+  # Nginx logs
+  - job_name: nginx-logs
+    static_configs:
+      - targets:
+          - localhost
+        labels:
+          job: nginx
+          environment: production
+          __path__: /var/log/nginx/*.log
+
+  # PostgreSQL logs
+  - job_name: postgres-logs
+    static_configs:
+      - targets:
+          - localhost
+        labels:
+          job: postgres
+          environment: production
+          __path__: /var/log/postgresql/*.log
+
+# Pipeline stages for log processing
+pipeline_stages:
+  # JSON parsing
+  - json:
+      expressions:
+        level: level
+        message: message
+        timestamp: timestamp
+        service: service
+        trace_id: trace_id
+
+  # Regex parsing for non-JSON logs
+  - regex:
+      expression: '^(?P<timestamp>\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2})\s+(?P<level>\w+)\s+(?P<message>.*)$'
+
+  # Timestamp parsing
+  - timestamp:
+      source: timestamp
+      format: '2006-01-02 15:04:05'
+      location: UTC
+
+  # Label enrichment
+  - labels:
+      level:
+      service:
+      trace_id:
+
+  # Log level normalization
+  - labels:
+      level:
+        mapping:
+          error: ERROR
+          err: ERROR
+          warn: WARNING
+          warning: WARNING
+          info: INFO
+          debug: DEBUG
+          trace: TRACE
+
+  # Metrics extraction
+  - metrics:
+      # Request duration histogram
+      request_duration:
+        type: Histogram
+        description: "Request duration in seconds"
+        source: duration
+        config:
+          buckets: [0.1, 0.5, 1.0, 2.5, 5.0, 10.0]
+
+      # Error rate counter
+      error_total:
+        type: Counter
+        description: "Total number of errors"
+        source: level
+        config:
+          value: "ERROR"
+          action: "inc"
+
+# Limit configuration
+limits_config:
+  read_timeout: 5m
+  write_timeout: 2m
+  entry_log_size_bytes: 1048576  # 1MB

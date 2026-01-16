@@ -1,0 +1,11 @@
+[submodule "daid-core"]
+	path = daid-core
+	# Correct URL: repository name uses a hyphen (daid-core)
+	url = https://github.com/bretbouchard/daid-core.git
+	branch = main
+[submodule "sdk"]
+	path = sdk
+	url = https://github.com/bretbouchard/schillinger-sdk
+[submodule "external/JUCE"]
+	path = external/JUCE
+	url = https://github.com/juce-framework/JUCE.git

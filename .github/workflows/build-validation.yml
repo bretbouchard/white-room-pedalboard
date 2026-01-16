@@ -1,0 +1,72 @@
+name: Build Structure Validation
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  validate-build-structure:
+    name: Validate Build Structure
+    runs-on: macos-latest
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+
+    - name: Setup Build Environment
+      run: ./build-config/scripts/setup-builds.sh
+
+    - name: Validate Build Structure
+      run: ./build-config/scripts/validate-builds.sh --exit-code
+
+    - name: Check for Build Artifacts
+      run: |
+        echo "Checking for build artifacts outside .build/..."
+        if find . -type d -name "build" -not -path "./.build/*" -not -path "./node_modules/*" | grep -q .; then
+          echo "❌ Found build directories outside .build/"
+          find . -type d -name "build" -not -path "./.build/*" -not -path "./node_modules/*"
+          exit 1
+        fi
+        echo "✓ No build directories found outside .build/"
+
+    - name: Check for CMake Artifacts
+      run: |
+        echo "Checking for CMake artifacts..."
+        if find . -name "CMakeCache.txt" -not -path "./.build/*" | grep -q .; then
+          echo "❌ Found CMakeCache.txt outside .build/"
+          find . -name "CMakeCache.txt" -not -path "./.build/*"
+          exit 1
+        fi
+        echo "✓ No CMake artifacts found outside .build/"
+
+    - name: Check for Python Cache
+      run: |
+        echo "Checking for Python cache..."
+        if find . -type d -name "__pycache__" -not -path "./.build/*" -not -path "./node_modules/*" | grep -q .; then
+          echo "❌ Found __pycache__ outside .build/"
+          find . -type d -name "__pycache__" -not -path "./.build/*" -not -path "./node_modules/*"
+          exit 1
+        fi
+        echo "✓ No Python cache found outside .build/"
+
+    - name: Report Success
+      if: success()
+      run: |
+        echo "✅ Build structure validation passed!"
+        echo "All build artifacts are properly centralized in .build/"
+
+    - name: Report Failure
+      if: failure()
+      run: |
+        echo "❌ Build structure validation failed!"
+        echo ""
+        echo "To fix violations:"
+        echo "1. Run: ./build-config/scripts/migrate-builds.sh --dry-run"
+        echo "2. Review what will be migrated"
+        echo "3. Run: ./build-config/scripts/migrate-builds.sh"
+        echo "4. Run: ./build-config/scripts/validate-builds.sh"
+        echo ""
+        echo "See BUILD_STRUCTURE.md for more information."
+        exit 1

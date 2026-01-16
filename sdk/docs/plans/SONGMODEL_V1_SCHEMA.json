@@ -1,0 +1,348 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://schemas.schillinger.ai/songmodel/v1",
+  "title": "SongModel_v1",
+  "description": "Frozen execution-ready song model for deterministic audio engine integration",
+  "type": "object",
+  "required": [
+    "version",
+    "id",
+    "createdAt",
+    "transport",
+    "sections",
+    "roles",
+    "projections",
+    "mixGraph",
+    "realizationPolicy",
+    "determinismSeed"
+  ],
+  "properties": {
+    "version": {
+      "type": "string",
+      "const": "1.0",
+      "description": "SongModel format version"
+    },
+    "id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Unique identifier for this song model"
+    },
+    "createdAt": {
+      "type": "integer",
+      "description": "Unix timestamp of creation"
+    },
+    "metadata": {
+      "$ref": "#/definitions/SongMetadata"
+    },
+    "transport": {
+      "$ref": "#/definitions/TransportConfig"
+    },
+    "sections": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/Section_v1"
+      },
+      "description": "Musical sections with time ranges"
+    },
+    "roles": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/Role_v1"
+      },
+      "description": "Musical role definitions"
+    },
+    "projections": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/Projection_v1"
+      },
+      "description": "Role → audio target mappings"
+    },
+    "mixGraph": {
+      "$ref": "#/definitions/MixGraph_v1"
+    },
+    "realizationPolicy": {
+      "$ref": "#/definitions/RealizationPolicy"
+    },
+    "determinismSeed": {
+      "type": "string",
+      "description": "Seed for deterministic event generation"
+    }
+  },
+  "definitions": {
+    "SongMetadata": {
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "artist": { "type": "string" },
+        "genre": { "type": "string" },
+        "bpm": { "type": "number" },
+        "duration": { "$ref": "#/definitions/MusicalTime" }
+      }
+    },
+    "TransportConfig": {
+      "type": "object",
+      "required": ["tempoMap", "timeSignatureMap", "loopPolicy"],
+      "properties": {
+        "tempoMap": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/TempoEvent"
+          }
+        },
+        "timeSignatureMap": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/TimeSignatureEvent"
+          }
+        },
+        "loopPolicy": {
+          "$ref": "#/definitions/LoopPolicy"
+        },
+        "playbackSpeed": {
+          "type": "number",
+          "minimum": 0.1,
+          "maximum": 4.0,
+          "default": 1.0
+        }
+      }
+    },
+    "TempoEvent": {
+      "type": "object",
+      "required": ["time", "bpm"],
+      "properties": {
+        "time": { "$ref": "#/definitions/MusicalTime" },
+        "bpm": { "type": "number", "minimum": 1, "maximum": 500 }
+      }
+    },
+    "TimeSignatureEvent": {
+      "type": "object",
+      "required": ["time", "numerator", "denominator"],
+      "properties": {
+        "time": { "$ref": "#/definitions/MusicalTime" },
+        "numerator": { "type": "integer", "minimum": 1, "maximum": 16 },
+        "denominator": { "type": "integer", "enum": [2, 4, 8, 16] }
+      }
+    },
+    "LoopPolicy": {
+      "type": "object",
+      "required": ["enabled"],
+      "properties": {
+        "enabled": { "type": "boolean" },
+        "start": { "$ref": "#/definitions/MusicalTime" },
+        "end": { "$ref": "#/definitions/MusicalTime" },
+        "count": { "type": "integer", "minimum": -1 }
+      }
+    },
+    "MusicalTime": {
+      "type": "object",
+      "required": ["bars", "beats", "fractional"],
+      "properties": {
+        "bars": { "type": "integer", "minimum": 0 },
+        "beats": { "type": "integer", "minimum": 0, "maximum": 15 },
+        "fractional": { "type": "number", "minimum": 0, "maximum": 0.999 }
+      }
+    },
+    "Section_v1": {
+      "type": "object",
+      "required": ["id", "name", "start", "end", "roles"],
+      "properties": {
+        "id": { "type": "string", "format": "uuid" },
+        "name": { "type": "string" },
+        "start": { "$ref": "#/definitions/MusicalTime" },
+        "end": { "$ref": "#/definitions/MusicalTime" },
+        "roles": {
+          "type": "array",
+          "items": { "type": "string", "format": "uuid" }
+        },
+        "realizationHints": { "type": "object" }
+      }
+    },
+    "Role_v1": {
+      "type": "object",
+      "required": ["id", "name", "type", "generatorConfig", "parameters"],
+      "properties": {
+        "id": { "type": "string", "format": "uuid" },
+        "name": { "type": "string" },
+        "type": {
+          "type": "string",
+          "enum": ["bass", "harmony", "melody", "rhythm", "texture", "ornament"]
+        },
+        "generatorConfig": {
+          "$ref": "#/definitions/GeneratorConfig"
+        },
+        "parameters": {
+          "$ref": "#/definitions/RoleParameters"
+        }
+      }
+    },
+    "GeneratorConfig": {
+      "type": "object",
+      "required": ["type", "params"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["rhythm", "harmony", "melody", "composition"]
+        },
+        "params": { "type": "object" }
+      }
+    },
+    "RoleParameters": {
+      "type": "object",
+      "properties": {
+        "volume": { "type": "number", "minimum": 0, "maximum": 1 },
+        "pan": { "type": "number", "minimum": -1, "maximum": 1 },
+        "transpose": { "type": "integer", "minimum": -24, "maximum": 24 },
+        "velocityCurve": { "type": "string" },
+        "automation": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/AutomationPoint"
+          }
+        }
+      }
+    },
+    "AutomationPoint": {
+      "type": "object",
+      "required": ["time", "value"],
+      "properties": {
+        "time": { "$ref": "#/definitions/MusicalTime" },
+        "value": { "type": "number" },
+        "interpolation": {
+          "type": "string",
+          "enum": ["linear", "exponential", "step"]
+        }
+      }
+    },
+    "Projection_v1": {
+      "type": "object",
+      "required": ["id", "roleId", "target"],
+      "properties": {
+        "id": { "type": "string", "format": "uuid" },
+        "roleId": { "type": "string", "format": "uuid" },
+        "target": {
+          "type": "object",
+          "required": ["type", "id"],
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": ["track", "bus", "instrument"]
+            },
+            "id": { "type": "string" }
+          }
+        },
+        "transform": {
+          "$ref": "#/definitions/TransformConfig"
+        }
+      }
+    },
+    "TransformConfig": {
+      "type": "object",
+      "properties": {
+        "transpose": { "type": "integer" },
+        "velocityMultiplier": { "type": "number" },
+        "timingOffset": { "$ref": "#/definitions/MusicalTime" }
+      }
+    },
+    "MixGraph_v1": {
+      "type": "object",
+      "required": ["tracks", "buses", "master"],
+      "properties": {
+        "tracks": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/TrackConfig"
+          }
+        },
+        "buses": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/BusConfig"
+          }
+        },
+        "sends": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/SendConfig"
+          }
+        },
+        "master": {
+          "$ref": "#/definitions/MasterConfig"
+        }
+      }
+    },
+    "TrackConfig": {
+      "type": "object",
+      "required": ["id", "name", "instrumentId"],
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "instrumentId": { "type": "string" },
+        "volume": { "type": "number", "minimum": 0, "maximum": 1 },
+        "pan": { "type": "number", "minimum": -1, "maximum": 1 },
+        "solo": { "type": "boolean" },
+        "mute": { "type": "boolean" },
+        "sends": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["busId", "amount"],
+            "properties": {
+              "busId": { "type": "string" },
+              "amount": { "type": "number", "minimum": 0, "maximum": 1 }
+            }
+          }
+        }
+      }
+    },
+    "BusConfig": {
+      "type": "object",
+      "required": ["id", "name"],
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "volume": { "type": "number", "minimum": 0, "maximum": 1 },
+        "sends": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["busId", "amount"],
+            "properties": {
+              "busId": { "type": "string" },
+              "amount": { "type": "number", "minimum": 0, "maximum": 1 }
+            }
+          }
+        }
+      }
+    },
+    "SendConfig": {
+      "type": "object",
+      "required": ["fromId", "toId", "amount"],
+      "properties": {
+        "fromId": { "type": "string" },
+        "toId": { "type": "string" },
+        "amount": { "type": "number", "minimum": 0, "maximum": 1 }
+      }
+    },
+    "MasterConfig": {
+      "type": "object",
+      "properties": {
+        "volume": { "type": "number", "minimum": 0, "maximum": 1 },
+        "limiterEnabled": { "type": "boolean" },
+        "limiterThreshold": { "type": "number", "minimum": -60, "maximum": 0 }
+      }
+    },
+    "RealizationPolicy": {
+      "type": "object",
+      "required": ["windowSize", "lookaheadDuration", "determinismMode"],
+      "properties": {
+        "windowSize": { "$ref": "#/definitions/MusicalTime" },
+        "lookaheadDuration": { "$ref": "#/definitions/MusicalTime" },
+        "determinismMode": {
+          "type": "string",
+          "enum": ["strict", "seeded", "loose"]
+        }
+      }
+    }
+  }
+}

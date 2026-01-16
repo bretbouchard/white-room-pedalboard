@@ -1,0 +1,11 @@
+{
+  "id": "artifact-1768283809568-uwct4j8jl",
+  "type": "pattern",
+  "content": "## Pattern: Recursive Mutex Deadlock in C++ FFI\n\n### Problem\nWhen a method locks a mutex and then calls another method that tries to lock the same mutex, a deadlock occurs because the mutex is non-recursive (std::mutex).\n\n### Example (Bug)\n```cpp\n// In EngineCoreImpl.cpp:\nEventBatch SchillingerEngineCore::getEvents(MusicalTime from, MusicalTime to) {\n  std::lock_guard<std::mutex> lock(state_.stateMutex);  // First lock\n  // ...\n  batch.events = generateV1Events(from, to);  // Calls getRoles()\n  return batch;\n}\n\nstd::vector<RoleConfig> SchillingerEngineCore::getRoles() const {\n  std::lock_guard<std::mutex> lock(state_.stateMutex);  // DEADLOCK! Already locked\n  return state_.roles;\n}\n```\n\n### Solution\nAdd internal unlocked variants for use when the lock is already held:\n\n```cpp\nprivate:\n  // Internal unlocked variants - only use when stateMutex is already held!\n  std::vector<RoleConfig> getRoles_unlocked() const {\n    return state_.roles;\n  }\n\n  std::vector<Pattern> getPatterns_unlocked(SongId song) const {\n    auto it = state_.patterns.find(song);\n    if (it != state_.patterns.end()) {\n      return it->second;\n    }\n    return {};\n  }\n```\n\nThen use them in locked contexts:\n```cpp\nbatch.events = generateV1Events(from, to);\n// Inside generateV1Events:\nstd::vector<RoleConfig> roles = getRoles_unlocked();  // No deadlock!\n```\n\n### Prevention\n- Never call a public locking method from within another method that holds the same lock\n- Use unlocked private variants for internal access when lock is already held\n- Consider using std::recursive_mutex if you truly need reentrancy (but prefer unlocked variants)\n\n### Files Affected\n- `/Users/bretbouchard/apps/schill/white_room/swift_frontend/src/SchillingerEngineCore/src/EngineCoreImpl.cpp`\n\n### Confidence\n1.0 (definitive root cause found through FFI timeout analysis)",
+  "metadata": {
+    "scope": "repository",
+    "tags": "arg_value>[",
+    "confidence": 1
+  },
+  "timestamp": "2026-01-13T05:56:49.568Z"
+}

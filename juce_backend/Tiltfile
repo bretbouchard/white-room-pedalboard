@@ -1,0 +1,54 @@
+# Tiltfile for Audio Agent Development - v2
+
+# Define project root
+project_root = "."
+
+# Backend readiness check that starts backend and waits for it to be healthy
+local_resource(
+  'backend',
+  cmd = '''
+# Start the backend in background
+python -m src.main --host 0.0.0.0 --port 8000 &
+BACKEND_PID=$!
+
+# Wait for backend to be ready
+echo "🔍 Waiting for backend to be ready..."
+for i in {1..600}; do
+  if curl -s http://localhost:8000/health > /dev/null 2>&1; then
+    HEALTH=$(curl -s http://localhost:8000/health)
+    if echo "$HEALTH" | grep -q '"status".*"healthy"' && echo "$HEALTH" | grep -q '"dawdreamer_available".*true'; then
+      echo "✅ Backend is ready with DawDreamer!"
+      echo "🎯 Backend resource is now ready - frontend can start!"
+      # Exit successfully while keeping backend running in background
+      exit 0
+    else
+      echo "⏳ Backend responding but not ready (attempt $i/600)"
+    fi
+  else
+    echo "⏳ Backend not responding yet (attempt $i/600)"
+  fi
+  sleep 1
+done
+
+echo "❌ Backend failed to become ready in 600 seconds (10 minutes)"
+kill $BACKEND_PID 2>/dev/null
+exit 1
+''',
+  dir='backend',
+  env={
+    'PYTHONPATH': 'backend/src:src',
+    'DAWDREAMER_ENABLED': 'true',
+  }
+)
+
+# Frontend service that starts after backend is ready
+local_resource(
+  'frontend',
+  cmd=['npm', 'run', 'dev', '--', '--host', '0.0.0.0', '--port', '3000'],
+  dir='frontend',
+  env={
+    'VITE_API_URL': 'http://localhost:8000/api',
+    'VITE_WS_URL': 'ws://localhost:8000/ws',
+  },
+  deps=['backend']
+)

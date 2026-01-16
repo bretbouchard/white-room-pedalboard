@@ -1,0 +1,11 @@
+{
+  "op": "plan",
+  "id": "req-plan-003",
+  "payload": {
+    "sessionId": "session-test-001",
+    "window": {
+      "from": 96000,
+      "to": 192000
+    }
+  }
+}

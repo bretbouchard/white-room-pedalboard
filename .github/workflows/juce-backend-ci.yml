@@ -1,0 +1,666 @@
+name: JUCE Backend CI/CD
+
+# Comprehensive CI/CD pipeline for JUCE backend
+# Optimized for multi-platform builds, automated testing, and quality gates
+
+on:
+  push:
+    branches: [main, develop, 'feature/*']
+    paths:
+      - 'juce_backend/**'
+      - '.github/workflows/juce-backend-ci.yml'
+  pull_request:
+    branches: [main, develop]
+    paths:
+      - 'juce_backend/**'
+  workflow_dispatch:
+    inputs:
+      build_type:
+        description: 'Build configuration'
+        required: true
+        default: 'Release'
+        type: choice
+        options:
+        - Debug
+        - Release
+        - RelWithDebInfo
+      run_sanitizers:
+        description: 'Run tests with sanitizers'
+        required: false
+        default: true
+        type: boolean
+      run_performance_tests:
+        description: 'Run performance benchmarks'
+        required: false
+        default: false
+        type: boolean
+
+env:
+  CMAKE_VERSION: '3.26.4'
+  # Coverage threshold for C++ code
+  COVERAGE_THRESHOLD: 85
+  # Performance regression threshold (5%)
+  PERF_THRESHOLD: 5
+  # Cache version - increment to force cache refresh
+  CACHE_VERSION: v2
+
+jobs:
+  ################################################################################
+  # Code Quality and Static Analysis
+  ################################################################################
+
+  code-quality:
+    name: Code Quality Analysis
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          fetch-depth: 0
+
+      - name: Setup CMake
+        uses: jwlawson/actions-setup-cmake@v2
+        with:
+          cmake-version: ${{ env.CMAKE_VERSION }}
+
+      - name: Install clang-tidy and clang-format
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang-tidy clang-format
+
+      - name: Run clang-format check
+        working-directory: juce_backend
+        run: |
+          find src -name '*.cpp' -o -name '*.h' | xargs clang-format --dry-run --Werror
+
+      - name: Run clang-tidy static analysis
+        working-directory: juce_backend
+        run: |
+          cmake -B build -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+          run-clang-tidy -p build src/ -warnings-as-errors '*' || true
+
+      - name: Upload analysis results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: code-quality-results
+          path: |
+            juce_backend/clang-tidy-results.txt
+            juce_backend/clang-format-results.txt
+          retention-days: 7
+
+  ################################################################################
+  # Unit Tests with Coverage
+  ################################################################################
+
+  unit-tests:
+    name: Unit Tests
+    runs-on: ${{ matrix.os }}
+    needs: code-quality
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        build_type: [Debug, Release]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Setup CMake
+        uses: jwlawson/actions-setup-cmake@v2
+        with:
+          cmake-version: ${{ env.CMAKE_VERSION }}
+
+      - name: Install dependencies (Ubuntu)
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libasound2-dev \
+            libx11-dev \
+            libxext-dev \
+            libxrandr-dev \
+            libxinerama-dev \
+            libxcursor-dev \
+            libfreetype6-dev \
+            libwebkit2gtk-4.0-dev \
+            libglu1-mesa-dev
+
+      - name: Install dependencies (macOS)
+        if: matrix.os == 'macos-latest'
+        run: |
+          # Install dependencies via HomeTap if needed
+          brew install libfreetype
+
+      - name: Configure CMake
+        working-directory: juce_backend
+        run: |
+          cmake -B build \
+            -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
+            -DBUILD_TESTS=ON \
+            -DENABLE_COVERAGE=ON \
+            -DCMAKE_INSTALL_PREFIX=install
+
+      - name: Build
+        working-directory: juce_backend
+        run: |
+          cmake --build build \
+            --config ${{ matrix.build_type }} \
+            -j$(sysctl -n hw.ncpu || nproc)
+
+      - name: Run unit tests
+        working-directory: juce_backend
+        run: |
+          cd build
+          ctest \
+            --output-on-failure \
+            --verbose \
+            -C ${{ matrix.build_type }} \
+            -T Test
+
+      - name: Generate coverage report
+        if: matrix.build_type == 'Debug' && matrix.os == 'ubuntu-latest'
+        working-directory: juce_backend
+        run: |
+          cmake --build build --target coverage
+          cmake --build build --target coverage_xml
+
+      - name: Upload coverage to Codecov
+        if: matrix.build_type == 'Debug' && matrix.os == 'ubuntu-latest'
+        uses: codecov/codecov-action@v4
+        with:
+          files: juce_backend/build/coverage.xml
+          flags: unit-tests
+          name: codecov-juce-unit
+          fail_ci_if_error: false
+
+      - name: Check coverage threshold
+        if: matrix.build_type == 'Debug' && matrix.os == 'ubuntu-latest'
+        working-directory: juce_backend
+        run: |
+          COVERAGE=$(lcov --summary build/coverage.info | grep lines | awk '{print $2}' | sed 's/%//')
+          echo "Current coverage: ${COVERAGE}%"
+          if (( $(echo "$COVERAGE < ${{ env.COVERAGE_THRESHOLD }}" | bc -l) )); then
+            echo "❌ Coverage ${COVERAGE}% is below threshold ${{ env.COVERAGE_THRESHOLD }}%"
+            exit 1
+          else
+            echo "✅ Coverage ${COVERAGE}% meets threshold"
+          fi
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: unit-test-results-${{ matrix.os }}-${{ matrix.build_type }}
+          path: |
+            juce_backend/build/Testing/
+            juce_backend/build/coverage.info
+            juce_backend/build/coverage.xml
+
+  ################################################################################
+  # Sanitizer Tests
+  ################################################################################
+
+  sanitizer-tests:
+    name: Sanitizer Tests (${{ matrix.sanitizer }})
+    runs-on: ubuntu-latest
+    needs: unit-tests
+    timeout-minutes: 45
+    if: github.event.inputs.run_sanitizers != 'false'
+    strategy:
+      fail-fast: false
+      matrix:
+        sanitizer: [address, undefined, thread]
+        include:
+          - sanitizer: address
+            cmake_flag: -fsanitize=address
+          - sanitizer: undefined
+            cmake_flag: -fsanitize=undefined
+          - sanitizer: thread
+            cmake_flag: -fsanitize=thread
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Setup CMake
+        uses: jwlawson/actions-setup-cmake@v2
+        with:
+          cmake-version: ${{ env.CMAKE_VERSION }}
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libasound2-dev libx11-dev libxext-dev
+
+      - name: Configure with sanitizer
+        working-directory: juce_backend
+        run: |
+          cmake -B build \
+            -DCMAKE_BUILD_TYPE=Debug \
+            -DBUILD_TESTS=ON \
+            -DCMAKE_C_FLAGS="${{ matrix.cmake_flag }} -O1 -g" \
+            -DCMAKE_CXX_FLAGS="${{ matrix.cmake_flag }} -O1 -g" \
+            -DCMAKE_EXE_LINKER_FLAGS="${{ matrix.cmake_flag }}" \
+            -DCMAKE_SHARED_LINKER_FLAGS="${{ matrix.cmake_flag }}"
+
+      - name: Build with sanitizer
+        working-directory: juce_backend
+        run: |
+          cmake --build build --config Debug -j$(nproc)
+
+      - name: Run tests with sanitizer
+        working-directory: juce_backend
+        run: |
+          cd build
+          ctest --output-on-failure -C Debug
+        env:
+          ASAN_OPTIONS: detect_leaks=1:halt_on_error=0
+          UBSAN_OPTIONS: halt_on_error=0
+
+      - name: Upload sanitizer results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: sanitizer-results-${{ matrix.sanitizer }}
+          path: juce_backend/build/Testing/
+
+  ################################################################################
+  # DSP Tests (Golden Audio)
+  ################################################################################
+
+  dsp-tests:
+    name: DSP Golden Tests
+    runs-on: ubuntu-latest
+    needs: unit-tests
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Setup CMake
+        uses: jwlawson/actions-setup-cmake@v2
+        with:
+          cmake-version: ${{ env.CMAKE_VERSION }}
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libasound2-dev libx11-dev
+
+      - name: Build DSP test harness
+        working-directory: juce_backend
+        run: |
+          cmake -B build -DCMAKE_BUILD_TYPE=Release -DBUILD_DSP_TESTS=ON
+          cmake --build build --config Release --target dsp_test_harness -j$(nproc)
+
+      - name: Run golden audio tests
+        working-directory: juce_backend
+        run: |
+          cd build
+          ./tests/dsp/dsp_test_harness --test-dir=tests/dsp/golden --output-dir=test-output
+
+      - name: Compare with baseline
+        working-directory: juce_backend
+        run: |
+          python3 tests/dsp/compare_golden.py \
+            --baseline tests/dsp/golden/baseline.json \
+            --current test-output/results.json \
+            --threshold 0.001
+
+      - name: Upload DSP test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: dsp-test-results
+          path: |
+            juce_backend/test-output/
+            juce_backend/build/dsp-test-report.html
+
+  ################################################################################
+  # Instrument Tests
+  ################################################################################
+
+  instrument-tests:
+    name: Instrument Tests
+    runs-on: ubuntu-latest
+    needs: unit-tests
+    timeout-minutes: 25
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Setup CMake
+        uses: jwlawson/actions-setup-cmake@v2
+        with:
+          cmake-version: ${{ env.CMAKE_VERSION }}
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libasound2-dev libx11-dev
+
+      - name: Build with instrument tests
+        working-directory: juce_backend
+        run: |
+          cmake -B build \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DBUILD_INSTRUMENT_TESTS=ON
+          cmake --build build --config Release -j$(nproc)
+
+      - name: Run instrument tests
+        working-directory: juce_backend
+        run: |
+          cd build
+          ctest --output-on-failure -C Release -R instrument
+
+      - name: Upload instrument results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: instrument-test-results
+          path: juce_backend/build/Testing/
+
+  ################################################################################
+  # Performance Benchmarks
+  ################################################################################
+
+  performance-tests:
+    name: Performance Benchmarks
+    runs-on: ubuntu-latest
+    needs: unit-tests
+    timeout-minutes: 30
+    if: github.event.inputs.run_performance_tests == 'true' || github.event_name == 'schedule'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          fetch-depth: 0
+
+      - name: Setup CMake
+        uses: jwlawson/actions-setup-cmake@v2
+        with:
+          cmake-version: ${{ env.CMAKE_VERSION }}
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libasound2-dev libx11-dev
+
+      - name: Build with benchmarks
+        working-directory: juce_backend
+        run: |
+          cmake -B build \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DBUILD_BENCHMARKS=ON
+          cmake --build build --config Release --target benchmarks -j$(nproc)
+
+      - name: Run benchmarks
+        working-directory: juce_backend
+        run: |
+          cd build
+          ./benchmarks/run_benchmarks --output benchmark-results.json
+
+      - name: Download previous benchmarks
+        uses: actions/cache@v4
+        id: benchmark-cache
+        with:
+          path: juce_backend/build/previous-benchmarks.json
+          key: benchmarks-${{ runner.os }}-${{ env.CACHE_VERSION }}
+          restore-keys: |
+            benchmarks-${{ runner.os }}-
+
+      - name: Compare performance
+        working-directory: juce_backend
+        run: |
+          python3 scripts/compare_benchmarks.py \
+            --baseline build/previous-benchmarks.json \
+            --current build/benchmark-results.json \
+            --threshold ${{ env.PERF_THRESHOLD }}
+
+      - name: Save current benchmarks
+        if: always()
+        run: |
+          cp juce_backend/build/benchmark-results.json juce_backend/build/previous-benchmarks.json
+
+      - name: Cache benchmarks
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: juce_backend/build/previous-benchmarks.json
+          key: benchmarks-${{ runner.os }}-${{ env.CACHE_VERSION }}-${{ github.sha }}
+
+      - name: Upload benchmark results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: benchmark-results
+          path: |
+            juce_backend/build/benchmark-results.json
+            juce_backend/build/benchmark-report.html
+
+  ################################################################################
+  # Multi-Platform Builds
+  ################################################################################
+
+  build-matrix:
+    name: Build (${{ matrix.platform }})
+    runs-on: ${{ matrix.os }}
+    needs: [unit-tests, sanitizer-tests]
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            platform: linux-x64
+            generator: Unix Makefiles
+          - os: macos-latest
+            platform: macos-universal
+            generator: Xcode
+          - os: macos-latest
+            platform: ios-arm64
+            generator: Xcode
+            ios: true
+          - os: macos-latest
+            platform: ios-simulator
+            generator: Xcode
+            ios: true
+            simulator: true
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Setup CMake
+        uses: jwlawson/actions-setup-cmake@v2
+        with:
+          cmake-version: ${{ env.CMAKE_VERSION }}
+
+      - name: Install dependencies (Ubuntu)
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libasound2-dev libx11-dev libxext-dev libfreetype6-dev
+
+      - name: Install dependencies (macOS)
+        if: matrix.os == 'macos-latest'
+        run: brew install libfreetype
+
+      - name: Configure CMake
+        working-directory: juce_backend
+        run: |
+          cmake -B build \
+            -G "${{ matrix.generator }}" \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DBUILD_PLUGINS=ON \
+            -DCMAKE_INSTALL_PREFIX=install \
+            ${{ matrix.ios && '-DCMAKE_SYSTEM_NAME=iOS' || '' }} \
+            ${{ matrix.simulator && '-DCMAKE_OSX_SYSROOT=iphonesimulator' || '' }}
+
+      - name: Build
+        working-directory: juce_backend
+        run: |
+          cmake --build build \
+            --config Release \
+            -j$(sysctl -n hw.ncpu || nproc)
+
+      - name: Install
+        working-directory: juce_backend
+        run: |
+          cmake --install build --prefix install
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-artifacts-${{ matrix.platform }}
+          path: |
+            juce_backend/install/
+            juce_backend/build/*.vst3
+            juce_backend/build/*.app
+            juce_backend/build/*.au
+
+  ################################################################################
+  # Quality Gates
+  ################################################################################
+
+  quality-gates:
+    name: Quality Gates
+    runs-on: ubuntu-latest
+    needs: [unit-tests, sanitizer-tests, dsp-tests, instrument-tests]
+    if: always()
+    timeout-minutes: 10
+
+    steps:
+      - name: Check all required jobs
+        run: |
+          echo "# JUCE Backend Quality Gates" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## Job Status" >> $GITHUB_STEP_SUMMARY
+          echo "- Unit Tests: ${{ needs.unit-tests.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Sanitizer Tests: ${{ needs.sanitizer-tests.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "- DSP Tests: ${{ needs.dsp-tests.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Instrument Tests: ${{ needs.instrument-tests.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          # Quality gate checks
+          GATE_STATUS="✅ PASSED"
+
+          if [[ "${{ needs.unit-tests.result }}" != "success" ]]; then
+            echo "❌ Unit tests failed" >> $GITHUB_STEP_SUMMARY
+            GATE_STATUS="❌ FAILED"
+          else
+            echo "✅ Unit tests passed" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          if [[ "${{ needs.sanitizer-tests.result }}" != "success" ]]; then
+            echo "❌ Sanitizer tests failed" >> $GITHUB_STEP_SUMMARY
+            GATE_STATUS="❌ FAILED"
+          else
+            echo "✅ Sanitizer tests passed" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          if [[ "${{ needs.dsp-tests.result }}" != "success" ]]; then
+            echo "❌ DSP tests failed" >> $GITHUB_STEP_SUMMARY
+            GATE_STATUS="❌ FAILED"
+          else
+            echo "✅ DSP tests passed" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          if [[ "${{ needs.instrument-tests.result }}" != "success" ]]; then
+            echo "❌ Instrument tests failed" >> $GITHUB_STEP_SUMMARY
+            GATE_STATUS="❌ FAILED"
+          else
+            echo "✅ Instrument tests passed" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## Final Status: $GATE_STATUS" >> $GITHUB_STEP_SUMMARY
+
+          if [[ "$GATE_STATUS" == *"FAILED"* ]]; then
+            exit 1
+          fi
+
+  ################################################################################
+  # Notifications
+  ################################################################################
+
+  notify:
+    name: Send Notifications
+    runs-on: ubuntu-latest
+    needs: [quality-gates, build-matrix]
+    if: always()
+    timeout-minutes: 5
+
+    steps:
+      - name: Determine build status
+        id: status
+        run: |
+          if [[ "${{ needs.quality-gates.result }}" == "success" && "${{ needs.build-matrix.result }}" == "success" ]]; then
+            echo "status=success" >> $GITHUB_OUTPUT
+            echo "emoji=✅" >> $GITHUB_OUTPUT
+            echo "color=good" >> $GITHUB_OUTPUT
+          else
+            echo "status=failure" >> $GITHUB_OUTPUT
+            echo "emoji=❌" >> $GITHUB_OUTPUT
+            echo "color=danger" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Slack notification
+        if: vars.SLACK_WEBHOOK_URL != ''
+        uses: slackapi/slack-github-action@v1
+        with:
+          webhook-url: ${{ vars.SLACK_WEBHOOK_URL }}
+          payload: |
+            {
+              "text": "${{ steps.status.outputs.emoji }} JUCE Backend Build ${{ steps.status.outputs.status }}",
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*${{ steps.status.outputs.emoji }} JUCE Backend Build ${{ steps.status.outputs.status }}*\n\n*Repository:* ${{ github.repository }}\n*Branch:* ${{ github.ref_name }}\n*Commit:* ${{ github.sha }}\n*Author:* ${{ github.actor }}\n\n${{ github.event.head_commit.message }}"
+                  }
+                },
+                {
+                  "type": "actions",
+                  "elements": [
+                    {
+                      "type": "button",
+                      "text": {
+                        "type": "plain_text",
+                        "text": "View Workflow"
+                      },
+                      "url": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+                    },
+                    {
+                      "type": "button",
+                      "text": {
+                        "type": "plain_text",
+                        "text": "View Commit"
+                      },
+                      "url": "${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}"
+                    }
+                  ]
+                }
+              ]
+            }

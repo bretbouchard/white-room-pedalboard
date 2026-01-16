@@ -1,0 +1,24 @@
+# FilterGate LV2 Manifest
+# Generated TTL file for LV2 plugin bundle
+
+@prefix lv2:  <http://lv2plug.in/ns/lv2core#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix doap: <http://usefulinc.com/ns/doap#> .
+@prefix ui:   <http://lv2plug.in/ns/extensions/ui#> .
+
+<http://schillinger-ecosystem/plugins/filtergate>
+    a lv2:Plugin ;
+    lv2:binary <FilterGate_LV2.so> ;
+    rdfs:seeAlso <FilterGate.ttl> ;
+
+    # Project metadata
+    doap:name "FilterGate" ;
+    doap:maintainer [
+        a foaf:Person ;
+        foaf:name "Schillinger Ecosystem" ;
+        foaf:homepage <https://schillinger-ecosystem.com>
+    ] ;
+    doap:license <https://opensource.org/licenses/MIT> ;
+
+    # Optional UI (for future)
+    # ui:ui <http://schillinger-ecosystem/plugins/filtergate#ui> .

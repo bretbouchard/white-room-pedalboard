@@ -1,0 +1,305 @@
+name: SDK CI Pipeline
+
+on:
+  push:
+    branches: [ main, master, develop ]
+  pull_request:
+    branches: [ main, master, develop ]
+    paths:
+      - 'src/sdk/**'
+      - '.github/workflows/sdk-ci.yml'
+
+jobs:
+  sdk-tests:
+    name: SDK Core Tests
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x]
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Setup Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+        cache-dependency-path: 'src/sdk/core/package-lock.json'
+
+    - name: Install dependencies
+      working-directory: src/sdk/core
+      run: npm ci
+
+    - name: Run type checking
+      working-directory: src/sdk/core
+      run: npm run build
+
+    - name: Run unit tests
+      working-directory: src/sdk/core
+      run: npm test -- --testPathPattern="unit"
+
+    - name: Run integration tests
+      working-directory: src/sdk/core
+      run: npm test -- --testPathPattern="integration"
+
+    - name: Generate test coverage
+      working-directory: src/sdk/core
+      run: npm run test:coverage
+
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v3
+      with:
+        file: src/sdk/core/coverage/lcov.info
+        flags: sdk-core
+        name: sdk-core-coverage
+
+  sdk-linting:
+    name: SDK Code Quality
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20.x'
+        cache: 'npm'
+        cache-dependency-path: 'src/sdk/core/package-lock.json'
+
+    - name: Install dependencies
+      working-directory: src/sdk/core
+      run: npm ci
+
+    - name: Run ESLint
+      working-directory: src/sdk/core
+      run: npm run lint
+
+    - name: Check formatting
+      working-directory: src/sdk/core
+      run: npx prettier --check "src/**/*.ts"
+
+  sdk-build:
+    name: SDK Build Verification
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20.x'
+        cache: 'npm'
+        cache-dependency-path: 'src/sdk/core/package-lock.json'
+
+    - name: Install dependencies
+      working-directory: src/sdk/core
+      run: npm ci
+
+    - name: Build SDK
+      working-directory: src/sdk/core
+      run: npm run build
+
+    - name: Verify build output
+      working-directory: src/sdk/core
+      run: |
+        test -f dist/index.js
+        test -f dist/index.d.ts
+        test -d dist/adapter
+        test -d dist/daid
+        test -d dist/types
+
+  sdk-security:
+    name: SDK Security Scan
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20.x'
+        cache: 'npm'
+        cache-dependency-path: 'src/sdk/core/package-lock.json'
+
+    - name: Install dependencies
+      working-directory: src/sdk/core
+      run: npm ci
+
+    - name: Run security audit
+      working-directory: src/sdk/core
+      run: npm audit --audit-level=moderate
+
+    - name: Run CodeQL Analysis
+      uses: github/codeql-action/init@v2
+      with:
+        languages: javascript
+
+    - name: Perform CodeQL Analysis
+      uses: github/codeql-action/analyze@v2
+
+  sdk-performance:
+    name: SDK Performance Tests
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20.x'
+        cache: 'npm'
+        cache-dependency-path: 'src/sdk/core/package-lock.json'
+
+    - name: Install dependencies
+      working-directory: src/sdk/core
+      run: npm ci
+
+    - name: Build SDK
+      working-directory: src/sdk/core
+      run: npm run build
+
+    - name: Run performance tests
+      working-directory: src/sdk/core
+      run: npm test -- --testPathPattern="performance" --verbose
+
+  frontend-integration:
+    name: Frontend Integration Tests
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20.x'
+        cache: 'npm'
+        cache-dependency-path: 'package-lock.json'
+
+    - name: Install frontend dependencies
+      run: npm ci
+
+    - name: Build SDK
+      working-directory: src/sdk/core
+      run: npm run build
+
+    - name: Run frontend integration tests
+      run: npm test -- --testPathPattern="sdk.integration"
+
+  deploy-docs:
+    name: Deploy Documentation
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    needs: [sdk-tests, sdk-linting, sdk-build]
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20.x'
+
+    - name: Install dependencies
+      working-directory: src/sdk/core
+      run: npm ci
+
+    - name: Build SDK
+      working-directory: src/sdk/core
+      run: npm run build
+
+    - name: Generate documentation
+      working-directory: src/sdk/core
+      run: |
+        npx typedoc src/index.ts --out docs --theme default
+
+    - name: Deploy to GitHub Pages
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: src/sdk/core/docs
+
+  publish-sdk:
+    name: Publish SDK Package
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    needs: [sdk-tests, sdk-linting, sdk-build, sdk-security]
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20.x'
+        registry-url: 'https://registry.npmjs.org'
+        cache: 'npm'
+        cache-dependency-path: 'src/sdk/core/package-lock.json'
+
+    - name: Install dependencies
+      working-directory: src/sdk/core
+      run: npm ci
+
+    - name: Build SDK
+      working-directory: src/sdk/core
+      run: npm run build
+
+    - name: Get version from package.json
+      id: version
+      working-directory: src/sdk/core
+      run: echo "VERSION=$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
+
+    - name: Check if version is already published
+      id: check_version
+      run: |
+        VERSION="${{ steps.version.outputs.VERSION }}"
+        if npm view @schillinger-sdk/core@${VERSION} --json >/dev/null 2>&1; then
+          echo "already_published=true" >> $GITHUB_OUTPUT
+        else
+          echo "already_published=false" >> $GITHUB_OUTPUT
+        fi
+
+    - name: Publish to NPM
+      if: steps.check_version.outputs.already_published != 'true'
+      working-directory: src/sdk/core
+      run: npm publish --access public
+      env:
+        NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+    - name: Create GitHub Release
+      if: steps.check_version.outputs.already_published != 'true'
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: v${{ steps.version.outputs.VERSION }}
+        release_name: SDK v${{ steps.version.outputs.VERSION }}
+        body: |
+          ## Schillinger SDK v${{ steps.version.outputs.VERSION }}
+
+          ### Features
+          - Complete TypeScript SDK core implementation
+          - Unified generation and analysis interfaces
+          - DAID provenance tracking system
+          - Comprehensive error handling and logging
+
+        draft: false
+        prerelease: false

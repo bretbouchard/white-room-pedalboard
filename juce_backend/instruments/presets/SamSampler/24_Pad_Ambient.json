@@ -1,0 +1,33 @@
+{
+  "version": "1.0.0",
+  "name": "Ambient Pad",
+  "author": "Bret Bouchard",
+  "description": "Evolving ambient texture with slow attacks and cinematic depth.",
+  "category": "Pad",
+  "tags": ["pad", "ambient", "cinematic", "evolving", "atmospheric"],
+  "creationDate": "2025-12-27",
+  "parameters": {
+    "sample.file": "texture_ambient_C4.wav",
+    "sample.loop_mode": 1.0,
+    "sample.loop.start": 0.2,
+    "sample.loop.end": 0.8,
+    "pitch.transpose": 0.5,
+    "pitch.detune": 0.5,
+    "pitch.bend": 0.5,
+    "filter.type": 0.0,
+    "filter.cutoff": 0.45,
+    "filter.resonance": 0.18,
+    "env.adsr.a": 0.6,
+    "env.adsr.d": 0.4,
+    "env.adsr.s": 0.7,
+    "env.adsr.r": 0.9,
+    "fx.drive": 0.0,
+    "fx.chorus": 0.55,
+    "fx.delay": 0.3,
+    "fx.reverb": 0.85,
+    "output.level": 0.7,
+    "output.pan": 0.5
+  },
+  "macroMappings": {},
+  "modulationMatrix": {}
+}

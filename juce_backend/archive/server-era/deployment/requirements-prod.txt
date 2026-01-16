@@ -1,0 +1,41 @@
+# Production requirements for Schillinger SDK HTTP Server
+# Core dependencies
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+pydantic==2.5.0
+pydantic-settings==2.1.0
+
+# HTTP and networking
+httpx==0.25.2
+requests==2.31.0
+
+# Logging and monitoring
+structlog==23.2.0
+prometheus-client==0.19.0
+
+# Security
+python-jose[cryptography]==3.3.0
+passlib[bcrypt]==1.7.4
+python-multipart==0.0.6
+PyJWT==2.8.0
+cryptography==41.0.7
+
+# Performance and caching
+redis==5.0.1
+aioredis==2.0.1
+
+# Development and production utilities
+python-dotenv==1.0.0
+click==8.1.7
+rich==13.7.0
+
+# Authentication
+clerk-backend==0.13.0
+
+# Schillinger-specific dependencies (mock for now)
+# These would be replaced with actual dependencies when available
+# schillinger-core==1.0.0
+# schillinger-daid==1.0.0
+
+# Optional: Uncomment if using actual DAID core
+# -e ./src/daid_core

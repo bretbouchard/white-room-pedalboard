@@ -1,0 +1,239 @@
+{
+  "model": {
+    "version": "1.0",
+    "id": "edge-cases",
+    "createdAt": 1735392000000,
+    "metadata": {
+      "name": "Edge Cases",
+      "description": "Variable tempo, loop points, time signature changes",
+      "duration": 60,
+      "expectedEventCount": 156
+    },
+    "transport": {
+      "tempoMap": [
+        { "time": 0, "tempo": 100 },
+        { "time": 10, "tempo": 120 },
+        { "time": 20, "tempo": 80 },
+        { "time": 30, "tempo": 140 },
+        { "time": 40, "tempo": 110 },
+        { "time": 50, "tempo": 130 }
+      ],
+      "timeSignatureMap": [
+        { "time": 0, "signature": [4, 4] },
+        { "time": 8, "signature": [3, 4] },
+        { "time": 16, "signature": [6, 8] },
+        { "time": 24, "signature": [5, 4] },
+        { "time": 32, "signature": [7, 8] },
+        { "time": 40, "signature": [4, 4] },
+        { "time": 48, "signature": [2, 4] }
+      ],
+      "loopPolicy": {
+        "enabled": true,
+        "start": 10,
+        "end": 30,
+        "count": 2
+      },
+      "playbackSpeed": 1.0
+    },
+    "sections": [
+      {
+        "id": "section-pre-loop",
+        "name": "Pre-Loop",
+        "start": { "seconds": 0, "beats": 0, "measures": 0 },
+        "end": { "seconds": 10, "beats": 25, "measures": 6.25 },
+        "roles": ["rhythm-1"]
+      },
+      {
+        "id": "section-loop-content",
+        "name": "Loop Content",
+        "start": { "seconds": 10, "beats": 25, "measures": 6.25 },
+        "end": { "seconds": 30, "beats": 72, "measures": 18 },
+        "roles": ["rhythm-1", "melody-1", "harmony-1"]
+      },
+      {
+        "id": "section-post-loop",
+        "name": "Post-Loop",
+        "start": { "seconds": 30, "beats": 72, "measures": 18 },
+        "end": { "seconds": 60, "beats": 172, "measures": 43 },
+        "roles": ["texture-1", "ornament-1"]
+      }
+    ],
+    "roles": [
+      {
+        "id": "rhythm-1",
+        "name": "Adaptive Rhythm",
+        "type": "rhythm",
+        "generatorConfig": {
+          "type": "rhythm",
+          "generators": [5, 7],
+          "complexity": 0.8,
+          "density": 0.6
+        },
+        "parameters": {
+          "tempo": 100,
+          "timeSignature": [4, 4],
+          "swing": 0.0,
+          "patternLength": 4
+        }
+      },
+      {
+        "id": "melody-1",
+        "name": "Tempo-Adaptive Melody",
+        "type": "melody",
+        "generatorConfig": {
+          "type": "melody",
+          "contour": "wave",
+          "key": "C",
+          "scale": "chromatic",
+          "range": [60, 76]
+        },
+        "parameters": {
+          "key": "C",
+          "scale": "chromatic",
+          "range": [60, 76],
+          "rhythmIntegration": true
+        }
+      },
+      {
+        "id": "harmony-1",
+        "name": "Time-Sig-Aware Harmony",
+        "type": "harmony",
+        "generatorConfig": {
+          "type": "harmony",
+          "style": "contemporary",
+          "key": "C",
+          "scale": "major",
+          "complexity": 0.7
+        },
+        "parameters": {
+          "key": "C",
+          "scale": "major",
+          "includeExtensions": true,
+          "functionalHarmony": false
+        }
+      },
+      {
+        "id": "texture-1",
+        "name": "Ambient Texture",
+        "type": "texture",
+        "generatorConfig": {
+          "type": "composition",
+          "density": "sparse"
+        },
+        "parameters": {
+          "density": 0.2,
+          "register": [72, 96]
+        }
+      },
+      {
+        "id": "ornament-1",
+        "name": "Final Flourish",
+        "type": "ornament",
+        "generatorConfig": {
+          "type": "melody",
+          "contour": "ascending",
+          "key": "C",
+          "scale": "major"
+        },
+        "parameters": {
+          "key": "C",
+          "scale": "major",
+          "range": [84, 100],
+          "density": 0.4
+        }
+      }
+    ],
+    "projections": [
+      {
+        "id": "proj-rhythm",
+        "roleId": "rhythm-1",
+        "target": { "type": "track", "id": "track-drums" }
+      },
+      {
+        "id": "proj-melody",
+        "roleId": "melody-1",
+        "target": { "type": "track", "id": "track-lead" }
+      },
+      {
+        "id": "proj-harmony",
+        "roleId": "harmony-1",
+        "target": { "type": "track", "id": "track-pads" }
+      },
+      {
+        "id": "proj-texture",
+        "roleId": "texture-1",
+        "target": { "type": "bus", "id": "bus-atmosphere" }
+      },
+      {
+        "id": "proj-ornament",
+        "roleId": "ornament-1",
+        "target": { "type": "track", "id": "track-ornament" }
+      }
+    ],
+    "mixGraph": {
+      "tracks": [
+        {
+          "id": "track-drums",
+          "name": "Drums",
+          "instrument": "drums",
+          "output": { "format": "audio", "bus": "master" },
+          "parameters": { "volume": 0.85, "pan": 0.0 }
+        },
+        {
+          "id": "track-lead",
+          "name": "Lead",
+          "instrument": "synth",
+          "output": { "format": "audio", "bus": "master" },
+          "parameters": { "volume": 0.7, "pan": -0.2 }
+        },
+        {
+          "id": "track-pads",
+          "name": "Pads",
+          "instrument": "pads",
+          "output": { "format": "audio", "bus": "master" },
+          "parameters": { "volume": 0.5, "pan": 0.2 }
+        },
+        {
+          "id": "track-ornament",
+          "name": "Ornaments",
+          "instrument": "bells",
+          "output": { "format": "audio", "bus": "atmosphere" },
+          "parameters": { "volume": 0.6, "pan": 0.0 }
+        }
+      ],
+      "buses": [
+        {
+          "id": "atmosphere",
+          "name": "Atmosphere Bus",
+          "output": { "format": "audio", "bus": "master" },
+          "parameters": {
+            "volume": 0.7,
+            "effects": { "reverb": 0.9, "delay": 0.5, "chorus": 0.3 }
+          }
+        }
+      ],
+      "sends": [
+        {
+          "from": "track-lead",
+          "to": "atmosphere",
+          "amount": 0.4
+        }
+      ],
+      "master": {
+        "id": "master",
+        "volume": 1.0,
+        "parameters": { "limiter": 0.9 }
+      }
+    },
+    "realizationPolicy": {
+      "windowSize": { "seconds": 3.0, "beats": 5, "measures": 1.25 },
+      "lookaheadDuration": { "seconds": 0.75, "beats": 1.25, "measures": 0.3125 },
+      "determinismMode": "strict"
+    },
+    "determinismSeed": "edge-cases-test-seed-v1"
+  },
+  "goldenHash": "edge-cases-v1-hash-placeholder",
+  "description": "Edge Cases: Loops, tempo changes, time sig changes (60s)",
+  "expectedEventCount": 156,
+  "expectedHash": "to-be-generated-after-implementation"
+}

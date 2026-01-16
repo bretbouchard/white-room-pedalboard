@@ -1,0 +1,118 @@
+# Prometheus Configuration for White Room Production Monitoring
+# Collects metrics from all system components
+
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    cluster: 'white-room-production'
+    environment: 'production'
+
+# Alertmanager configuration
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+          - alertmanager:9093
+
+# Load rules once and periodically evaluate them
+rule_files:
+  - 'alert_rules.yml'
+  - 'recording_rules.yml'
+
+# Scrape configurations
+scrape_configs:
+  # Prometheus self-monitoring
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+        labels:
+          service: 'prometheus'
+          component: 'monitoring'
+
+  # White Room JUCE Backend
+  - job_name: 'juce-backend'
+    static_configs:
+      - targets: ['juce-backend:8000']
+        labels:
+          service: 'juce-backend'
+          component: 'audio-engine'
+    metrics_path: '/metrics'
+    scrape_interval: 10s
+    scrape_timeout: 5s
+
+  # White Room Swift Frontend
+  - job_name: 'swift-frontend'
+    static_configs:
+      - targets: ['swift-frontend:8001']
+        labels:
+          service: 'swift-frontend'
+          component: 'ui'
+    metrics_path: '/metrics'
+    scrape_interval: 30s
+
+  # Node Exporter - System Metrics
+  - job_name: 'node-exporter'
+    static_configs:
+      - targets: ['node-exporter:9100']
+        labels:
+          service: 'infrastructure'
+          component: 'system'
+    scrape_interval: 15s
+
+  # cAdvisor - Container Metrics
+  - job_name: 'cadvisor'
+    static_configs:
+      - targets: ['cadvisor:8080']
+        labels:
+          service: 'infrastructure'
+          component: 'containers'
+    scrape_interval: 15s
+
+  # PostgreSQL Database
+  - job_name: 'postgres'
+    static_configs:
+      - targets: ['postgres-exporter:9187']
+        labels:
+          service: 'database'
+          component: 'postgres'
+    scrape_interval: 30s
+
+  # Redis Cache
+  - job_name: 'redis'
+    static_configs:
+      - targets: ['redis-exporter:9121']
+        labels:
+          service: 'cache'
+          component: 'redis'
+    scrape_interval: 30s
+
+  # Nginx Web Server
+  - job_name: 'nginx'
+    static_configs:
+      - targets: ['nginx-exporter:9113']
+        labels:
+          service: 'web'
+          component: 'nginx'
+    scrape_interval: 15s
+
+  # Business Metrics (Custom)
+  - job_name: 'business-metrics'
+    static_configs:
+      - targets: ['business-metrics:8002']
+        labels:
+          service: 'analytics'
+          component: 'business'
+    scrape_interval: 60s
+
+# Storage configuration
+storage:
+  tsdb:
+    path: /prometheus
+    retention.time: 15d
+    retention.size: 10GB
+
+# Tracing configuration (optional)
+tracing:
+  endpoint: "localhost:4318"
+  client_type: "grpc"

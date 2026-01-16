@@ -1,0 +1,432 @@
+name: Comprehensive Test Suite
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  workflow_dispatch:
+
+jobs:
+  # TypeScript SDK Tests
+  sdk-tests:
+    name: SDK Tests (TypeScript)
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: 'sdk/package-lock.json'
+
+      - name: Install dependencies
+        working-directory: ./sdk
+        run: npm ci
+
+      - name: Run SDK tests
+        working-directory: ./sdk
+        run: npm run test -- --coverage
+
+      - name: Run SDK tests with coverage
+        working-directory: ./sdk
+        run: npm run test:coverage
+
+      - name: Check coverage threshold
+        working-directory: ./sdk
+        run: |
+          coverage=$(cat coverage/coverage-summary.json | jq '.total.lines.pct')
+          echo "Coverage: $coverage%"
+          if (( $(echo "$coverage < 85" | bc -l) )); then
+            echo "Coverage $coverage% is below threshold 85%"
+            exit 1
+          fi
+          echo "Coverage $coverage% meets threshold 85%"
+
+      - name: Upload coverage reports
+        uses: codecov/codecov-action@v3
+        with:
+          files: ./sdk/coverage/lcov.info
+          flags: sdk
+          name: sdk-coverage
+
+      - name: Archive coverage results
+        uses: actions/upload-artifact@v3
+        with:
+          name: sdk-coverage
+          path: sdk/coverage/
+
+  # C++ JUCE Backend Tests
+  juce-tests:
+    name: JUCE Backend Tests (C++)
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Xcode
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
+
+      - name: Install dependencies
+        working-directory: ./juce_backend
+        run: |
+          brew install cmake catch2
+          pip3 install conan
+
+      - name: Configure CMake
+        working-directory: ./juce_backend
+        run: |
+          cmake -B build \
+            -DCMAKE_BUILD_TYPE=Debug \
+            -DBUILD_TESTING=ON \
+            -DCMAKE_CXX_FLAGS="--coverage"
+
+      - name: Build tests
+        working-directory: ./juce_backend
+        run: cmake --build build --target tests
+
+      - name: Run tests
+        working-directory: ./juce_backend
+        run: |
+          cd build
+          ctest --output-on-failure --verbose
+
+      - name: Generate coverage report
+        working-directory: ./juce_backend
+        run: |
+          lcov --capture --directory build --output-file coverage.info
+          lcov --remove coverage.info '/usr/*' '*/tests/*' '*/build/*' --output-file coverage.info
+          lcov --list coverage.info
+
+      - name: Upload coverage reports
+        uses: codecov/codecov-action@v3
+        with:
+          files: ./juce_backend/coverage.info
+          flags: juce
+          name: juce-coverage
+
+      - name: Archive coverage results
+        uses: actions/upload-artifact@v3
+        with:
+          name: juce-coverage
+          path: juce_backend/coverage.info
+
+  # Swift Frontend Tests
+  swift-tests:
+    name: Swift Frontend Tests
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Xcode
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
+
+      - name: Resolve dependencies
+        working-directory: ./swift_frontend/WhiteRoomiOS
+        run: |
+          xcodebuild -resolvePackageDependencies \
+            -scheme WhiteRoomiOS \
+            -destination 'platform=iOS Simulator,name=iPhone 15'
+
+      - name: Run unit tests
+        working-directory: ./swift_frontend/WhiteRoomiOS
+        run: |
+          xcodebuild test \
+            -scheme WhiteRoomiOS \
+            -destination 'platform=iOS Simulator,name=iPhone 15' \
+            -enableCodeCoverage YES \
+            -resultBundlePath TestResults.xcresult
+
+      - name: Generate coverage report
+        working-directory: ./swift_frontend/WhiteRoomiOS
+        run: |
+          xcrun xccov view --report --json TestResults.xcresult > coverage.json
+
+      - name: Check coverage threshold
+        working-directory: ./swift_frontend/WhiteRoomiOS
+        run: |
+          coverage=$(cat coverage.json | jq '.executableLinesCoverage')
+          echo "Coverage: $coverage%"
+          if (( $(echo "$coverage < 85" | bc -l) )); then
+            echo "Coverage $coverage% is below threshold 85%"
+            exit 1
+          fi
+          echo "Coverage $coverage% meets threshold 85%"
+
+      - name: Upload coverage reports
+        uses: codecov/codecov-action@v3
+        with:
+          files: ./swift_frontend/WhiteRoomiOS/coverage.json
+          flags: swift
+          name: swift-coverage
+
+      - name: Archive test results
+        uses: actions/upload-artifact@v3
+        with:
+          name: swift-test-results
+          path: swift_frontend/WhiteRoomiOS/TestResults.xcresult
+
+  # FFI Bridge Integration Tests
+  ffi-tests:
+    name: FFI Bridge Integration Tests
+    runs-on: macos-latest
+    needs: [sdk-tests, juce-tests]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Setup Xcode
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
+
+      - name: Install dependencies
+        run: |
+          brew install cmake
+          pip3 install conan
+
+      - name: Build FFI bridge
+        working-directory: ./juce_backend
+        run: |
+          cmake -B build -DCMAKE_BUILD_TYPE=Debug
+          cmake --build build --target ffi_bridge
+
+      - name: Run FFI tests
+        working-directory: ./juce_backend
+        run: |
+          cd build
+          ctest -R ffi --output-on-failure --verbose
+
+      - name: Run integration tests
+        working-directory: ./sdk
+        run: npm run test:integration
+
+  # End-to-End Pipeline Tests
+  e2e-tests:
+    name: End-to-End Pipeline Tests
+    runs-on: macos-latest
+    needs: [sdk-tests, juce-tests, ffi-tests]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Setup Xcode
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
+
+      - name: Install all dependencies
+        run: |
+          cd sdk && npm ci
+          cd ../juce_backend && brew install cmake && pip3 install conan
+
+      - name: Build all components
+        run: |
+          cd juce_backend
+          cmake -B build -DCMAKE_BUILD_TYPE=Debug
+          cmake --build build
+
+      - name: Run E2E tests
+        working-directory: ./sdk
+        run: npm run test:e2e
+
+      - name: Run performance tests
+        working-directory: ./sdk
+        run: npm run test:performance
+
+  # Cross-Platform Tests
+  cross-platform-tests:
+    name: Cross-Platform Tests
+    runs-on: macos-latest
+    strategy:
+      matrix:
+        platform: [macos, ios, tvos]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Xcode
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
+
+      - name: Run platform-specific tests
+        working-directory: ./sdk
+        run: |
+          if [ "${{ matrix.platform }}" = "macos" ]; then
+            npm run test:integration:typescript
+          elif [ "${{ matrix.platform }}" = "ios" ]; then
+            npm run test:integration:swift
+          elif [ "${{ matrix.platform }}" = "tvos" ]; then
+            npm run test:integration:swift
+          fi
+
+  # Performance Regression Tests
+  performance-tests:
+    name: Performance Regression Tests
+    runs-on: macos-latest
+    needs: [sdk-tests, juce-tests]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        working-directory: ./sdk
+        run: npm ci
+
+      - name: Run performance tests
+        working-directory: ./sdk
+        run: npm run test:performance
+
+      - name: Check performance thresholds
+        working-directory: ./sdk
+        run: |
+          # Check that operations complete within time targets
+          node -e "
+            const fs = require('fs');
+            const results = JSON.parse(fs.readFileSync('test-results/performance.json', 'utf8'));
+            results.forEach(result => {
+              if (result.duration > result.maxDuration) {
+                console.error(\`Performance regression: \${result.name} took \${result.duration}ms (max: \${result.maxDuration}ms)\`);
+                process.exit(1);
+              }
+            });
+            console.log('All performance tests passed');
+          "
+
+      - name: Upload performance results
+        uses: actions/upload-artifact@v3
+        with:
+          name: performance-results
+          path: sdk/test-results/
+
+  # Security Tests
+  security-tests:
+    name: Security Tests
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Run security audit
+        working-directory: ./sdk
+        run: npm audit --audit-level=moderate
+
+      - name: Run security tests
+        working-directory: ./sdk
+        run: npm run test:integration:security
+
+  # Coverage Aggregation
+  coverage-aggregation:
+    name: Coverage Aggregation
+    runs-on: macos-latest
+    needs: [sdk-tests, juce-tests, swift-tests]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download all coverage reports
+        uses: actions/download-artifact@v3
+
+      - name: Merge coverage reports
+        run: |
+          # Merge coverage from all platforms
+          echo "Merging coverage reports..."
+
+      - name: Check overall coverage threshold
+        run: |
+          # Overall coverage should be > 85%
+          echo "Checking overall coverage..."
+
+      - name: Generate coverage badge
+        run: |
+          # Generate coverage badge for README
+          echo "Generating coverage badge..."
+
+  # Test Report
+  test-report:
+    name: Test Report
+    runs-on: macos-latest
+    needs: [sdk-tests, juce-tests, swift-tests, ffi-tests, e2e-tests, performance-tests]
+    if: always()
+
+    steps:
+      - name: Download all test results
+        uses: actions/download-artifact@v3
+
+      - name: Generate comprehensive test report
+        run: |
+          echo "# Test Report" > test-report.md
+          echo "" >> test-report.md
+          echo "## Summary" >> test-report.md
+          echo "- SDK Tests: ${{ needs.sdk-tests.result }}" >> test-report.md
+          echo "- JUCE Tests: ${{ needs.juce-tests.result }}" >> test-report.md
+          echo "- Swift Tests: ${{ needs.swift-tests.result }}" >> test-report.md
+          echo "- FFI Tests: ${{ needs.ffi-tests.result }}" >> test-report.md
+          echo "- E2E Tests: ${{ needs.e2e-tests.result }}" >> test-report.md
+          echo "- Performance Tests: ${{ needs.performance-tests.result }}" >> test-report.md
+
+      - name: Upload test report
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-report
+          path: test-report.md
+
+  # Status Check
+  status-check:
+    name: Status Check
+    runs-on: macos-latest
+    needs: [sdk-tests, juce-tests, swift-tests, ffi-tests, e2e-tests, performance-tests, security-tests]
+    if: always()
+
+    steps:
+      - name: Check all jobs status
+        run: |
+          if [ "${{ needs.sdk-tests.result }}" != "success" ] || \
+             [ "${{ needs.juce-tests.result }}" != "success" ] || \
+             [ "${{ needs.swift-tests.result }}" != "success" ] || \
+             [ "${{ needs.ffi-tests.result }}" != "success" ] || \
+             [ "${{ needs.e2e-tests.result }}" != "success" ] || \
+             [ "${{ needs.performance-tests.result }}" != "success" ] || \
+             [ "${{ needs.security-tests.result }}" != "success" ]; then
+            echo "One or more test jobs failed"
+            exit 1
+          fi
+          echo "All test jobs passed successfully"

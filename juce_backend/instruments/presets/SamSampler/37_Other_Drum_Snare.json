@@ -1,0 +1,33 @@
+{
+  "version": "1.0.0",
+  "name": "Snare Drum",
+  "author": "Bret Bouchard",
+  "description": "Acoustic snare with crisp attack, body, and natural snare rattle.",
+  "category": "Drum",
+  "tags": ["drum", "snare", "acoustic", "crisp", "rattle"],
+  "creationDate": "2025-12-27",
+  "parameters": {
+    "sample.file": "drum_snare.wav",
+    "sample.loop_mode": 0.0,
+    "sample.loop.start": 0.0,
+    "sample.loop.end": 1.0,
+    "pitch.transpose": 0.5,
+    "pitch.detune": 0.5,
+    "pitch.bend": 0.5,
+    "filter.type": 0.0,
+    "filter.cutoff": 0.75,
+    "filter.resonance": 0.15,
+    "env.adsr.a": 0.001,
+    "env.adsr.d": 0.12,
+    "env.adsr.s": 0.1,
+    "env.adsr.r": 0.15,
+    "fx.drive": 0.05,
+    "fx.chorus": 0.0,
+    "fx.delay": 0.0,
+    "fx.reverb": 0.15,
+    "output.level": 0.85,
+    "output.pan": 0.5
+  },
+  "macroMappings": {},
+  "modulationMatrix": {}
+}

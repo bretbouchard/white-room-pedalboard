@@ -1,0 +1,18 @@
+{
+  "id": "artifact-1768376145183-o28ifeqor",
+  "type": "design_decision",
+  "content": "## tvOS Order Song UI Implementation Pattern\n\nSuccessfully implemented tvOS-optimized Order Song UI for Schillinger DAW with Siri Remote integration and big-screen visual form structure.\n\n### Key Architecture Decisions\n\n1. **Separation of Concerns**: Split into distinct layers\n   - Models (SongState, Form, SongContract)\n   - Views (OrderSongScreenTV, FormVisualizerTV)\n   - Intents (SiriOrderingIntents)\n   - Components (CertaintySlider, shared contract models)\n\n2. **Platform-Specific Components**: Created tvOS-specific variants\n   - FormVisualizerTV: Big screen (400pt height) visualization\n   - IntentButtonTV/MotionButtonTV/HarmonyButtonTV: 92x92pt minimum touch targets\n   - Focus engine integration for Siri Remote\n\n3. **Visual Form Structure**: Three-panel layout\n   - Left: Sections timeline with intensity bars\n   - Center: Animated intensity curve with gradient fill\n   - Right: Pulse streams (3 rows) showing rhythm patterns\n\n### Implementation Patterns\n\n**Focus State Management**:\n```swift\n@FocusState private var focusedButton: String?\n.focused($focusedButton, equals: \"button-id\")\n```\n\n**tvOS Conditional Compilation**:\n```swift\n#if os(tvOS)\n.focusable()\n.tvosTouchTarget(minSize: 92)\n#else\n// iOS/macOS implementation\n#endif\n```\n\n**Siri Intent Parsing**:\n```swift\npublic func handleOrderIntent(_ intent: OrderSongIntent) -> Bool {\n    // Parse natural language → SongContract parameters\n    // \"Order a tense accelerating cue\"\n    //   → intent = .cue, motion = .accelerating, certainty = .tense\n}\n```\n\n**Real-time Form Updates**:\n```swift\n.onChange(of: contract.certaintyValue) { _, newValue in\n    // Form visualizer updates live as contract changes\n}\n```\n\n### Success Criteria Met\n\n- All controls work with Siri Remote (focus, swipe, select)\n- Visual form shows sections, intensity, pulses at once\n- Siri handles common intents with voice feedback\n- Certainty slider works with remote swipe gestures\n- Form updates in real-time as contract changes\n- Can navigate to Performance Editor and Orchestration\n- Type checking passes for tvOS target\n\n### Files Created\n\n- SongState.swift: Complete musical logic models\n- FormVisualizerTV.swift: Big-screen visualization\n- OrderSongScreenTV.swift: Primary interface\n- SiriOrderingIntents.swift: Voice command handling\n- OrderSongIntent.swift: INExtension definition\n- SchillingerTVApp.swift: Updated app entry point\n\n### Preset Templates\n\nHBO Cue, Ambient Loop, Tense Action, Emotional Underscore, Ceremonial Ritual - each maps to specific SongContract parameters.\n\n### Testing Notes\n\nTest in Xcode tvOS simulator with Siri Remote simulation. Verify focus navigation, swipe gestures, and voice feedback.\n\n### Context\n\nThis is the PRIMARY interface for tvOS users. Philosophy: tvOS = Ordering Console (big picture decisions) with voice commands and remote navigation as primary flow.",
+  "metadata": {
+    "scope": "repository",
+    "tags": [
+      "tvOS",
+      "SwiftUI",
+      "Siri",
+      "Order Song UI",
+      "Focus Engine",
+      "Visual Form"
+    ],
+    "confidence": 0.9
+  },
+  "timestamp": "2026-01-14T07:35:45.183Z"
+}

@@ -1,0 +1,566 @@
+# REST API Security Framework Deployment Configuration
+# This file defines production-ready deployment settings for the REST security system
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: rest-security-config
+  namespace: schillinger-backend
+  labels:
+    app: schillinger-backend
+    component: rest-security
+    tier: security
+data:
+  # Rate Limiting Configuration
+  rate_limiting.yaml: |
+    rate_limiting:
+      # Global rate limits
+      global:
+        requests_per_minute: 1000
+        requests_per_hour: 50000
+        requests_per_day: 500000
+
+      # Per-client limits
+      per_client:
+        requests_per_minute: 60
+        requests_per_hour: 1000
+        requests_per_day: 10000
+
+      # Burst capacity
+      burst:
+        enabled: true
+        capacity: 10
+        refill_rate: 1.0
+
+      # Sliding window
+      sliding_window:
+        enabled: true
+        window_size: 60s
+
+      # Cleanup settings
+      cleanup:
+        interval: 300s  # 5 minutes
+        max_age: 3600s  # 1 hour
+
+      # Whitelisting
+      whitelist:
+        enabled: true
+        clients:
+          - "127.0.0.1"
+          - "10.0.0.0/8"
+          - "192.168.0.0/16"
+          - "172.16.0.0/12"
+
+      # Blacklisting
+      blacklist:
+        enabled: true
+        default_block_duration: 3600s  # 1 hour
+        max_block_duration: 86400s     # 24 hours
+
+  # JSON Security Configuration
+  json_security.yaml: |
+    json_security:
+      # Size limits
+      max_json_size: 1048576  # 1MB
+      max_string_length: 65536  # 64KB
+      max_array_size: 10000
+
+      # Structure limits
+      max_nested_depth: 20
+      max_object_keys: 1000
+
+      # Security settings
+      allow_unicode_control_chars: false
+      strict_type_checking: true
+      sanitize_strings: true
+
+      # Performance settings
+      enable_streaming: true
+      chunk_size: 8192
+
+      # Validation rules
+      validation:
+        enforce_schema: true
+        reject_undeclared_properties: false
+        require_required_fields: true
+
+      # Allowed MIME types
+      allowed_content_types:
+        - "application/json"
+        - "application/hal+json"
+        - "application/vnd.api+json"
+
+  # Input Validation Configuration
+  input_validation.yaml: |
+    input_validation:
+      # SQL injection prevention
+      sql_injection:
+        enabled: true
+        strict_mode: true
+        patterns:
+          - "DROP\\s+TABLE"
+          - "DELETE\\s+FROM"
+          - "INSERT\\s+INTO"
+          - "UPDATE\\s+SET"
+          - "UNION\\s+SELECT"
+          - "EXEC\\s*\\("
+          - "EXECUTE\\s*\\("
+
+      # XSS prevention
+      xss_prevention:
+        enabled: true
+        sanitize_html: true
+        remove_script_tags: true
+        remove_event_handlers: true
+        block_javascript_protocol: true
+
+      # Input size limits
+      size_limits:
+        max_header_length: 8192
+        max_query_string_length: 4096
+        max_cookie_length: 4096
+        max_path_length: 2048
+
+      # Character filtering
+      character_filtering:
+        remove_null_bytes: true
+        remove_control_chars: true
+        normalize_unicode: true
+
+      # Content security policy
+      csp:
+        enabled: true
+        default_src: "'self'"
+        script_src: "'self' 'unsafe-inline'"
+        style_src: "'self' 'unsafe-inline'"
+        img_src: "'self' data: https:"
+        connect_src: "'self' https:"
+        font_src: "'self' https:"
+        object_src: "'none'"
+        media_src: "'self'"
+        frame_src: "'none'"
+
+  # Authentication Configuration
+  authentication.yaml: |
+    authentication:
+      # JWT settings
+      jwt:
+        enabled: true
+        secret_key: "${JWT_SECRET_KEY}"
+        algorithm: "HS256"
+        token_expiration: 3600s  # 1 hour
+        refresh_token_expiration: 86400s  # 24 hours
+        issuer: "schillinger-backend"
+        audience: "schillinger-clients"
+
+      # API key settings
+      api_keys:
+        enabled: true
+        header_name: "X-API-Key"
+        query_param: "api_key"
+        key_rotation_interval: 2592000s  # 30 days
+
+      # Basic auth settings
+      basic_auth:
+        enabled: false  # Generally disabled in production
+
+      # OAuth settings
+      oauth:
+        enabled: false  # Implement if needed
+        providers:
+          - name: "github"
+            client_id: "${GITHUB_CLIENT_ID}"
+            client_secret: "${GITHUB_CLIENT_SECRET}"
+
+  # HTTPS/SSL Configuration
+  ssl_configuration.yaml: |
+    ssl_security:
+      # HTTPS enforcement
+      enforce_https: true
+      redirect_http_to_https: true
+      hsts_enabled: true
+      hsts_max_age: 31536000  # 1 year
+      hsts_include_subdomains: true
+      hsts_preload: true
+
+      # TLS settings
+      tls_min_version: "1.2"
+      tls_ciphers:
+        - "TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384"
+        - "TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384"
+        - "TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256"
+        - "TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256"
+        - "TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256"
+        - "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256"
+
+      # Certificate settings
+      cert_file: "/etc/ssl/certs/schillinger-backend.crt"
+      key_file: "/etc/ssl/private/schillinger-backend.key"
+      ca_file: "/etc/ssl/certs/ca-bundle.crt"
+
+      # OCSP stapling
+      ocsp_stapling: true
+
+  # Logging and Monitoring Configuration
+  logging.yaml: |
+    logging:
+      # Log levels
+      level: "info"  # debug, info, warn, error
+      security_level: "warn"  # Log security events at warning level
+
+      # Log formats
+      access_log_format: "combined"
+      error_log_format: "detailed"
+
+      # Log destinations
+      destinations:
+        - type: "file"
+          path: "/var/log/schillinger-backend/access.log"
+          rotation: "daily"
+          retention: "30d"
+
+        - type: "file"
+          path: "/var/log/schillinger-backend/security.log"
+          rotation: "daily"
+          retention: "90d"
+
+        - type: "syslog"
+          facility: "daemon"
+          tag: "schillinger-backend"
+
+      # Security event logging
+      security_events:
+        - "authentication_failure"
+        - "authorization_denied"
+        - "rate_limit_exceeded"
+        - "sql_injection_attempt"
+        - "xss_attempt"
+        - "malformed_request"
+        - "validation_failure"
+        - "certificate_error"
+
+      # Rate limiting for log entries
+      log_rate_limit:
+        enabled: true
+        max_per_second: 1000
+        burst_size: 100
+
+  # CORS Configuration
+  cors.yaml: |
+    cors:
+      enabled: true
+
+      # Allowed origins
+      allowed_origins:
+        - "https://schillinger.app"
+        - "https://api.schillinger.app"
+        - "https://admin.schillinger.app"
+
+      # Allowed methods
+      allowed_methods:
+        - "GET"
+        - "POST"
+        - "PUT"
+        - "PATCH"
+        - "DELETE"
+        - "OPTIONS"
+        - "HEAD"
+
+      # Allowed headers
+      allowed_headers:
+        - "Content-Type"
+        - "Authorization"
+        - "X-API-Key"
+        - "X-Requested-With"
+        - "Accept"
+        - "Origin"
+        - "Cache-Control"
+
+      # Exposed headers
+      exposed_headers:
+        - "X-Rate-Limit-Limit"
+        - "X-Rate-Limit-Remaining"
+        - "X-Rate-Limit-Reset"
+        - "X-Total-Count"
+
+      # Credentials
+      allow_credentials: true
+
+      # Preflight settings
+      max_age: 86400  # 24 hours
+      preflight_continue: false
+
+  # Health Check Configuration
+  health_check.yaml: |
+    health_check:
+      enabled: true
+      endpoint: "/health"
+
+      # Health check responses
+      responses:
+        healthy:
+          status: 200
+          body: '{"status":"healthy","timestamp":"{{timestamp}}","version":"{{version}}"}'
+
+        unhealthy:
+          status: 503
+          body: '{"status":"unhealthy","timestamp":"{{timestamp}}","error":"{{error}}"}'
+
+      # Health checks
+      checks:
+        - name: "database"
+          type: "database"
+          timeout: 5s
+
+        - name: "rate_limiter"
+          type: "memory"
+          timeout: 1s
+
+        - name: "json_parser"
+          type: "memory"
+          timeout: 1s
+
+        - name: "input_validator"
+          type: "memory"
+          timeout: 1s
+
+      # Metrics
+      enable_metrics: true
+      metrics_endpoint: "/metrics"
+
+---
+# Service Definition
+apiVersion: v1
+kind: Service
+metadata:
+  name: schillinger-backend-rest-security
+  namespace: schillinger-backend
+  labels:
+    app: schillinger-backend
+    component: rest-security
+spec:
+  selector:
+    app: schillinger-backend
+    component: rest-security
+  ports:
+    - name: https
+      port: 443
+      targetPort: 8443
+      protocol: TCP
+    - name: http
+      port: 80
+      targetPort: 8080
+      protocol: TCP
+  type: ClusterIP
+
+---
+# Deployment Definition
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: schillinger-backend-rest-security
+  namespace: schillinger-backend
+  labels:
+    app: schillinger-backend
+    component: rest-security
+spec:
+  replicas: 3
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 1
+  selector:
+    matchLabels:
+      app: schillinger-backend
+      component: rest-security
+  template:
+    metadata:
+      labels:
+        app: schillinger-backend
+        component: rest-security
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9090"
+        prometheus.io/path: "/metrics"
+    spec:
+      containers:
+        - name: schillinger-backend
+          image: schillinger/backend:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8080
+              name: http
+            - containerPort: 8443
+              name: https
+            - containerPort: 9090
+              name: metrics
+          env:
+            - name: NODE_ENV
+              value: "production"
+            - name: LOG_LEVEL
+              value: "info"
+            - name: RATE_LIMITING_ENABLED
+              value: "true"
+            - name: JSON_SECURITY_ENABLED
+              value: "true"
+            - name: INPUT_VALIDATION_ENABLED
+              value: "true"
+            - name: AUTHENTICATION_ENABLED
+              value: "true"
+            - name: CORS_ENABLED
+              value: "true"
+            - name: JWT_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: schillinger-secrets
+                  key: jwt-secret
+            - name: GITHUB_CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: schillinger-secrets
+                  key: github-client-id
+            - name: GITHUB_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: schillinger-secrets
+                  key: github-client-secret
+          volumeMounts:
+            - name: ssl-certs
+              mountPath: /etc/ssl/certs
+              readOnly: true
+            - name: ssl-private
+              mountPath: /etc/ssl/private
+              readOnly: true
+            - name: config
+              mountPath: /etc/schillinger/config
+              readOnly: true
+            - name: logs
+              mountPath: /var/log/schillinger-backend
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "250m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 3
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1000
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
+      volumes:
+        - name: ssl-certs
+          secret:
+            secretName: schillinger-ssl-certs
+        - name: ssl-private
+          secret:
+            secretName: schillinger-ssl-private
+            defaultMode: 0600
+        - name: config
+          configMap:
+            name: rest-security-config
+        - name: logs
+          emptyDir: {}
+      securityContext:
+        fsGroup: 1000
+      restartPolicy: Always
+
+---
+# HorizontalPodAutoscaler
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: schillinger-backend-rest-security-hpa
+  namespace: schillinger-backend
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: schillinger-backend-rest-security
+  minReplicas: 3
+  maxReplicas: 10
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 80
+
+---
+# NetworkPolicy
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: schillinger-backend-network-policy
+  namespace: schillinger-backend
+spec:
+  podSelector:
+    matchLabels:
+      app: schillinger-backend
+      component: rest-security
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: schillinger-frontend
+        - namespaceSelector:
+            matchLabels:
+              name: kube-system
+      ports:
+        - protocol: TCP
+          port: 8080
+        - protocol: TCP
+          port: 8443
+  egress:
+    - to: []
+      ports:
+        - protocol: TCP
+          port: 443
+        - protocol: TCP
+          port: 53
+        - protocol: UDP
+          port: 53
+
+---
+# PodDisruptionBudget
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: schillinger-backend-pdb
+  namespace: schillinger-backend
+spec:
+  minAvailable: 2
+  selector:
+    matchLabels:
+      app: schillinger-backend
+      component: rest-security

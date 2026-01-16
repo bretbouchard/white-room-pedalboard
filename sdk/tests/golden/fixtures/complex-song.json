@@ -1,0 +1,306 @@
+{
+  "model": {
+    "version": "1.0",
+    "id": "complex-song",
+    "createdAt": 1735392000000,
+    "metadata": {
+      "name": "Complex Song",
+      "description": "Full orchestration with 6 roles, 4 sections",
+      "duration": 180,
+      "expectedEventCount": 384
+    },
+    "transport": {
+      "tempoMap": [
+        { "time": 0, "tempo": 120 },
+        { "time": 60, "tempo": 130 },
+        { "time": 120, "tempo": 140 }
+      ],
+      "timeSignatureMap": [
+        { "time": 0, "signature": [4, 4] },
+        { "time": 64, "signature": [3, 4] },
+        { "time": 128, "signature": [6, 8] }
+      ],
+      "loopPolicy": {
+        "enabled": false,
+        "start": 0,
+        "end": 180,
+        "count": 1
+      },
+      "playbackSpeed": 1.0
+    },
+    "sections": [
+      {
+        "id": "section-intro",
+        "name": "Intro",
+        "start": { "seconds": 0, "beats": 0, "measures": 0 },
+        "end": { "seconds": 16, "beats": 32, "measures": 8 },
+        "roles": ["rhythm-1", "texture-1"]
+      },
+      {
+        "id": "section-verse",
+        "name": "Verse",
+        "start": { "seconds": 16, "beats": 32, "measures": 8 },
+        "end": { "seconds": 64, "beats": 128, "measures": 32 },
+        "roles": ["rhythm-1", "melody-1", "harmony-1", "bass-1"]
+      },
+      {
+        "id": "section-chorus",
+        "name": "Chorus",
+        "start": { "seconds": 64, "beats": 128, "measures": 32 },
+        "end": { "seconds": 128, "beats": 272, "measures": 68 },
+        "roles": ["rhythm-1", "melody-1", "harmony-1", "bass-1", "counter-1"]
+      },
+      {
+        "id": "section-outro",
+        "name": "Outro",
+        "start": { "seconds": 128, "beats": 272, "measures": 68 },
+        "end": { "seconds": 180, "beats": 392, "measures": 98 },
+        "roles": ["texture-1", "ornament-1"]
+      }
+    ],
+    "roles": [
+      {
+        "id": "rhythm-1",
+        "name": "Main Rhythm",
+        "type": "rhythm",
+        "generatorConfig": {
+          "type": "rhythm",
+          "generators": [3, 4],
+          "complexity": 0.6,
+          "density": 0.7
+        },
+        "parameters": {
+          "tempo": 120,
+          "timeSignature": [4, 4],
+          "swing": 0.2,
+          "patternLength": 8
+        }
+      },
+      {
+        "id": "melody-1",
+        "name": "Lead Melody",
+        "type": "melody",
+        "generatorConfig": {
+          "type": "melody",
+          "contour": "arch",
+          "key": "C",
+          "scale": "major",
+          "range": [60, 84]
+        },
+        "parameters": {
+          "key": "C",
+          "scale": "major",
+          "range": [60, 84],
+          "rhythmIntegration": true
+        }
+      },
+      {
+        "id": "harmony-1",
+        "name": "Harmonic Pad",
+        "type": "harmony",
+        "generatorConfig": {
+          "type": "harmony",
+          "style": "classical",
+          "key": "C",
+          "scale": "major",
+          "complexity": 0.5
+        },
+        "parameters": {
+          "key": "C",
+          "scale": "major",
+          "includeExtensions": true,
+          "functionalHarmony": true
+        }
+      },
+      {
+        "id": "bass-1",
+        "name": "Bass Foundation",
+        "type": "bass",
+        "generatorConfig": {
+          "type": "harmony",
+          "style": "minimal",
+          "key": "C",
+          "scale": "major"
+        },
+        "parameters": {
+          "key": "C",
+          "scale": "major",
+          "range": [36, 48],
+          "rhythmIntegration": true
+        }
+      },
+      {
+        "id": "counter-1",
+        "name": "Counter Melody",
+        "type": "counter-melody",
+        "generatorConfig": {
+          "type": "melody",
+          "contour": "wave",
+          "key": "C",
+          "scale": "major",
+          "range": [48, 72]
+        },
+        "parameters": {
+          "key": "C",
+          "scale": "major",
+          "range": [48, 72],
+          "rhythmIntegration": true
+        }
+      },
+      {
+        "id": "texture-1",
+        "name": "Background Texture",
+        "type": "texture",
+        "generatorConfig": {
+          "type": "composition",
+          "density": "sparse"
+        },
+        "parameters": {
+          "density": 0.3,
+          "register": [72, 84]
+        }
+      },
+      {
+        "id": "ornament-1",
+        "name": "Ornamentation",
+        "type": "ornament",
+        "generatorConfig": {
+          "type": "melody",
+          "contour": "descending",
+          "key": "C",
+          "scale": "major"
+        },
+        "parameters": {
+          "key": "C",
+          "scale": "major",
+          "range": [84, 96],
+          "density": 0.2
+        }
+      }
+    ],
+    "projections": [
+      {
+        "id": "proj-rhythm",
+        "roleId": "rhythm-1",
+        "target": { "type": "track", "id": "track-drums" }
+      },
+      {
+        "id": "proj-melody",
+        "roleId": "melody-1",
+        "target": { "type": "track", "id": "track-lead" }
+      },
+      {
+        "id": "proj-harmony",
+        "roleId": "harmony-1",
+        "target": { "type": "track", "id": "track-pads" }
+      },
+      {
+        "id": "proj-bass",
+        "roleId": "bass-1",
+        "target": { "type": "track", "id": "track-bass" }
+      },
+      {
+        "id": "proj-counter",
+        "roleId": "counter-1",
+        "target": { "type": "track", "id": "track-counter" }
+      },
+      {
+        "id": "proj-texture",
+        "roleId": "texture-1",
+        "target": { "type": "bus", "id": "bus-effects" }
+      },
+      {
+        "id": "proj-ornament",
+        "roleId": "ornament-1",
+        "target": { "type": "track", "id": "track-ornament" }
+      }
+    ],
+    "mixGraph": {
+      "tracks": [
+        {
+          "id": "track-drums",
+          "name": "Drums",
+          "instrument": "drums",
+          "output": { "format": "audio", "bus": "drum-bus" },
+          "parameters": { "volume": 0.8, "pan": 0.0 }
+        },
+        {
+          "id": "track-lead",
+          "name": "Lead Synth",
+          "instrument": "synth",
+          "output": { "format": "audio", "bus": "master" },
+          "parameters": { "volume": 0.7, "pan": -0.2 }
+        },
+        {
+          "id": "track-pads",
+          "name": "Harmonic Pads",
+          "instrument": "pads",
+          "output": { "format": "audio", "bus": "master" },
+          "parameters": { "volume": 0.6, "pan": 0.0 }
+        },
+        {
+          "id": "track-bass",
+          "name": "Bass",
+          "instrument": "bass",
+          "output": { "format": "audio", "bus": "master" },
+          "parameters": { "volume": 0.75, "pan": 0.3 }
+        },
+        {
+          "id": "track-counter",
+          "name": "Counter Melody",
+          "instrument": "synth",
+          "output": { "format": "audio", "bus": "master" },
+          "parameters": { "volume": 0.5, "pan": -0.4 }
+        },
+        {
+          "id": "track-ornament",
+          "name": "Ornaments",
+          "instrument": "bells",
+          "output": { "format": "audio", "bus": "effects-bus" },
+          "parameters": { "volume": 0.4, "pan": 0.5 }
+        }
+      ],
+      "buses": [
+        {
+          "id": "drum-bus",
+          "name": "Drum Bus",
+          "output": { "format": "audio", "bus": "master" },
+          "parameters": { "volume": 1.0, "effects": { "compressor": 0.5 } }
+        },
+        {
+          "id": "effects-bus",
+          "name": "Effects Bus",
+          "output": { "format": "audio", "bus": "master" },
+          "parameters": { "volume": 0.8, "effects": { "reverb": 0.7, "delay": 0.3 } }
+        }
+      ],
+      "sends": [
+        {
+          "from": "track-lead",
+          "to": "effects-bus",
+          "amount": 0.3
+        },
+        {
+          "from": "track-pads",
+          "to": "effects-bus",
+          "amount": 0.5
+        }
+      ],
+      "master": {
+        "id": "master",
+        "volume": 1.0,
+        "parameters": { "reverb": 0.2, "limiter": 0.8 }
+      }
+    },
+    "realizationPolicy": {
+      "windowSize": { "seconds": 4.0, "beats": 8, "measures": 2 },
+      "lookaheadDuration": { "seconds": 1.0, "beats": 2, "measures": 0.5 },
+      "determinismMode": "strict"
+    },
+    "determinismSeed": "complex-song-test-seed-v1"
+  },
+  "goldenHash": "complex-song-v1-hash-placeholder",
+  "description": "Complex Song: Full orchestration (3 minutes)",
+  "expectedEventCount": 384,
+  "expectedHash": "to-be-generated-after-implementation"
+}

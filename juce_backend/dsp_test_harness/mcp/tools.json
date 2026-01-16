@@ -1,0 +1,286 @@
+{
+  "tools": [
+    {
+      "name": "dsp.render",
+      "description": "Offline-render audio from the DSP under test using internal generators (no MIDI/audio device required).",
+      "input_schema": {
+        "type": "object",
+        "required": ["instrument", "test"],
+        "properties": {
+          "instrument": {
+            "type": "string",
+            "description": "Instrument name (SamSampler, DrumMachine, etc.)"
+          },
+          "test": {
+            "type": "string",
+            "enum": ["silence", "impulse", "tone_220hz", "tone_440hz", "envelope"],
+            "description": "Test case to run"
+          },
+          "output_path": {
+            "type": "string",
+            "description": "Output WAV file path"
+          },
+          "duration": {
+            "type": "number",
+            "default": 2.0,
+            "minimum": 0.1,
+            "maximum": 60.0
+          },
+          "sample_rate": {
+            "type": "integer",
+            "default": 48000,
+            "enum": [44100, 48000, 96000]
+          },
+          "block_size": {
+            "type": "integer",
+            "default": 512,
+            "enum": [64, 128, 256, 512, 1024, 2048]
+          }
+        }
+      },
+      "output_schema": {
+        "type": "object",
+        "required": ["success", "metrics"],
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "output_file": {
+            "type": "string"
+          },
+          "metrics": {
+            "type": "object",
+            "properties": {
+              "rms": {"type": "number"},
+              "peak": {"type": "number"},
+              "dc_offset": {"type": "number"},
+              "nan_count": {"type": "integer"},
+              "inf_count": {"type": "integer"},
+              "clipped_samples": {"type": "integer"},
+              "zero_crossings_per_sec": {"type": "number"},
+              "fft_peak_hz": {"type": "number"},
+              "fft_peak_db": {"type": "number"},
+              "block_edge_max_jump": {"type": "number"}
+            }
+          },
+          "assertion_passed": {
+            "type": "boolean"
+          }
+        }
+      }
+    },
+    {
+      "name": "dsp.analyze",
+      "description": "Analyze an audio artifact (wav) and return DSP sanity metrics.",
+      "input_schema": {
+        "type": "object",
+        "required": ["path"],
+        "properties": {
+          "path": {
+            "type": "string"
+          },
+          "sample_rate": {
+            "type": "integer",
+            "default": 48000
+          }
+        }
+      },
+      "output_schema": {
+        "type": "object",
+        "required": ["metrics"],
+        "properties": {
+          "metrics": {
+            "type": "object"
+          }
+        }
+      }
+    },
+    {
+      "name": "dsp.golden_compare",
+      "description": "Compare a rendered file to a golden reference and return a pass/fail with similarity metrics.",
+      "input_schema": {
+        "type": "object",
+        "required": ["candidate_path", "golden_path"],
+        "properties": {
+          "candidate_path": {
+            "type": "string"
+          },
+          "golden_path": {
+            "type": "string"
+          },
+          "max_lag": {
+            "type": "integer",
+            "default": 2048
+          },
+          "max_abs_tol": {
+            "type": "number",
+            "default": 0.001
+          },
+          "rms_tol": {
+            "type": "number",
+            "default": 0.0001
+          },
+          "snr_min": {
+            "type": "number",
+            "default": 50.0
+          }
+        }
+      },
+      "output_schema": {
+        "type": "object",
+        "required": ["pass", "summary"],
+        "properties": {
+          "pass": {
+            "type": "boolean"
+          },
+          "summary": {
+            "type": "object",
+            "properties": {
+              "max_abs_diff": {"type": "number"},
+              "rms_diff": {"type": "number"},
+              "snr_db": {"type": "number"},
+              "lag_samples": {"type": "integer"},
+              "details": {"type": "string"}
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "dsp.inspect_plot",
+      "description": "Generate waveform + FFT plots for an artifact and save to disk.",
+      "input_schema": {
+        "type": "object",
+        "required": ["path"],
+        "properties": {
+          "path": {
+            "type": "string"
+          },
+          "out_dir": {
+            "type": "string",
+            "default": "tests/audio/plots"
+          },
+          "seconds": {
+            "type": "number",
+            "default": 2.0
+          },
+          "fft_window": {
+            "type": "integer",
+            "default": 4096
+          },
+          "spectrogram": {
+            "type": "boolean",
+            "default": false
+          }
+        }
+      },
+      "output_schema": {
+        "type": "object",
+        "required": ["plots"],
+        "properties": {
+          "plots": {
+            "type": "object",
+            "properties": {
+              "waveform_png": {"type": "string"},
+              "fft_png": {"type": "string"},
+              "spectrogram_png": {"type": "string"}
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "dsp.run_tests",
+      "description": "Run full test suite for an instrument with golden comparison.",
+      "input_schema": {
+        "type": "object",
+        "required": ["instrument"],
+        "properties": {
+          "instrument": {
+            "type": "string"
+          },
+          "update_golden": {
+            "type": "boolean",
+            "default": false
+          },
+          "test": {
+            "type": "string",
+            "description": "Optional specific test to run"
+          }
+        }
+      },
+      "output_schema": {
+        "type": "object",
+        "required": ["results"],
+        "properties": {
+          "results": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "test": {"type": "string"},
+                "pass": {"type": "boolean"},
+                "metrics": {"type": "object"},
+                "golden": {"type": "object"}
+              }
+            }
+          },
+          "all_passed": {
+            "type": "boolean"
+          },
+          "summary": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    {
+      "name": "dsp.list_instruments",
+      "description": "List all available instruments for testing.",
+      "input_schema": {
+        "type": "object",
+        "properties": {}
+      },
+      "output_schema": {
+        "type": "object",
+        "required": ["instruments"],
+        "properties": {
+          "instruments": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "name": {"type": "string"},
+                "version": {"type": "string"}
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "dsp.list_tests",
+      "description": "List all available test cases.",
+      "input_schema": {
+        "type": "object",
+        "properties": {}
+      },
+      "output_schema": {
+        "type": "object",
+        "required": ["tests"],
+        "properties": {
+          "tests": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "name": {"type": "string"},
+                "description": {"type": "string"}
+              }
+            }
+          }
+        }
+      }
+    }
+  ]
+}

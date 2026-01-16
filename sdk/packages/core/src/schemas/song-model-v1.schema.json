@@ -1,0 +1,293 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://schemas.schillinger.sdk/v1/song-model",
+  "title": "SongModel_v1",
+  "description": "Executable song representation derived from SchillingerSong_v1 via deterministic realization. Contains notes, events, timing, and voice assignments.",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "songId",
+    "derivationId",
+    "notes",
+    "events",
+    "voiceAssignments",
+    "duration",
+    "tempoChanges",
+    "sections"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "type": "string",
+      "const": "1.0"
+    },
+    "songId": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Matches SchillingerSong.songId"
+    },
+    "derivationId": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Links to DerivationRecord_v1"
+    },
+    "notes": {
+      "type": "array",
+      "description": "All notes in the song",
+      "items": {
+        "type": "object",
+        "required": ["noteId", "voiceId", "startTime", "duration", "pitch", "velocity", "derivationSource"],
+        "properties": {
+          "noteId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "voiceId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "startTime": {
+            "type": "number",
+            "minimum": 0,
+            "description": "Start time in beats"
+          },
+          "duration": {
+            "type": "number",
+            "exclusiveMinimum": 0,
+            "description": "Duration in beats"
+          },
+          "pitch": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 127,
+            "description": "MIDI note number"
+          },
+          "velocity": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 127,
+            "description": "MIDI velocity (0-127)"
+          },
+          "derivationSource": {
+            "type": "string",
+            "format": "uuid",
+            "description": "System ID that generated this note"
+          }
+        }
+      }
+    },
+    "events": {
+      "type": "array",
+      "description": "Non-note events (dynamics, articulations, etc.)",
+      "items": {
+        "type": "object",
+        "required": ["eventId", "voiceId", "time", "type", "value"],
+        "properties": {
+          "eventId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "voiceId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "time": {
+            "type": "number",
+            "minimum": 0,
+            "description": "Event time in beats"
+          },
+          "type": {
+            "type": "string",
+            "enum": ["dynamic", "articulation", "other"]
+          },
+          "value": true
+        }
+      }
+    },
+    "voiceAssignments": {
+      "type": "array",
+      "description": "Which voice plays which notes and roles",
+      "items": {
+        "type": "object",
+        "required": ["voiceId", "roleId", "systemIds"],
+        "properties": {
+          "voiceId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "roleId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "systemIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        }
+      }
+    },
+    "duration": {
+      "type": "number",
+      "minimum": 0,
+      "description": "Total duration in beats"
+    },
+    "tempoChanges": {
+      "type": "array",
+      "description": "Tempo map (if any tempo changes occur)",
+      "items": {
+        "type": "object",
+        "required": ["time", "tempo"],
+        "properties": {
+          "time": {
+            "type": "number",
+            "minimum": 0
+          },
+          "tempo": {
+            "type": "number",
+            "minimum": 40,
+            "maximum": 300
+          }
+        }
+      }
+    },
+    "sections": {
+      "type": "array",
+      "description": "Form sections (A, B, C, etc.)",
+      "items": {
+        "type": "object",
+        "required": ["sectionId", "name", "startTime", "duration"],
+        "properties": {
+          "sectionId": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "startTime": {
+            "type": "number",
+            "minimum": 0
+          },
+          "duration": {
+            "type": "number",
+            "exclusiveMinimum": 0
+          }
+        }
+      }
+    }
+  },
+  "additionalProperties": false,
+  "examples": [
+    {
+      "description": "Simple song with 8 notes",
+      "schemaVersion": "1.0",
+      "songId": "550e8400-e29b-41d4-a716-446655440000",
+      "derivationId": "6ba7b810-9dad-11d1-80b4-00c04fd430c8",
+      "notes": [
+        {
+          "noteId": "7f9b8e10-9dad-11d1-80b4-00c04fd430c8",
+          "voiceId": "8ba09020-9dad-11d1-80b4-00c04fd430c8",
+          "startTime": 0,
+          "duration": 1,
+          "pitch": 60,
+          "velocity": 100,
+          "derivationSource": "9ca1a030-9dad-11d1-80b4-00c04fd430c8"
+        },
+        {
+          "noteId": "adb2b140-9dad-11d1-80b4-00c04fd430c8",
+          "voiceId": "8ba09020-9dad-11d1-80b4-00c04fd430c8",
+          "startTime": 1,
+          "duration": 0.5,
+          "pitch": 64,
+          "velocity": 90,
+          "derivationSource": "9ca1a030-9dad-11d1-80b4-00c04fd430c8"
+        },
+        {
+          "noteId": "bec3c250-9dad-11d1-80b4-00c04fd430c8",
+          "voiceId": "8ba09020-9dad-11d1-80b4-00c04fd430c8",
+          "startTime": 1.5,
+          "duration": 0.5,
+          "pitch": 67,
+          "velocity": 95,
+          "derivationSource": "9ca1a030-9dad-11d1-80b4-00c04fd430c8"
+        },
+        {
+          "noteId": "cfd4d360-9dad-11d1-80b4-00c04fd430c8",
+          "voiceId": "8ba09020-9dad-11d1-80b4-00c04fd430c8",
+          "startTime": 2,
+          "duration": 1,
+          "pitch": 72,
+          "velocity": 105,
+          "derivationSource": "9ca1a030-9dad-11d1-80b4-00c04fd430c8"
+        },
+        {
+          "noteId": "d0e5e470-9dad-11d1-80b4-00c04fd430c8",
+          "voiceId": "8ba09020-9dad-11d1-80b4-00c04fd430c8",
+          "startTime": 3,
+          "duration": 1,
+          "pitch": 67,
+          "velocity": 95,
+          "derivationSource": "9ca1a030-9dad-11d1-80b4-00c04fd430c8"
+        },
+        {
+          "noteId": "e1f6f580-9dad-11d1-80b4-00c04fd430c8",
+          "voiceId": "8ba09020-9dad-11d1-80b4-00c04fd430c8",
+          "startTime": 4,
+          "duration": 0.5,
+          "pitch": 64,
+          "velocity": 90,
+          "derivationSource": "9ca1a030-9dad-11d1-80b4-00c04fd430c8"
+        },
+        {
+          "noteId": "f207g690-9dad-11d1-80b4-00c04fd430c8",
+          "voiceId": "8ba09020-9dad-11d1-80b4-00c04fd430c8",
+          "startTime": 4.5,
+          "duration": 0.5,
+          "pitch": 60,
+          "velocity": 100,
+          "derivationSource": "9ca1a030-9dad-11d1-80b4-00c04fd430c8"
+        },
+        {
+          "noteId": "0318h7a0-9dad-11d1-80b4-00c04fd430c8",
+          "voiceId": "8ba09020-9dad-11d1-80b4-00c04fd430c8",
+          "startTime": 5,
+          "duration": 3,
+          "pitch": 57,
+          "velocity": 110,
+          "derivationSource": "9ca1a030-9dad-11d1-80b4-00c04fd430c8"
+        }
+      ],
+      "events": [
+        {
+          "eventId": "1429i8b0-9dad-11d1-80b4-00c04fd430c8",
+          "voiceId": "8ba09020-9dad-11d1-80b4-00c04fd430c8",
+          "time": 0,
+          "type": "dynamic",
+          "value": {
+            "type": "crescendo",
+            "startLevel": 80,
+            "endLevel": 110
+          }
+        }
+      ],
+      "voiceAssignments": [
+        {
+          "voiceId": "8ba09020-9dad-11d1-80b4-00c04fd430c8",
+          "roleId": "9da1a030-9dad-11d1-80b4-00c04fd430c8",
+          "systemIds": ["9ca1a030-9dad-11d1-80b4-00c04fd430c8"]
+        }
+      ],
+      "duration": 8,
+      "tempoChanges": [],
+      "sections": [
+        {
+          "sectionId": "A",
+          "name": "A",
+          "startTime": 0,
+          "duration": 8
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "version": "1.0.0",
+  "name": "Electric Bass",
+  "author": "Bret Bouchard",
+  "description": "Fingered electric bass with warm tone, filter control, and punchy envelope.",
+  "category": "Bass",
+  "tags": ["bass", "electric", "fingered", "warm", "punchy"],
+  "creationDate": "2025-12-27",
+  "parameters": {
+    "sample.file": "bass_electric_C2.wav",
+    "sample.loop_mode": 1.0,
+    "sample.loop.start": 0.15,
+    "sample.loop.end": 0.85,
+    "pitch.transpose": 0.5,
+    "pitch.detune": 0.5,
+    "pitch.bend": 0.5,
+    "filter.type": 0.0,
+    "filter.cutoff": 0.6,
+    "filter.resonance": 0.2,
+    "env.adsr.a": 0.008,
+    "env.adsr.d": 0.15,
+    "env.adsr.s": 0.5,
+    "env.adsr.r": 0.2,
+    "fx.drive": 0.1,
+    "fx.chorus": 0.15,
+    "fx.delay": 0.0,
+    "fx.reverb": 0.12,
+    "output.level": 0.82,
+    "output.pan": 0.5
+  },
+  "macroMappings": {},
+  "modulationMatrix": {}
+}

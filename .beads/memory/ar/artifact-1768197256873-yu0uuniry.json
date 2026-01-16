@@ -1,0 +1,12 @@
+{
+  "id": "artifact-1768197256873-yu0uuniry",
+  "type": "pattern",
+  "content": "# RoleSpec to RoleFrame Expansion Pattern\n\n## Problem\nHow to convert abstract musical role definitions (RoleSpec) into concrete, time-windowed note data (RoleFrame) that DAWs can execute.\n\n## Solution: Expansion Engine Pattern\n\n### Input: RoleSpec\n```protobuf\nmessage RoleSpec {\n  RoleType role = 1;           // Which canonical role\n  TransformConfig transform = 2; // Transformation to apply\n  Constraints constraints = 3;  // Musical constraints\n  Realization realization = 4;  // How to realize (instrument, etc.)\n}\n```\n\n### Output: RoleFrame\n```protobuf\nmessage RoleFrame {\n  int64 start_ppq = 1;         // Start time in PPQ\n  int64 duration_ppq = 2;      // Duration in PPQ\n  uint32 seed = 3;             // Seeded RNG for determinism\n  repeated NoteEvent notes = 4; // Actual notes\n  repeated Automation automation = 5; // Parameter changes\n}\n```\n\n## Implementation Pattern\n\n### 1. Deterministic Seeding\n- Every RoleFrame includes a `seed` field\n- Initialize RNG with seed: `std::mt19937 rng(frame.seed());`\n- Ensures reproducible results across runs\n\n### 2. PPQ-Based Timing\n- Use 1920 PPQ (standard MIDI resolution)\n- PPQ = \"Parts Per Quarter\" note\n- Allows sample-accurate timing when converted to audio\n\n### 3. Note Generation Strategy\n- Each role type has specialized generator\n- Generator receives seeded RNG + constraints\n- Returns vector of NoteEvents with PPQ timing\n\n### 4. Transform Application\n- Transforms operate on RoleFrame, not RoleSpec\n- Transforms are composable (can chain multiple)\n- Registry pattern for transform lookup\n\n## Code Structure\n```cpp\nclass ExpansionEngine {\npublic:\n  RoleFrame expand(const RoleSpec& spec, int64 start_ppq, int64 duration_ppq, uint32 seed);\n  \nprivate:\n  using Generator = std::function<RoleFrame(const Constraints&, int64, int64, uint32)>;\n  std::map<RoleType, Generator> generators_;\n  \n  using Transform = std::function<RoleFrame(const RoleFrame&)>;\n  std::map<TransformType, Transform> transforms_;\n};\n```\n\n## Benefits\n- **Deterministic**: Same seed = same output\n- **Universal**: Any DAW can read MIDI\n- **Testable**: Golden fixtures verify correctness\n- **Extensible**: Add new roles/transforms via registry",
+  "metadata": {
+    "scope": "submodule",
+    "submodule": "daw_control",
+    "tags": [],
+    "confidence": 1
+  },
+  "timestamp": "2026-01-12T05:54:16.873Z"
+}

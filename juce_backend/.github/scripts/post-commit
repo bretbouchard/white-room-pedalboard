@@ -1,0 +1,92 @@
+#!/bin/bash
+
+#==============================================================================
+# Git Post-Commit Hook: Instrument Subtree Split
+#
+# Automatically splits and pushes instrument changes to individual repos
+# after each commit.
+#
+# To enable: chmod +x .git/hooks/post-commit
+# To disable: chmod -x .git/hooks/post-commit
+#
+# Environment variables:
+#   SKIP_SUBTREE_SPLIT - Set to 'true' to skip split for this commit
+#   SUBTREE_SPLIT_INSTRUMENTS - Comma-separated list of instruments to split
+#==============================================================================
+
+# Skip if environment variable set
+if [[ "$SKIP_SUBTREE_SPLIT" == "true" ]]; then
+    exit 0
+fi
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
+SPLIT_SCRIPT="$PROJECT_ROOT/.github/scripts/split_instruments.sh"
+
+# Check if split script exists
+if [[ ! -f "$SPLIT_SCRIPT" ]]; then
+    echo "⚠️  Subtree split script not found: $SPLIT_SCRIPT"
+    exit 0
+fi
+
+# Check if GH token is available
+if [[ -z "$GH_TOKEN" ]]; then
+    # Try GitHub CLI
+    if command -v gh &> /dev/null; then
+        GH_TOKEN=$(gh auth token 2>/dev/null)
+    fi
+
+    # Try to load from .env file
+    if [[ -z "$GH_TOKEN" && -f "$PROJECT_ROOT/.env" ]]; then
+        source "$PROJECT_ROOT/.env"
+    fi
+
+    if [[ -z "$GH_TOKEN" ]]; then
+        echo "⚠️  GH_TOKEN not set - skipping subtree split"
+        echo "   Set GH_TOKEN in your environment or .env file"
+        echo "   Or use: gh auth login (GitHub CLI)"
+        exit 0
+    fi
+fi
+
+# Check which instruments were affected
+CHANGED_INSTRUMENTS=$(git diff --name-only HEAD~1 HEAD | grep '^instruments/' | cut -d'/' -f2 | sort -u)
+
+if [[ -z "$CHANGED_INSTRUMENTS" ]]; then
+    # No instrument changes, skip split
+    exit 0
+fi
+
+echo "🔄 Running subtree split for changed instruments..."
+
+# Map instrument folder names to config names
+declare -A INSTRUMENT_MAP=(
+    ["localgal"]="LOCAL_GAL"
+    ["Sam_sampler"]="Sam_Sampler"
+    ["Nex_synth"]="Nex_Synth"
+    ["kane_marco"]="Kane_Marco"
+    ["giant_instruments"]="Giant_Instruments"
+    ["drummachine"]="Drum_Machine"
+)
+
+# Build list of instruments to split
+INSTRUMENTS_TO_SPLIT=""
+for folder in $CHANGED_INSTRUMENTS; do
+    if [[ -n "${INSTRUMENT_MAP[$folder]}" ]]; then
+        INSTRUMENTS_TO_SPLIT="$INSTRUMENTS_TO_SPLIT ${INSTRUMENT_MAP[$folder]}"
+    fi
+done
+
+# If specific instruments requested, use those
+if [[ -n "$SUBTREE_SPLIT_INSTRUMENTS" ]]; then
+    INSTRUMENTS_TO_SPLIT=$(echo "$SUBTREE_SPLIT_INSTRUMENTS" | tr ',' ' ')
+fi
+
+# Split each instrument
+for instrument in $INSTRUMENTS_TO_SPLIT; do
+    echo "  Splitting: $instrument"
+    "$SPLIT_SCRIPT" "$instrument" 2>&1 | grep -E "(INFO|SUCCESS|ERROR|WARNING)" || true
+done
+
+echo "✅ Subtree split complete"
+exit 0
