@@ -16,64 +16,57 @@ C2 VCC 0 100n
 * ============================================================
 * BUTTON 1
 * ============================================================
-SW1 NO1_1 IN1_1 VSWITCH
-V_BUTTON1 VSWITCH 0 PULSE(0 5 1ms 1ms 100ms 200ms)
+* Voltage source simulates button press (5V = released, 0V = pressed)
+V_BUTTON1 IN1_1 0 PULSE(5 0 1ms 1ms 100ms 200ms)
 R_PULLUP1 IN1_1 VCC 100k
 C_IN1 IN1_1 0 10p
 
 * ============================================================
 * BUTTON 2
 * ============================================================
-SW2 NO2_1 IN2_1 VSWITCH2
-V_BUTTON2 VSWITCH2 0 PULSE(0 5 10ms 1ms 100ms 200ms)
+V_BUTTON2 IN2_1 0 PULSE(5 0 10ms 1ms 100ms 200ms)
 R_PULLUP2 IN2_1 VCC 100k
 C_IN2 IN2_1 0 10p
 
 * ============================================================
 * BUTTON 3
 * ============================================================
-SW3 NO3_1 IN3_1 VSWITCH3
-V_BUTTON3 VSWITCH3 0 PULSE(0 5 20ms 1ms 100ms 200ms)
+V_BUTTON3 IN3_1 0 PULSE(5 0 20ms 1ms 100ms 200ms)
 R_PULLUP3 IN3_1 VCC 100k
 C_IN3 IN3_1 0 10p
 
 * ============================================================
 * BUTTON 4
 * ============================================================
-SW4 NO4_1 IN4_1 VSWITCH4
-V_BUTTON4 VSWITCH4 0 PULSE(0 5 30ms 1ms 100ms 200ms)
+V_BUTTON4 IN4_1 0 PULSE(5 0 30ms 1ms 100ms 200ms)
 R_PULLUP4 IN4_1 VCC 100k
 C_IN4 IN4_1 0 10p
 
 * ============================================================
 * BUTTON 5
 * ============================================================
-SW5 NO5_1 IN5_1 VSWITCH5
-V_BUTTON5 VSWITCH5 0 PULSE(0 5 40ms 1ms 100ms 200ms)
+V_BUTTON5 IN5_1 0 PULSE(5 0 40ms 1ms 100ms 200ms)
 R_PULLUP5 IN5_1 VCC 100k
 C_IN5 IN5_1 0 10p
 
 * ============================================================
 * BUTTON 6
 * ============================================================
-SW6 NO6_1 IN6_1 VSWITCH6
-V_BUTTON6 VSWITCH6 0 PULSE(0 5 50ms 1ms 100ms 200ms)
+V_BUTTON6 IN6_1 0 PULSE(5 0 50ms 1ms 100ms 200ms)
 R_PULLUP6 IN6_1 VCC 100k
 C_IN6 IN6_1 0 10p
 
 * ============================================================
 * BUTTON 7
 * ============================================================
-SW7 NO7_1 IN7_1 VSWITCH7
-V_BUTTON7 VSWITCH7 0 PULSE(0 5 60ms 1ms 100ms 200ms)
+V_BUTTON7 IN7_1 0 PULSE(5 0 60ms 1ms 100ms 200ms)
 R_PULLUP7 IN7_1 VCC 100k
 C_IN7 IN7_1 0 10p
 
 * ============================================================
 * BUTTON 8
 * ============================================================
-SW8 NO8_1 IN8_1 VSWITCH8
-V_BUTTON8 VSWITCH8 0 PULSE(0 5 70ms 1ms 100ms 200ms)
+V_BUTTON8 IN8_1 0 PULSE(5 0 70ms 1ms 100ms 200ms)
 R_PULLUP8 IN8_1 VCC 100k
 C_IN8 IN8_1 0 10p
 
@@ -123,12 +116,16 @@ R_LIMIT8 LED8_CATHODE 0 150
 * ============================================================
 * LED DIODE MODEL
 * ============================================================
-.MODEL D_LED D(Is=1e-10 Rs=1 N=1.8 Vf=2.0)
+.MODEL D_LED D(Is=1e-10 Rs=1 N=1.8 Cjo=10p)
 
 * ============================================================
 * SIMULATION COMMANDS
 * ============================================================
 .TRAN 10u 200m
-.PROBE
-
+* Print LED current measurements (current through LED diodes)
+.PRINT TRAN I(D1) I(D2) I(D3) I(D4)
+.PRINT TRAN I(D5) I(D6) I(D7) I(D8)
+* Print button input voltages
+.PRINT TRAN V(IN1_1) V(IN2_1) V(IN3_1) V(IN4_1)
+.PRINT TRAN V(IN5_1) V(IN6_1) V(IN7_1) V(IN8_1)
 .END

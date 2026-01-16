@@ -1,0 +1,26 @@
+Components needed for PB86 8-button circuit:
+
+1. MCP23017 - I2C I/O Expander
+   - Package: DIP-28 (through-hole)
+   - Symbol: MCU_Microchip_CP2102 or similar
+   
+2. 74HC595 - 8-bit Shift Register
+   - Package: DIP-16 (through-hole)
+   - Symbol: 74xGxx:74HC595
+   
+3. PB86 - Push Button with LED
+   - Package: Through-hole 6-pin
+   - Symbol: Custom symbol needed
+   
+4. Resistor - 150Ω, 1/4W
+   - Package: Axial 0.4" (through-hole)
+   - Symbol: Device:R
+   
+5. LED - Red, 20mA
+   - Package: 3mm or 5mm THT
+   - Symbol: Device:LED
+
+6. Capacitors - 100µF, 100nF
+   - Package: Radial THT
+   - Symbol: Device:CP (for electrolytic)
+   - Symbol: Device:C (for ceramic)

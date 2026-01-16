@@ -1,0 +1,13 @@
+* Simple LED test circuit with better model
+VCC 1 0 DC 5.0
+V_IN Q1 0 PULSE(0 5 0ms 0ms 50ms 100ms)
+R_OUT Q1 LED_ANODE 50
+D1 LED_ANODE LED_CATHODE D_LED
+R_LIMIT LED_CATHODE 0 150
+
+* Better LED model with forward voltage
+.MODEL D_LED D(Is=1e-12 Rs=10 N=1.5 Cjo=10p BV=5)
+
+.TRAN 10u 50m
+.PRINT TRAN V(LED_ANODE) V(LED_CATHODE)
+.END
