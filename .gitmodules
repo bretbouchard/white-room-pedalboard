@@ -15,3 +15,39 @@
 [submodule "effects/filtergate"]
 	path = effects/filtergate
 	url = https://github.com/bretbouchard/FilterGate.git
+[submodule "effects/AetherDrive"]
+	path = effects/AetherDrive
+	url = https://github.com/bretbouchard/aether-drive.git
+[submodule "effects/monument"]
+	path = effects/monument
+	url = https://github.com/bretbouchard/monument-phaser.git
+[submodule "effects/farfaraway"]
+	path = effects/farfaraway
+	url = https://github.com/bretbouchard/far-far-away.git
+[submodule "effects/dynamics"]
+	path = effects/dynamics
+	url = https://github.com/bretbouchard/white-room-dynamics.git
+[submodule "instruments/kane_marco"]
+	path = instruments/kane_marco
+	url = https://github.com/bretbouchard/kane-marco-aether.git
+[submodule "instruments/giant_instruments"]
+	path = instruments/giant_instruments
+	url = https://github.com/bretbouchard/aether-giant-instruments.git
+[submodule "instruments/drummachine"]
+	path = instruments/drummachine
+	url = https://github.com/bretbouchard/white-room-drum-machine.git
+[submodule "instruments/Nex_synth"]
+	path = instruments/Nex_synth
+	url = https://github.com/bretbouchard/white-room-nex-synth.git
+[submodule "instruments/Sam_sampler"]
+	path = instruments/Sam_sampler
+	url = https://github.com/bretbouchard/white-room-sam-sampler.git
+[submodule "effects/overdrive_pedal"]
+	path = effects/overdrive_pedal
+	url = https://github.com/bretbouchard/white-room-overdrive-pedal.git
+[submodule "effects/pedals"]
+	path = effects/pedals
+	url = https://github.com/bretbouchard/white-room-pedals-framework.git
+[submodule "instruments/localgal"]
+	path = instruments/localgal
+	url = https://github.com/bretbouchard/local-galaxy-instrument.git
