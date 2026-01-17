@@ -1,0 +1,14 @@
+{
+    "name": "Subtle Shimmer",
+    "description": "Gentle slow phasing for subtle movement",
+    "author": "Mu-Tron",
+    "category": "Subtle",
+    "parameters": {
+        "rate": 0.15,
+        "depth": 0.3,
+        "feedback": 0.0,
+        "stereoPhase": 90.0,
+        "shape": "sine"
+    },
+    "notes": "Minimal depth and no feedback for clean, subtle effect"
+}

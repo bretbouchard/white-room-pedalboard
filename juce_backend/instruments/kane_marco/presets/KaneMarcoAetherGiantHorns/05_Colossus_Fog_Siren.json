@@ -1,0 +1,44 @@
+{
+  "version": "1.0.0",
+  "author": "Kane Marco Design Team",
+  "creationDate": "2025-01-08",
+  "name": "Colossus Fog Siren",
+  "description": "Semi-stable with cinematic warning character",
+  "category": "Giant Horns",
+  "tags": ["siren", "warning", "cinematic", "unstable", "fog"],
+  "giant_scale": {
+    "scale_meters": 12.0,
+    "mass_bias": 0.8,
+    "air_loss": 0.6,
+    "transient_slowing": 0.7
+  },
+  "gesture": {
+    "force": 0.65,
+    "speed": 0.25,
+    "contact_area": 0.6,
+    "roughness": 0.4
+  },
+  "horn_parameters": {
+    "lip_tension": 0.5,
+    "mouth_pressure": 0.6,
+    "nonlinearity": 0.45,
+    "chaos_threshold": 0.5,
+    "growl_amount": 0.25,
+    "bore_length": 12.0,
+    "reflection_coeff": 0.85,
+    "bore_shape": 0.9,
+    "flare_factor": 0.8,
+    "bell_size": 3.0,
+    "horn_type": 0.0,
+    "brightness": 0.45,
+    "warmth": 0.75,
+    "metalness": 0.7,
+    "master_volume": 0.88
+  },
+  "parameters": {
+    "master_volume": 0.88,
+    "scale_meters": 12.0,
+    "force": 0.65,
+    "bore_length": 12.0
+  }
+}

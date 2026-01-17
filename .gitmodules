@@ -9,44 +9,44 @@
 	path = swift_frontend
 	url = https://github.com/bretbouchard/swift_frontend.git
 	branch = main
-[submodule "effects/biPhase"]
-	path = effects/biPhase
+[submodule "juce_backend/effects/biPhase"]
+	path = juce_backend/effects/biPhase
 	url = https://github.com/bretbouchard/biPhase.git
-[submodule "effects/filtergate"]
-	path = effects/filtergate
+[submodule "juce_backend/effects/filtergate"]
+	path = juce_backend/effects/filtergate
 	url = https://github.com/bretbouchard/FilterGate.git
-[submodule "effects/AetherDrive"]
-	path = effects/AetherDrive
+[submodule "juce_backend/effects/AetherDrive"]
+	path = juce_backend/effects/AetherDrive
 	url = https://github.com/bretbouchard/aether-drive.git
-[submodule "effects/monument"]
-	path = effects/monument
+[submodule "juce_backend/effects/monument"]
+	path = juce_backend/effects/monument
 	url = https://github.com/bretbouchard/monument-phaser.git
-[submodule "effects/farfaraway"]
-	path = effects/farfaraway
+[submodule "juce_backend/effects/farfaraway"]
+	path = juce_backend/effects/farfaraway
 	url = https://github.com/bretbouchard/far-far-away.git
-[submodule "effects/dynamics"]
-	path = effects/dynamics
+[submodule "juce_backend/effects/dynamics"]
+	path = juce_backend/effects/dynamics
 	url = https://github.com/bretbouchard/white-room-dynamics.git
-[submodule "instruments/kane_marco"]
-	path = instruments/kane_marco
+[submodule "juce_backend/instruments/kane_marco"]
+	path = juce_backend/instruments/kane_marco
 	url = https://github.com/bretbouchard/kane-marco-aether.git
-[submodule "instruments/giant_instruments"]
-	path = instruments/giant_instruments
+[submodule "juce_backend/instruments/giant_instruments"]
+	path = juce_backend/instruments/giant_instruments
 	url = https://github.com/bretbouchard/aether-giant-instruments.git
-[submodule "instruments/drummachine"]
-	path = instruments/drummachine
+[submodule "juce_backend/instruments/drummachine"]
+	path = juce_backend/instruments/drummachine
 	url = https://github.com/bretbouchard/white-room-drum-machine.git
-[submodule "instruments/Nex_synth"]
-	path = instruments/Nex_synth
+[submodule "juce_backend/instruments/Nex_synth"]
+	path = juce_backend/instruments/Nex_synth
 	url = https://github.com/bretbouchard/white-room-nex-synth.git
-[submodule "instruments/Sam_sampler"]
-	path = instruments/Sam_sampler
+[submodule "juce_backend/instruments/Sam_sampler"]
+	path = juce_backend/instruments/Sam_sampler
 	url = https://github.com/bretbouchard/white-room-sam-sampler.git
-[submodule "effects/overdrive_pedal"]
-	path = effects/overdrive_pedal
+[submodule "juce_backend/effects/overdrive_pedal"]
+	path = juce_backend/effects/overdrive_pedal
 	url = https://github.com/bretbouchard/white-room-overdrive-pedal.git
-[submodule "effects/pedals"]
-	path = effects/pedals
+[submodule "juce_backend/effects/pedals"]
+	path = juce_backend/effects/pedals
 	url = https://github.com/bretbouchard/white-room-pedals-framework.git
 [submodule "instruments/localgal"]
 	path = instruments/localgal

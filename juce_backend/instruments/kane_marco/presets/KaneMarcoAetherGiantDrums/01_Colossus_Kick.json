@@ -1,0 +1,43 @@
+{
+  "version": "1.0.0",
+  "author": "Kane Marco Design Team",
+  "creationDate": "2025-01-08",
+  "name": "Colossus Kick",
+  "description": "Sub-heavy giant kick with slow bloom and massive low end",
+  "category": "Giant Drums",
+  "tags": [
+    "kick",
+    "sub",
+    "bass",
+    "giant",
+    "cinematic"
+  ],
+  "giant_scale": {
+    "scale_meters": 2.5,
+    "mass_bias": 0.7,
+    "air_loss": 0.3,
+    "transient_slowing": 0.6
+  },
+  "gesture": {
+    "force": 0.8,
+    "speed": 0.3,
+    "contact_area": 0.7,
+    "roughness": 0.2
+  },
+  "parameters": {
+    "master_volume": 0.9,
+    "membrane_tension": 0.4,
+    "membrane_diameter": 2.5,
+    "membrane_damping": 0.997,
+    "membrane_inharmonicity": 0.15,
+    "membrane_num_modes": 4,
+    "shell_cavity_freq": 80.0,
+    "shell_formant": 150.0,
+    "shell_coupling": 0.4,
+    "saturation_amount": 0.15,
+    "mass_effect": 0.6,
+    "room_size": 0.6,
+    "reflection_gain": 0.25,
+    "reverb_time": 2.5
+  }
+}

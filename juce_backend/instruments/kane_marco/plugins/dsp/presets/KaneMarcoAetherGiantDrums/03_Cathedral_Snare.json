@@ -1,0 +1,37 @@
+{
+  "version": "1.0.0",
+  "author": "Kane Marco Design Team",
+  "creationDate": "2025-01-08",
+  "name": "Cathedral Snare",
+  "description": "Giant shell with long tail and controlled buzz",
+  "category": "Giant Drums",
+  "tags": ["snare", "giant", "cathedral", "long", "resonant"],
+  "giant_scale": {
+    "scale_meters": 1.5,
+    "mass_bias": 0.5,
+    "air_loss": 0.35,
+    "transient_slowing": 0.4
+  },
+  "gesture": {
+    "force": 0.6,
+    "speed": 0.7,
+    "contact_area": 0.4,
+    "roughness": 0.5
+  },
+  "parameters": {
+    "master_volume": 0.8,
+    "membrane_tension": 0.7,
+    "membrane_diameter": 1.5,
+    "membrane_damping": 0.994,
+    "membrane_inharmonicity": 0.2,
+    "membrane_num_modes": 5,
+    "shell_cavity_freq": 200.0,
+    "shell_formant": 400.0,
+    "shell_coupling": 0.4,
+    "saturation_amount": 0.15,
+    "mass_effect": 0.4,
+    "room_size": 0.75,
+    "reflection_gain": 0.35,
+    "reverb_time": 3.0
+  }
+}

@@ -1,0 +1,37 @@
+{
+  "version": "1.0.0",
+  "author": "Kane Marco Design Team",
+  "creationDate": "2025-01-08",
+  "name": "Thunder Frame Drum",
+  "description": "Wide transient with slow fundamental and rumble",
+  "category": "Giant Drums",
+  "tags": ["frame", "wide", "rumble", "thunder", "slow"],
+  "giant_scale": {
+    "scale_meters": 2.2,
+    "mass_bias": 0.7,
+    "air_loss": 0.25,
+    "transient_slowing": 0.7
+  },
+  "gesture": {
+    "force": 0.9,
+    "speed": 0.4,
+    "contact_area": 0.8,
+    "roughness": 0.2
+  },
+  "parameters": {
+    "master_volume": 0.9,
+    "membrane_tension": 0.4,
+    "membrane_diameter": 2.2,
+    "membrane_damping": 0.997,
+    "membrane_inharmonicity": 0.08,
+    "membrane_num_modes": 3,
+    "shell_cavity_freq": 80.0,
+    "shell_formant": 120.0,
+    "shell_coupling": 0.25,
+    "saturation_amount": 0.1,
+    "mass_effect": 0.7,
+    "room_size": 0.8,
+    "reflection_gain": 0.4,
+    "reverb_time": 3.5
+  }
+}

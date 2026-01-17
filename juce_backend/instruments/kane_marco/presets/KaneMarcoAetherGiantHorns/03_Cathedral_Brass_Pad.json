@@ -1,0 +1,44 @@
+{
+  "version": "1.0.0",
+  "author": "Kane Marco Design Team",
+  "creationDate": "2025-01-08",
+  "name": "Cathedral Brass Pad",
+  "description": "Formant-smoothed with wide cinematic presence",
+  "category": "Giant Horns",
+  "tags": ["pad", "brass", "wide", "cathedral", "smooth"],
+  "giant_scale": {
+    "scale_meters": 10.0,
+    "mass_bias": 0.7,
+    "air_loss": 0.5,
+    "transient_slowing": 0.8
+  },
+  "gesture": {
+    "force": 0.5,
+    "speed": 0.15,
+    "contact_area": 0.7,
+    "roughness": 0.2
+  },
+  "horn_parameters": {
+    "lip_tension": 0.45,
+    "mouth_pressure": 0.5,
+    "nonlinearity": 0.25,
+    "chaos_threshold": 0.8,
+    "growl_amount": 0.1,
+    "bore_length": 10.0,
+    "reflection_coeff": 0.95,
+    "bore_shape": 0.8,
+    "flare_factor": 0.7,
+    "bell_size": 2.5,
+    "horn_type": 1.0,
+    "brightness": 0.35,
+    "warmth": 0.9,
+    "metalness": 0.6,
+    "master_volume": 0.8
+  },
+  "parameters": {
+    "master_volume": 0.8,
+    "scale_meters": 10.0,
+    "force": 0.5,
+    "bore_length": 10.0
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "version": "1.0.0",
+  "name": "Organic Rustle",
+  "author": "Kane Marco Design Team",
+  "description": "Natural leaf and paper rustle sounds. Quick, percussive textures for foley and nature ambience.",
+  "category": "Texture",
+  "tags": ["organic", "rustle", "natural", "percussive", "foley"],
+  "creationDate": "2025-12-26",
+  "parameters": {
+    "exciter_noise_color": 0.5,
+    "exciter_gain": 0.4,
+    "exciter_attack": 0.01,
+    "exciter_decay": 0.2,
+    "exciter_sustain": 0.1,
+    "exciter_release": 0.3,
+    "resonator_mode_count": 16,
+    "resonator_brightness": 0.5,
+    "resonator_decay": 0.3,
+    "feedback_amount": 0.3,
+    "feedback_delay_time": 0.003,
+    "feedback_saturation": 1.1,
+    "feedback_mix": 0.25,
+    "filter_cutoff": 0.55,
+    "filter_resonance": 0.3,
+    "amp_attack": 0.01,
+    "amp_decay": 0.3,
+    "amp_sustain": 0.1,
+    "amp_release": 0.4
+  }
+}

@@ -1,0 +1,37 @@
+{
+  "version": "1.0.0",
+  "author": "Kane Marco Design Team",
+  "creationDate": "2025-01-08",
+  "name": "Mythic Taiko",
+  "description": "Huge strike with air push and ceremonial weight",
+  "category": "Giant Drums",
+  "tags": ["taiko", "japanese", "ceremonial", "massive", "air"],
+  "giant_scale": {
+    "scale_meters": 3.0,
+    "mass_bias": 0.8,
+    "air_loss": 0.2,
+    "transient_slowing": 0.8
+  },
+  "gesture": {
+    "force": 1.0,
+    "speed": 0.3,
+    "contact_area": 0.9,
+    "roughness": 0.25
+  },
+  "parameters": {
+    "master_volume": 0.95,
+    "membrane_tension": 0.5,
+    "membrane_diameter": 3.0,
+    "membrane_damping": 0.998,
+    "membrane_inharmonicity": 0.1,
+    "membrane_num_modes": 4,
+    "shell_cavity_freq": 60.0,
+    "shell_formant": 100.0,
+    "shell_coupling": 0.3,
+    "saturation_amount": 0.12,
+    "mass_effect": 0.8,
+    "room_size": 0.9,
+    "reflection_gain": 0.5,
+    "reverb_time": 4.0
+  }
+}
