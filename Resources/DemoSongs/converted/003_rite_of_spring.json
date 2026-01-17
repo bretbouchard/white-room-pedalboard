@@ -1,0 +1,237 @@
+{
+  "id": "converted_003",
+  "name": "The Rite of Spring (Structural Analysis)",
+  "category": "converted",
+  "difficulty": "advanced",
+  "focus": [
+    "Independent pulse streams",
+    "Resultant accent fields",
+    "Non-isochronous rhythm cells",
+    "Phase reset events",
+    "Fragment permutation",
+    "Block collision form",
+    "Energy saturation",
+    "Predictability management"
+  ],
+  "duration_seconds": 180,
+  "agents": [
+    "Rhythm",
+    "Pitch",
+    "Structure",
+    "Energy"
+  ],
+  "description": "Schillinger decomposition of Stravinsky's Rite of Spring - treats the work as a structural and generative system. Demonstrates interference-based rhythm, fragment permutation logic, block formalism, and energy-driven form. No imitation, no transcription - pure structural principles extracted and systematized.",
+  "performance_notes": "CRITICAL: You are NOT copying Stravinsky. You are implementing constraint logic. Never allow all pulse streams to share factors (prevents metric lock). Avoid long-term 2^n dominance. When PM (Predictability Metric) exceeds 0.5, intervene immediately. Form is juxtaposition (collision cuts), NOT evolution. Use density ramps as primary macro-energy driver. Pitch is statistical field occupancy, NOT functional tonality. Blocks transition via hard cuts, interpolation is NONE. This is musical engineering, not composition - think physics, not expression.",
+  "composer": "Igor Stravinsky (Schillinger Decomposition)",
+  "date_added": "2026-01-16",
+  "sequence": 3,
+  "session_model": {
+    "tempo": {
+      "base": 120,
+      "variation": "local_not_global",
+      "note": "Tempo exists but pulse streams govern perception"
+    },
+    "duration_bars": 80,
+    "rhythm": {
+      "independent_pulse_streams": [
+        {
+          "id": "stream_a",
+          "period": 7,
+          "phase_offset": 0
+        },
+        {
+          "id": "stream_b",
+          "period": 9,
+          "phase_offset": 2
+        },
+        {
+          "id": "stream_c",
+          "period": 5,
+          "phase_offset": 1
+        }
+      ],
+      "resultant_mode": "interference",
+      "accent_generation": "coincidence_based",
+      "phase_resets": [
+        {
+          "target_stream": "stream_b",
+          "reset_point": 16
+        }
+      ],
+      "non_isochronous_cells": [
+        {
+          "durations": [3, 2, 4, 1, 2],
+          "repetition": "structural_not_metric"
+        }
+      ],
+      "density_ramp": {
+        "enabled": true,
+        "direction": "increasing",
+        "rate": 0.15
+      }
+    },
+    "pitch": {
+      "approach": "statistical_field_not_scale",
+      "interval_generators": [
+        {
+          "base_pitch": 48,
+          "interval_set": [1, 6, 7, 11]
+        }
+      ],
+      "pitch_field": {
+        "allowed_intervals": [1, 4, 6, 7, 11],
+        "register_range": [36, 84],
+        "density": 0.6
+      },
+      "poly_pitch": {
+        "enabled": true,
+        "fields": [
+          {
+            "id": "field_1",
+            "center": 60,
+            "spread": 12
+          },
+          {
+            "id": "field_2",
+            "center": 48,
+            "spread": 18,
+            "offset": 3
+          }
+        ],
+        "reconciliation": "none",
+        "note": "Multiple pitch systems coexist without resolution"
+      },
+      "fragment_tokens": [
+        {
+          "id": "frag_1",
+          "intervals": [1, 6, 7],
+          "rhythmic_embedding": "syncopated"
+        },
+        {
+          "id": "frag_2",
+          "intervals": [4, 4, 11],
+          "rhythmic_embedding": "on_beat"
+        }
+      ],
+      "permutation_rules": {
+        "allowed_operations": ["rotation", "inversion", "truncation", "transposition"],
+        "forbidden": ["development", "thematic_elaboration"],
+        "note": "Permutation of constraints, not thematic development"
+      }
+    },
+    "harmony": {
+      "mode": "disabled_or_interval_stack",
+      "if_enabled": {
+        "type": "interval_aggregates",
+        "no_roman_numerals": true,
+        "no_progression_logic": true
+      }
+    },
+    "form": {
+      "type": "block_collision",
+      "blocks": [
+        {
+          "id": "block_a",
+          "duration_bars": 8,
+          "primitives": ["stream_a", "frag_1"],
+          "transition": "cut_to_block_b"
+        },
+        {
+          "id": "block_b",
+          "duration_bars": 12,
+          "primitives": ["stream_b", "frag_2", "density_ramp"],
+          "transition": "cut_to_block_c"
+        },
+        {
+          "id": "block_c",
+          "duration_bars": 6,
+          "primitives": ["all_streams", "permutation_inversion"],
+          "transition": "cut_to_block_a_mod"
+        }
+      ],
+      "interpolation": "none",
+      "parameter_rebinding": [
+        {
+          "block": "block_a_mod",
+          "parameter": "pulse_stream_period",
+          "new_constraint": "prime_only"
+        }
+      ]
+    },
+    "orchestration": {
+      "layers_as_control_channels": [
+        {
+          "name": "low",
+          "register": [36, 48],
+          "density_weight": 0.3,
+          "attack_profile": "slow"
+        },
+        {
+          "name": "mid",
+          "register": [60, 72],
+          "density_weight": 0.5,
+          "attack_profile": "medium"
+        },
+        {
+          "name": "high",
+          "register": [76, 84],
+          "density_weight": 0.7,
+          "attack_profile": "fast"
+        }
+      ],
+      "energy_saturation": {
+        "trigger_points": [0.6, 0.8],
+        "actions": ["add_layer", "increase_density", "widen_register"]
+      }
+    }
+  },
+  "preset_evolution": {
+    "enabled": true,
+    "lock_level": 0.3,
+    "mutation_budget": {
+      "max_mutations": 2,
+      "cooldown_seconds": 30
+    },
+    "predictability_metric": {
+      "window_seconds": 6,
+      "weights": {
+        "rhythm": 0.35,
+        "pitch": 0.25,
+        "density": 0.15,
+        "form": 0.25
+      },
+      "thresholds": {
+        "warn": 0.5,
+        "intervene": 0.65,
+        "force": 0.75
+      },
+      "agent_responses": {
+        "structure": "cut_blocks_when_PF_exceeded",
+        "rhythm": "introduce_phase_drift_when_PR_high",
+        "pitch": "rotate_intervals_when_PI_increases",
+        "energy": "adjust_density_when_PD_plateaus"
+      }
+    },
+    "mutation_types": [
+      {
+        "type": "pulse_shift",
+        "actions": ["add_stream", "remove_stream", "swap_period", "phase_drift"],
+        "rules": "Never allow all streams to share factors"
+      },
+      {
+        "type": "density_rebind",
+        "actions": ["expand_range", "contract_range", "invert_trend"]
+      },
+      {
+        "type": "interval_rotation",
+        "actions": ["rotate_intervals", "split_pitch_field", "shift_register"],
+        "rules": "Max 1 interval added per cycle, avoid diatonic completeness"
+      },
+      {
+        "type": "form_rebind",
+        "actions": ["change_block_duration", "alter_cut_irregularity", "force_early_cut"],
+        "trigger": "PF_spike"
+      }
+    ]
+  }
+}

@@ -1,0 +1,74 @@
+{
+  "id": "starter_005",
+  "name": "Heartbeat",
+  "category": "starter",
+  "difficulty": "beginner",
+  "focus": [
+    "2-3 groove",
+    "Ostinato",
+    "Minimal variation"
+  ],
+  "duration_seconds": 60,
+  "agents": [
+    "Rhythm",
+    "Pitch"
+  ],
+  "description": "Demonstrates: 2-3 groove, Ostinato, Minimal variation",
+  "composer": "Claude (White Room System)",
+  "date_added": "2026-01-16",
+  "sequence": 5,
+  "session_model": {
+    "tempo": 150,
+    "time_signature": [
+      4,
+      4
+    ],
+    "duration_bars": 16,
+    "rhythm": {
+      "primary_pulse_streams": [
+        {
+          "period": 2,
+          "phase_offset": 0,
+          "weight": 1.0
+        },
+        {
+          "period": 3,
+          "phase_offset": 0,
+          "weight": 0.8
+        }
+      ],
+      "resultant_pattern": "2-3 basic",
+      "density": 0.55
+    },
+    "pitch": {
+      "primary_interval_seed": [
+        0,
+        0,
+        -5
+      ],
+      "contour_type": "simple",
+      "register_range": {
+        "min": 60,
+        "max": 77
+      },
+      "scale": "pentatonic_major"
+    },
+    "form": {
+      "structure": [
+        16
+      ],
+      "section_types": [
+        "A"
+      ]
+    },
+    "orchestration": {
+      "layers": [
+        {
+          "name": "melody",
+          "register": "mid_high",
+          "density_weight": 1.0
+        }
+      ]
+    }
+  }
+}

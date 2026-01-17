@@ -1,0 +1,80 @@
+{
+  "id": "starter_002",
+  "name": "Pulse Dance",
+  "category": "starter",
+  "difficulty": "beginner",
+  "focus": [
+    "7-8 interference",
+    "Melodic repetition",
+    "Call and response"
+  ],
+  "duration_seconds": 60,
+  "agents": [
+    "Rhythm",
+    "Pitch"
+  ],
+  "description": "Demonstrates: 7-8 interference, Melodic repetition, Call and response",
+  "composer": "Claude (White Room System)",
+  "date_added": "2026-01-16",
+  "sequence": 2,
+  "session_model": {
+    "tempo": 120,
+    "time_signature": [
+      4,
+      4
+    ],
+    "duration_bars": 16,
+    "rhythm": {
+      "primary_pulse_streams": [
+        {
+          "period": 7,
+          "phase_offset": 0,
+          "weight": 1.0
+        },
+        {
+          "period": 8,
+          "phase_offset": 0,
+          "weight": 0.8
+        }
+      ],
+      "resultant_pattern": "7-8 syncopation",
+      "density": 0.4
+    },
+    "pitch": {
+      "primary_interval_seed": [
+        2,
+        2,
+        -3
+      ],
+      "contour_type": "simple",
+      "register_range": {
+        "min": 60,
+        "max": 74
+      },
+      "scale": "pentatonic_major"
+    },
+    "form": {
+      "structure": [
+        4,
+        4,
+        4,
+        4
+      ],
+      "section_types": [
+        "A",
+        "A",
+        "A",
+        "A"
+      ]
+    },
+    "orchestration": {
+      "layers": [
+        {
+          "name": "melody",
+          "register": "mid_high",
+          "density_weight": 1.0
+        }
+      ]
+    }
+  }
+}

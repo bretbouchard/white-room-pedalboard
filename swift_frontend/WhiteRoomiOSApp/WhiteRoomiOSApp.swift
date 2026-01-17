@@ -10,16 +10,16 @@ import SwiftUI
 
 @main
 struct WhiteRoomiOSApp: App {
-    @StateObject private var autoSaveManager = AutoSaveManager.shared
+    // @StateObject private var autoSaveManager = AutoSaveManager.shared
     @Environment(\.scenePhase) private var scenePhase
 
     var body: some Scene {
         WindowGroup {
             ContentView()
-                .environmentObject(autoSaveManager)
+                // .environmentObject(autoSaveManager)
                 .onAppear {
                     // Mark pending changes when app becomes active
-                    NSLog("White Room: App appeared - AutoSaveManager initialized")
+                    NSLog("White Room: App appeared")
                 }
                 .onChange(of: scenePhase) { newPhase in
                     handleScenePhaseChange(newPhase)
@@ -57,13 +57,14 @@ struct WhiteRoomiOSApp: App {
 }
 
 struct ContentView: View {
-    @EnvironmentObject private var autoSaveManager: AutoSaveManager
+    // @EnvironmentObject private var autoSaveManager: AutoSaveManager
     @State private var timeSinceLastSave: TimeInterval? = nil
     @State private var isSaving = false
     @State private var saveError: Error? = nil
     @State private var showCrashRecovery = false
     @State private var crashVersion = 0
     @State private var showSettings = false
+    @State private var showDemoSongs = false
 
     var body: some View {
         VStack(spacing: 20) {
@@ -105,6 +106,11 @@ struct ContentView: View {
                 HStack {
                     Image(systemName: "checkmark.circle.fill")
                         .foregroundStyle(.green)
+                    Text("Demo Songs (83)")
+                }
+                HStack {
+                    Image(systemName: "checkmark.circle.fill")
+                        .foregroundStyle(.green)
                     Text("Auto-Save System")
                 }
             }
@@ -112,6 +118,21 @@ struct ContentView: View {
             .padding()
             .background(Color(.systemGray6))
             .cornerRadius(12)
+
+            // Demo Songs Button
+            Button(action: { showDemoSongs = true }) {
+                HStack {
+                    Image(systemName: "music.note.list")
+                    Text("Browse Demo Songs")
+                }
+                .font(.callout)
+                .padding()
+                .frame(maxWidth: .infinity)
+                .background(Color.accentColor.opacity(0.1))
+                .foregroundStyle(.accent)
+                .cornerRadius(12)
+            }
+            .padding(.horizontal)
 
             // Auto-Save Status Indicator
             AutoSaveStatusIndicator(
@@ -137,10 +158,14 @@ struct ContentView: View {
         }
         .padding()
         .onAppear {
-            setupAutoSave()
+            // setupAutoSave()
         }
         .sheet(isPresented: $showSettings) {
-            AutoSaveSettingsView()
+            // AutoSaveSettingsView()
+            Text("Auto-save settings coming soon!")
+        }
+        .sheet(isPresented: $showDemoSongs) {
+            DemoSongBrowserView()
         }
         .overlay(crashRecoveryOverlay)
     }
@@ -184,6 +209,7 @@ struct ContentView: View {
         )
 
         // Start auto-save with event callback
+        /*
         Task {
             await autoSaveManager.startAutoSave(
                 for: testSong,
@@ -193,8 +219,10 @@ struct ContentView: View {
                 }
             )
         }
+         */
     }
 
+    /*
     private func handleAutoSaveEvent(_ event: AutoSaveManager.AutoSaveEvent) {
         switch event {
         case .saved(let timeInterval):
@@ -223,7 +251,7 @@ struct ContentView: View {
             }
         }
     }
-
+    */
     // MARK: - Crash Recovery Overlay
 
     @ViewBuilder
@@ -238,6 +266,7 @@ struct ContentView: View {
                     }
 
                 // Crash recovery dialog
+                /*
                 CrashRecoveryView(
                     autoSaveVersion: crashVersion,
                     onRestore: {
@@ -259,6 +288,9 @@ struct ContentView: View {
                     }
                 )
                 .padding()
+                 */
+                Text("Crash recovery coming soon!")
+                    .padding()
             }
             .transition(.opacity)
         }

@@ -1,0 +1,118 @@
+{
+  "id": "converted_002",
+  "name": "HBO Feature Presentation (Identity Theme)",
+  "category": "converted",
+  "difficulty": "intermediate",
+  "focus": [
+    "Monotonic acceleration",
+    "Rhythmic interference",
+    "Harmonic unveiling",
+    "Directed motion form",
+    "Register as distance",
+    "Inevitability through structure"
+  ],
+  "duration_seconds": 30,
+  "agents": [
+    "Rhythm",
+    "Structure",
+    "Energy"
+  ],
+  "description": "Schillinger analysis of the classic HBO 'Feature Presentation' theme - demonstrates how to create musical inevitability and authority through pure structural means, without traditional harmony or melody. Perfect for logos, identities, and transitions.",
+  "performance_notes": "The key here is acceleration without tempo change - achieve this through rhythmic interference patterns (pulse every 8 units overlaid with pulse every 5 units). Keep pitch material extremely economical - narrow band, perfect intervals only. The harmony should 'unveil' rather than progress - you're approaching a static field, not moving through changes. Form is one-directional: no returns, no reprises. High frequencies = proximity, low frequencies = distance.",
+  "composer": "HBO (Schillinger Analysis)",
+  "date_added": "2026-01-16",
+  "sequence": 2,
+  "session_model": {
+    "tempo": {
+      "initial": 80,
+      "final": 80,
+      "note": "No tempo change - acceleration is rhythmic, not metric"
+    },
+    "duration_bars": 8,
+    "rhythm": {
+      "primary_pulse_streams": [
+        {
+          "period": 8,
+          "phase_offset": 0,
+          "weight": 0.5
+        },
+        {
+          "period": 5,
+          "phase_offset": 0,
+          "weight": 0.5
+        }
+      ],
+      "interference_mode": "progressive_contraction",
+      "acceleration_type": "structural",
+      "metric_reset": false,
+      "note": "Resultant creates perceived acceleration without tempo change"
+    },
+    "pitch": {
+      "pitch_band": {
+        "min": 36,
+        "max": 60,
+        "note": "Narrow band for focus"
+      },
+      "interval_palette": [5, 7, 12],
+      "interval_types": ["perfect_fourth", "perfect_fifth", "octave"],
+      "chromaticism": "minimal",
+      "contour": "architectural_not_lyrical",
+      "note": "Perfect intervals avoid emotional ambiguity"
+    },
+    "harmony": {
+      "type": "static_field_unveiling",
+      "progression": "none",
+      "unveiling_strategy": "additive_partials",
+      "harmonic_motion": "approach_not_modulation",
+      "note": "Listener approaches harmony, harmony doesn't move"
+    },
+    "form": {
+      "type": "unidirectional",
+      "repetition": false,
+      "reprise": false,
+      "stages": [
+        {
+          "name": "latent_motion",
+          "duration_bars": 2,
+          "character": "space_distance"
+        },
+        {
+          "name": "emergent_pulse",
+          "duration_bars": 2,
+          "character": "orientation"
+        },
+        {
+          "name": "acceleration",
+          "duration_bars": 2,
+          "character": "approach"
+        },
+        {
+          "name": "terminal_confirmation",
+          "duration_bars": 2,
+          "character": "identity_lock"
+        }
+      ],
+      "note": "Mirrors physical motion, not musical form"
+    },
+    "orchestration": {
+      "register_as_distance": true,
+      "frequency_mapping": {
+        "low": "mass",
+        "mid": "motion",
+        "high": "destination"
+      },
+      "evolution": "increasing_high_frequency_content",
+      "note": "As piece progresses, increase high freq to create 'approaching' feeling"
+    },
+    "energy": {
+      "curve": "low_to_accelerating_to_terminal",
+      "saturation_point": 0.9,
+      "target": "inevitability_not_emotion"
+    }
+  },
+  "preset_evolution": {
+    "enabled": false,
+    "lock_level": 1.0,
+    "note": "Identity themes must be consistent - evolution disabled"
+  }
+}

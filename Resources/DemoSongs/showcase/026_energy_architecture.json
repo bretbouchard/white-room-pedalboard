@@ -1,0 +1,113 @@
+{
+  "id": "showcase_026",
+  "name": "Energy Architecture",
+  "category": "showcase",
+  "difficulty": "intermediate",
+  "focus": [
+    "Energy curves",
+    "Climax design",
+    "Tension arcs"
+  ],
+  "duration_seconds": 120,
+  "agents": [
+    "Energy",
+    "Structure"
+  ],
+  "description": "Demonstrates: Energy curves, Climax design, Tension arcs",
+  "performance_notes": "Focus on energy curves and how it interacts with other system elements.",
+  "composer": "Claude (White Room System)",
+  "date_added": "2026-01-16",
+  "sequence": 26,
+  "session_model": {
+    "tempo": 163,
+    "time_signature": [
+      4,
+      4
+    ],
+    "duration_bars": 32,
+    "rhythm": {
+      "primary_pulse_streams": [
+        {
+          "period": 29,
+          "phase_offset": 0,
+          "weight": 1.0
+        },
+        {
+          "period": 31,
+          "phase_offset": 2,
+          "weight": 0.8
+        }
+      ],
+      "resultant_pattern": "showcase_26",
+      "density": 1.15,
+      "phase_drift": {
+        "enabled": false,
+        "rate": 0
+      }
+    },
+    "pitch": {
+      "primary_interval_seed": [
+        2,
+        3,
+        -5,
+        1,
+        -3
+      ],
+      "contour_type": "moderate",
+      "register_range": {
+        "min": 48,
+        "max": 84
+      },
+      "scale": "pentatonic_major",
+      "rotation": {
+        "enabled": false,
+        "axis": "median",
+        "period": 0
+      }
+    },
+    "form": {
+      "structure": [
+        8,
+        8,
+        8,
+        8
+      ],
+      "section_types": [
+        "A",
+        "B",
+        "A",
+        "C"
+      ],
+      "transitions": "standard"
+    },
+    "orchestration": {
+      "layers": [
+        {
+          "name": "lead",
+          "register": "mid_high",
+          "density_weight": 0.7
+        },
+        {
+          "name": "texture",
+          "register": "mid",
+          "density_weight": 0.5
+        }
+      ]
+    },
+    "energy": {
+      "curve": "exponential",
+      "saturation_point": 0.75,
+      "oscillation": {
+        "enabled": false,
+        "period": 4
+      }
+    }
+  },
+  "preset_evolution": {
+    "enabled": false,
+    "predictability_metric": {
+      "threshold": 0.5,
+      "manipulation": "standard"
+    }
+  }
+}

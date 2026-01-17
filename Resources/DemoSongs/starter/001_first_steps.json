@@ -1,0 +1,76 @@
+{
+  "id": "starter_001",
+  "name": "First Steps",
+  "category": "starter",
+  "difficulty": "beginner",
+  "focus": [
+    "Basic resultant rhythm",
+    "Simple melodic contour",
+    "Binary form"
+  ],
+  "duration_seconds": 60,
+  "agents": [
+    "Rhythm",
+    "Pitch"
+  ],
+  "description": "Demonstrates: Basic resultant rhythm, Simple melodic contour, Binary form",
+  "composer": "Claude (White Room System)",
+  "date_added": "2026-01-16",
+  "sequence": 1,
+  "session_model": {
+    "tempo": 110,
+    "time_signature": [
+      4,
+      4
+    ],
+    "duration_bars": 16,
+    "rhythm": {
+      "primary_pulse_streams": [
+        {
+          "period": 3,
+          "phase_offset": 0,
+          "weight": 1.0
+        },
+        {
+          "period": 5,
+          "phase_offset": 0,
+          "weight": 0.8
+        }
+      ],
+      "resultant_pattern": "3-2",
+      "density": 0.35
+    },
+    "pitch": {
+      "primary_interval_seed": [
+        3,
+        -2,
+        -1
+      ],
+      "contour_type": "simple",
+      "register_range": {
+        "min": 60,
+        "max": 73
+      },
+      "scale": "pentatonic_major"
+    },
+    "form": {
+      "structure": [
+        8,
+        8
+      ],
+      "section_types": [
+        "A",
+        "A"
+      ]
+    },
+    "orchestration": {
+      "layers": [
+        {
+          "name": "melody",
+          "register": "mid_high",
+          "density_weight": 1.0
+        }
+      ]
+    }
+  }
+}

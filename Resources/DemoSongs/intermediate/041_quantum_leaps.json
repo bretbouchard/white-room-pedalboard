@@ -1,0 +1,124 @@
+{
+  "id": "intermediate_041",
+  "name": "Quantum Leaps",
+  "category": "intermediate",
+  "difficulty": "intermediate",
+  "focus": [
+    "Large intervals",
+    "Register jumps",
+    "Discontinuous pitch"
+  ],
+  "duration_seconds": 150,
+  "agents": [
+    "Pitch",
+    "Structure"
+  ],
+  "description": "Demonstrates: Large intervals, Register jumps, Discontinuous pitch",
+  "composer": "Claude (White Room System)",
+  "date_added": "2026-01-16",
+  "sequence": 41,
+  "session_model": {
+    "tempo": 146.5,
+    "time_signature": [
+      4,
+      4
+    ],
+    "duration_bars": 48,
+    "rhythm": {
+      "primary_pulse_streams": [
+        {
+          "period": 44,
+          "phase_offset": 0,
+          "weight": 1.0
+        },
+        {
+          "period": 46,
+          "phase_offset": 0,
+          "weight": 0.8
+        },
+        {
+          "period": 47,
+          "phase_offset": 1,
+          "weight": 0.7000000000000001
+        }
+      ],
+      "resultant_pattern": "intermediate_41",
+      "density": 0.9,
+      "phase_resets": [
+        {
+          "target_stream": 0,
+          "reset_point": 16
+        },
+        {
+          "target_stream": 1,
+          "reset_point": 24
+        },
+        {
+          "target_stream": 2,
+          "reset_point": 32
+        }
+      ]
+    },
+    "pitch": {
+      "primary_interval_seed": [
+        2,
+        3,
+        -5,
+        1
+      ],
+      "contour_type": "complex",
+      "register_range": {
+        "min": 48,
+        "max": 84
+      },
+      "scale": "pentatonic_major",
+      "permutation_enabled": true,
+      "poly_pitch": {
+        "enabled": false
+      }
+    },
+    "form": {
+      "structure": [
+        12,
+        8,
+        12,
+        16
+      ],
+      "section_types": [
+        "A",
+        "B",
+        "A",
+        "C"
+      ],
+      "transitions": "standard"
+    },
+    "orchestration": {
+      "layers": [
+        {
+          "name": "layer_0",
+          "register": "low",
+          "density_weight": 0.4
+        },
+        {
+          "name": "layer_1",
+          "register": "mid",
+          "density_weight": 0.55
+        },
+        {
+          "name": "layer_2",
+          "register": "mid_high",
+          "density_weight": 0.7
+        },
+        {
+          "name": "layer_3",
+          "register": "high",
+          "density_weight": 0.85
+        }
+      ]
+    },
+    "energy": {
+      "curve": "linear",
+      "saturation_point": 0.905
+    }
+  }
+}

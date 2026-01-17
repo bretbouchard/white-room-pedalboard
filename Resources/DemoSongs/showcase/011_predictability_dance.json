@@ -1,0 +1,100 @@
+{
+  "id": "showcase_011",
+  "name": "Predictability Dance",
+  "category": "showcase",
+  "difficulty": "intermediate",
+  "focus": [
+    "PM monitoring",
+    "Agent intervention",
+    "Dynamic balance"
+  ],
+  "duration_seconds": 120,
+  "agents": [
+    "Rhythm",
+    "Pitch",
+    "Structure",
+    "Energy"
+  ],
+  "description": "Demonstrates: PM monitoring, Agent intervention, Dynamic balance",
+  "composer": "Claude (White Room System)",
+  "date_added": "2026-01-16",
+  "sequence": 11,
+  "session_model": {
+    "tempo": 145,
+    "time_signature": [
+      4,
+      4
+    ],
+    "duration_bars": 32,
+    "rhythm": {
+      "primary_pulse_streams": [
+        {
+          "period": 14,
+          "phase_offset": 0,
+          "weight": 1.0
+        },
+        {
+          "period": 16,
+          "phase_offset": 1,
+          "weight": 0.8
+        }
+      ],
+      "resultant_pattern": "complex_11",
+      "density": 0.83,
+      "phase_resets": [
+        {
+          "target_stream": 0,
+          "reset_point": 16
+        }
+      ]
+    },
+    "pitch": {
+      "primary_interval_seed": [
+        2,
+        3,
+        -5,
+        1
+      ],
+      "contour_type": "moderate",
+      "register_range": {
+        "min": 48,
+        "max": 84
+      },
+      "scale": "pentatonic_major"
+    },
+    "form": {
+      "structure": [
+        8,
+        8,
+        8,
+        8
+      ],
+      "section_types": [
+        "A",
+        "A",
+        "B",
+        "A"
+      ]
+    },
+    "orchestration": {
+      "layers": [
+        {
+          "name": "lead",
+          "register": "mid_high",
+          "density_weight": 0.7
+        },
+        {
+          "name": "counter",
+          "register": "mid",
+          "density_weight": 0.5
+        }
+      ]
+    },
+    "preset_evolution": {
+      "enabled": true,
+      "predictability_metric": {
+        "threshold": 0.5
+      }
+    }
+  }
+}

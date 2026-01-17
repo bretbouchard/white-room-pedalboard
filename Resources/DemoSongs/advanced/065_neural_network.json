@@ -1,0 +1,146 @@
+{
+  "id": "advanced_065",
+  "name": "Neural Network",
+  "category": "advanced",
+  "difficulty": "advanced",
+  "focus": [
+    "Pattern recognition",
+    "Learning systems",
+    "Adaptive behavior"
+  ],
+  "duration_seconds": 180,
+  "agents": [
+    "Structure",
+    "Energy"
+  ],
+  "description": "Demonstrates: Pattern recognition, Learning systems, Adaptive behavior",
+  "composer": "Claude (White Room System)",
+  "date_added": "2026-01-16",
+  "sequence": 65,
+  "session_model": {
+    "tempo": 145,
+    "time_signature": [
+      4,
+      4
+    ],
+    "duration_bars": 64,
+    "rhythm": {
+      "primary_pulse_streams": [
+        {
+          "period": 68,
+          "phase_offset": 0,
+          "weight": 1.0
+        },
+        {
+          "period": 70,
+          "phase_offset": 0,
+          "weight": 0.8
+        },
+        {
+          "period": 71,
+          "phase_offset": 1,
+          "weight": 0.7000000000000001
+        },
+        {
+          "period": 72,
+          "phase_offset": 2,
+          "weight": 0.6000000000000001
+        }
+      ],
+      "resultant_pattern": "advanced_65",
+      "density": 0.9,
+      "phase_resets": [
+        {
+          "target_stream": 0,
+          "reset_point": 16
+        },
+        {
+          "target_stream": 1,
+          "reset_point": 24
+        },
+        {
+          "target_stream": 2,
+          "reset_point": 32
+        },
+        {
+          "target_stream": 0,
+          "reset_point": 40
+        }
+      ]
+    },
+    "pitch": {
+      "primary_interval_seed": [
+        2,
+        3,
+        -5,
+        1
+      ],
+      "contour_type": "complex",
+      "register_range": {
+        "min": -17,
+        "max": 137
+      },
+      "scale": "chromatic",
+      "permutation_enabled": true,
+      "poly_pitch": {
+        "enabled": true
+      }
+    },
+    "form": {
+      "structure": [
+        16,
+        12,
+        16,
+        20
+      ],
+      "section_types": [
+        "A",
+        "B",
+        "A",
+        "C"
+      ],
+      "transitions": "hard_cuts"
+    },
+    "orchestration": {
+      "layers": [
+        {
+          "name": "layer_0",
+          "register": "low",
+          "density_weight": 0.4
+        },
+        {
+          "name": "layer_1",
+          "register": "mid",
+          "density_weight": 0.55
+        },
+        {
+          "name": "layer_2",
+          "register": "mid_high",
+          "density_weight": 0.7
+        },
+        {
+          "name": "layer_3",
+          "register": "high",
+          "density_weight": 0.85
+        }
+      ]
+    },
+    "energy": {
+      "curve": "linear",
+      "saturation_point": 1.025
+    },
+    "preset_evolution": {
+      "enabled": true,
+      "mutation_budget": {
+        "max_mutations": 4
+      },
+      "predictability_metric": {
+        "thresholds": {
+          "warn": 0.45,
+          "intervene": 0.6,
+          "force": 0.75
+        }
+      }
+    }
+  }
+}

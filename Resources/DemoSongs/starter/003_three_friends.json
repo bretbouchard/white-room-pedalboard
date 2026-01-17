@@ -1,0 +1,78 @@
+{
+  "id": "starter_003",
+  "name": "Three Friends",
+  "category": "starter",
+  "difficulty": "beginner",
+  "focus": [
+    "Triple pulse streams",
+    "Harmonic thirds",
+    "Simple ABA"
+  ],
+  "duration_seconds": 60,
+  "agents": [
+    "Rhythm",
+    "Pitch"
+  ],
+  "description": "Demonstrates: Triple pulse streams, Harmonic thirds, Simple ABA",
+  "composer": "Claude (White Room System)",
+  "date_added": "2026-01-16",
+  "sequence": 3,
+  "session_model": {
+    "tempo": 130,
+    "time_signature": [
+      4,
+      4
+    ],
+    "duration_bars": 16,
+    "rhythm": {
+      "primary_pulse_streams": [
+        {
+          "period": 2,
+          "phase_offset": 0,
+          "weight": 1.0
+        },
+        {
+          "period": 3,
+          "phase_offset": 0,
+          "weight": 0.8
+        }
+      ],
+      "resultant_pattern": "complex triplet",
+      "density": 0.45
+    },
+    "pitch": {
+      "primary_interval_seed": [
+        3,
+        4,
+        -5
+      ],
+      "contour_type": "simple",
+      "register_range": {
+        "min": 60,
+        "max": 75
+      },
+      "scale": "pentatonic_major"
+    },
+    "form": {
+      "structure": [
+        8,
+        4,
+        8
+      ],
+      "section_types": [
+        "A",
+        "A",
+        "A"
+      ]
+    },
+    "orchestration": {
+      "layers": [
+        {
+          "name": "melody",
+          "register": "mid_high",
+          "density_weight": 1.0
+        }
+      ]
+    }
+  }
+}

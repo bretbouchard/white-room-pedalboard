@@ -1,0 +1,104 @@
+{
+  "id": "showcase_032",
+  "name": "Glitch Garden",
+  "category": "showcase",
+  "difficulty": "intermediate",
+  "focus": [
+    "Controlled chaos",
+    "Micro-rhythms",
+    "Digital artifacts"
+  ],
+  "duration_seconds": 120,
+  "agents": [
+    "Rhythm",
+    "Pitch"
+  ],
+  "description": "Demonstrates: Controlled chaos, Micro-rhythms, Digital artifacts",
+  "composer": "Claude (White Room System)",
+  "date_added": "2026-01-16",
+  "sequence": 32,
+  "session_model": {
+    "tempo": 154,
+    "time_signature": [
+      4,
+      4
+    ],
+    "duration_bars": 32,
+    "rhythm": {
+      "primary_pulse_streams": [
+        {
+          "period": 35,
+          "phase_offset": 0,
+          "weight": 1.0
+        },
+        {
+          "period": 37,
+          "phase_offset": 0,
+          "weight": 0.8
+        }
+      ],
+      "resultant_pattern": "showcase_32",
+      "density": 0.9,
+      "phase_resets": [
+        {
+          "target_stream": 0,
+          "reset_point": 16
+        },
+        {
+          "target_stream": 1,
+          "reset_point": 24
+        }
+      ]
+    },
+    "pitch": {
+      "primary_interval_seed": [
+        2,
+        3,
+        -5
+      ],
+      "contour_type": "moderate",
+      "register_range": {
+        "min": 48,
+        "max": 84
+      },
+      "scale": "pentatonic_major",
+      "permutation_enabled": false,
+      "poly_pitch": {
+        "enabled": false
+      }
+    },
+    "form": {
+      "structure": [
+        8,
+        8,
+        8,
+        8
+      ],
+      "section_types": [
+        "A",
+        "B",
+        "A",
+        "C"
+      ],
+      "transitions": "standard"
+    },
+    "orchestration": {
+      "layers": [
+        {
+          "name": "layer_0",
+          "register": "low",
+          "density_weight": 0.4
+        },
+        {
+          "name": "layer_1",
+          "register": "mid",
+          "density_weight": 0.55
+        }
+      ]
+    },
+    "energy": {
+      "curve": "sine",
+      "saturation_point": 0.86
+    }
+  }
+}

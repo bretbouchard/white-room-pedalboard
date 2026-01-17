@@ -1,0 +1,133 @@
+{
+  "id": "advanced_062",
+  "name": "Fractal Music",
+  "category": "advanced",
+  "difficulty": "advanced",
+  "focus": [
+    "Self-similarity",
+    "Recursive structures",
+    "Mandelbrot patterns"
+  ],
+  "duration_seconds": 180,
+  "agents": [
+    "Pitch",
+    "Structure"
+  ],
+  "description": "Demonstrates: Self-similarity, Recursive structures, Mandelbrot patterns",
+  "composer": "Claude (White Room System)",
+  "date_added": "2026-01-16",
+  "sequence": 62,
+  "session_model": {
+    "tempo": 142,
+    "time_signature": [
+      4,
+      4
+    ],
+    "duration_bars": 64,
+    "rhythm": {
+      "primary_pulse_streams": [
+        {
+          "period": 65,
+          "phase_offset": 0,
+          "weight": 1.0
+        },
+        {
+          "period": 67,
+          "phase_offset": 0,
+          "weight": 0.8
+        },
+        {
+          "period": 68,
+          "phase_offset": 1,
+          "weight": 0.7000000000000001
+        }
+      ],
+      "resultant_pattern": "advanced_62",
+      "density": 0.9,
+      "phase_resets": [
+        {
+          "target_stream": 0,
+          "reset_point": 16
+        },
+        {
+          "target_stream": 1,
+          "reset_point": 24
+        },
+        {
+          "target_stream": 2,
+          "reset_point": 32
+        }
+      ]
+    },
+    "pitch": {
+      "primary_interval_seed": [
+        2,
+        3,
+        -5,
+        1,
+        -3
+      ],
+      "contour_type": "complex",
+      "register_range": {
+        "min": -14,
+        "max": 134
+      },
+      "scale": "chromatic",
+      "permutation_enabled": true,
+      "poly_pitch": {
+        "enabled": true
+      }
+    },
+    "form": {
+      "structure": [
+        16,
+        12,
+        16,
+        20
+      ],
+      "section_types": [
+        "A",
+        "B",
+        "A",
+        "C"
+      ],
+      "transitions": "hard_cuts"
+    },
+    "orchestration": {
+      "layers": [
+        {
+          "name": "layer_0",
+          "register": "low",
+          "density_weight": 0.4
+        },
+        {
+          "name": "layer_1",
+          "register": "mid",
+          "density_weight": 0.55
+        },
+        {
+          "name": "layer_2",
+          "register": "mid_high",
+          "density_weight": 0.7
+        }
+      ]
+    },
+    "energy": {
+      "curve": "sine",
+      "saturation_point": 1.01
+    },
+    "preset_evolution": {
+      "enabled": true,
+      "mutation_budget": {
+        "max_mutations": 4
+      },
+      "predictability_metric": {
+        "thresholds": {
+          "warn": 0.45,
+          "intervene": 0.6,
+          "force": 0.75
+        }
+      }
+    }
+  }
+}

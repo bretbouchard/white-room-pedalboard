@@ -1,0 +1,135 @@
+{
+  "id": "advanced_070",
+  "name": "Emergent Empire",
+  "category": "advanced",
+  "difficulty": "advanced",
+  "focus": [
+    "Complex systems",
+    "Emergence",
+    "Self-organization"
+  ],
+  "duration_seconds": 180,
+  "agents": [
+    "Rhythm",
+    "Pitch",
+    "Structure",
+    "Energy"
+  ],
+  "description": "Demonstrates: Complex systems, Emergence, Self-organization",
+  "composer": "Claude (White Room System)",
+  "date_added": "2026-01-16",
+  "sequence": 70,
+  "session_model": {
+    "tempo": 150,
+    "time_signature": [
+      4,
+      4
+    ],
+    "duration_bars": 64,
+    "rhythm": {
+      "primary_pulse_streams": [
+        {
+          "period": 73,
+          "phase_offset": 0,
+          "weight": 1.0
+        },
+        {
+          "period": 75,
+          "phase_offset": 0,
+          "weight": 0.8
+        },
+        {
+          "period": 76,
+          "phase_offset": 1,
+          "weight": 0.7000000000000001
+        }
+      ],
+      "resultant_pattern": "advanced_70",
+      "density": 0.9,
+      "phase_resets": [
+        {
+          "target_stream": 0,
+          "reset_point": 16
+        },
+        {
+          "target_stream": 1,
+          "reset_point": 24
+        },
+        {
+          "target_stream": 2,
+          "reset_point": 32
+        }
+      ]
+    },
+    "pitch": {
+      "primary_interval_seed": [
+        2,
+        3,
+        -5,
+        1,
+        -3
+      ],
+      "contour_type": "complex",
+      "register_range": {
+        "min": -22,
+        "max": 142
+      },
+      "scale": "chromatic",
+      "permutation_enabled": true,
+      "poly_pitch": {
+        "enabled": true
+      }
+    },
+    "form": {
+      "structure": [
+        16,
+        12,
+        16,
+        20
+      ],
+      "section_types": [
+        "A",
+        "B",
+        "A",
+        "C"
+      ],
+      "transitions": "hard_cuts"
+    },
+    "orchestration": {
+      "layers": [
+        {
+          "name": "layer_0",
+          "register": "low",
+          "density_weight": 0.4
+        },
+        {
+          "name": "layer_1",
+          "register": "mid",
+          "density_weight": 0.55
+        },
+        {
+          "name": "layer_2",
+          "register": "mid_high",
+          "density_weight": 0.7
+        }
+      ]
+    },
+    "energy": {
+      "curve": "linear",
+      "saturation_point": 1.05
+    },
+    "preset_evolution": {
+      "enabled": true,
+      "mutation_budget": {
+        "max_mutations": 4
+      },
+      "predictability_metric": {
+        "thresholds": {
+          "warn": 0.45,
+          "intervene": 0.6,
+          "force": 0.75
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,92 @@
+{
+  "id": "showcase_012",
+  "name": "Dual Streams",
+  "category": "showcase",
+  "difficulty": "intermediate",
+  "focus": [
+    "Multi-stream output",
+    "Independent pitch fields",
+    "Interweaving"
+  ],
+  "duration_seconds": 120,
+  "agents": [
+    "Rhythm",
+    "Pitch"
+  ],
+  "description": "Demonstrates: Multi-stream output, Independent pitch fields, Interweaving",
+  "composer": "Claude (White Room System)",
+  "date_added": "2026-01-16",
+  "sequence": 12,
+  "session_model": {
+    "tempo": 150,
+    "time_signature": [
+      4,
+      4
+    ],
+    "duration_bars": 32,
+    "rhythm": {
+      "primary_pulse_streams": [
+        {
+          "period": 15,
+          "phase_offset": 0,
+          "weight": 1.0
+        },
+        {
+          "period": 17,
+          "phase_offset": 1,
+          "weight": 0.8
+        }
+      ],
+      "resultant_pattern": "complex_12",
+      "density": 0.86,
+      "phase_resets": [
+        {
+          "target_stream": 0,
+          "reset_point": 16
+        }
+      ]
+    },
+    "pitch": {
+      "primary_interval_seed": [
+        2,
+        3,
+        -5,
+        1
+      ],
+      "contour_type": "moderate",
+      "register_range": {
+        "min": 48,
+        "max": 84
+      },
+      "scale": "pentatonic_major"
+    },
+    "form": {
+      "structure": [
+        8,
+        8,
+        8,
+        8
+      ],
+      "section_types": [
+        "A",
+        "A",
+        "B",
+        "A"
+      ]
+    },
+    "orchestration": {
+      "layers": [
+        {
+          "name": "lead",
+          "register": "mid_high",
+          "density_weight": 0.7
+        },
+        {
+          "name": "counter",
+          "register": "mid",
+          "density_weight": 0.5
+        }
+      ]
+    }
+  }
+}

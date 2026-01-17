@@ -1,0 +1,156 @@
+{
+  "id": "advanced_019",
+  "name": "Predictability Management",
+  "category": "advanced",
+  "difficulty": "advanced",
+  "focus": [
+    "PM orchestration",
+    "Multi-agent coordination",
+    "Complex thresholds"
+  ],
+  "duration_seconds": 180,
+  "agents": [
+    "Rhythm",
+    "Pitch",
+    "Structure",
+    "Energy"
+  ],
+  "description": "Demonstrates: PM orchestration, Multi-agent coordination, Complex thresholds",
+  "composer": "Claude (White Room System)",
+  "date_added": "2026-01-16",
+  "sequence": 19,
+  "session_model": {
+    "tempo": 137,
+    "time_signature": [
+      4,
+      4
+    ],
+    "duration_bars": 64,
+    "rhythm": {
+      "primary_pulse_streams": [
+        {
+          "period": 26,
+          "phase_offset": 0,
+          "weight": 1.0
+        },
+        {
+          "period": 28,
+          "phase_offset": 2,
+          "weight": 0.8
+        },
+        {
+          "period": 5,
+          "phase_offset": 1,
+          "weight": 0.6
+        }
+      ],
+      "resultant_pattern": "advanced_19",
+      "density": 0.98,
+      "phase_resets": [
+        {
+          "target_stream": 0,
+          "reset_point": 16
+        },
+        {
+          "target_stream": 1,
+          "reset_point": 32
+        }
+      ],
+      "density_ramp": {
+        "enabled": true,
+        "rate": 0.1
+      }
+    },
+    "pitch": {
+      "primary_interval_seed": [
+        1,
+        3,
+        5,
+        7,
+        -2
+      ],
+      "contour_type": "complex",
+      "register_range": {
+        "min": 36,
+        "max": 84
+      },
+      "scale": "chromatic",
+      "poly_pitch": {
+        "enabled": true
+      },
+      "fragment_tokens": [
+        {
+          "intervals": [
+            1,
+            3,
+            5
+          ]
+        }
+      ],
+      "permutation_enabled": true,
+      "permutation_rules": [
+        "rotation",
+        "inversion",
+        "truncation"
+      ]
+    },
+    "form": {
+      "structure": [
+        12,
+        8,
+        12,
+        16,
+        16
+      ],
+      "section_types": [
+        "A",
+        "B",
+        "A",
+        "C",
+        "D"
+      ],
+      "transitions": "hard_cuts"
+    },
+    "orchestration": {
+      "layers": [
+        {
+          "name": "lead",
+          "register": "high",
+          "density_weight": 0.8
+        },
+        {
+          "name": "counter1",
+          "register": "mid_high",
+          "density_weight": 0.6
+        },
+        {
+          "name": "counter2",
+          "register": "mid",
+          "density_weight": 0.5
+        },
+        {
+          "name": "foundation",
+          "register": "low",
+          "density_weight": 0.4
+        }
+      ]
+    },
+    "energy": {
+      "curve": "exponential",
+      "saturation_point": 0.99
+    },
+    "preset_evolution": {
+      "enabled": true,
+      "mutation_budget": {
+        "max_mutations": 3
+      },
+      "predictability_metric": {
+        "thresholds": {
+          "warn": 0.4,
+          "intervene": 0.6,
+          "force": 0.7
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,79 @@
+{
+  "id": "starter_004",
+  "name": "Wandering Path",
+  "category": "starter",
+  "difficulty": "beginner",
+  "focus": [
+    "Phase offsets",
+    "Stepwise melody",
+    "Through-composed"
+  ],
+  "duration_seconds": 60,
+  "agents": [
+    "Rhythm",
+    "Pitch"
+  ],
+  "description": "Demonstrates: Phase offsets, Stepwise melody, Through-composed",
+  "composer": "Claude (White Room System)",
+  "date_added": "2026-01-16",
+  "sequence": 4,
+  "session_model": {
+    "tempo": 140,
+    "time_signature": [
+      4,
+      4
+    ],
+    "duration_bars": 16,
+    "rhythm": {
+      "primary_pulse_streams": [
+        {
+          "period": 4,
+          "phase_offset": 0,
+          "weight": 1.0
+        },
+        {
+          "period": 7,
+          "phase_offset": 0,
+          "weight": 0.8
+        }
+      ],
+      "resultant_pattern": "asymmetric 4-7",
+      "density": 0.5
+    },
+    "pitch": {
+      "primary_interval_seed": [
+        1,
+        2,
+        1,
+        -2
+      ],
+      "contour_type": "simple",
+      "register_range": {
+        "min": 60,
+        "max": 76
+      },
+      "scale": "pentatonic_major"
+    },
+    "form": {
+      "structure": [
+        6,
+        6,
+        4
+      ],
+      "section_types": [
+        "A",
+        "A",
+        "A"
+      ]
+    },
+    "orchestration": {
+      "layers": [
+        {
+          "name": "melody",
+          "register": "mid_high",
+          "density_weight": 1.0
+        }
+      ]
+    }
+  }
+}

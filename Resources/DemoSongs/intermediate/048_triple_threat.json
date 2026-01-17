@@ -1,0 +1,105 @@
+{
+  "id": "intermediate_048",
+  "name": "Triple Threat",
+  "category": "intermediate",
+  "difficulty": "intermediate",
+  "focus": [
+    "Three-part layers",
+    "Triadic interplay",
+    "Complex textures"
+  ],
+  "duration_seconds": 150,
+  "agents": [
+    "Rhythm",
+    "Pitch",
+    "Harmony"
+  ],
+  "description": "Demonstrates: Three-part layers, Triadic interplay, Complex textures",
+  "composer": "Claude (White Room System)",
+  "date_added": "2026-01-16",
+  "sequence": 48,
+  "session_model": {
+    "tempo": 157.0,
+    "time_signature": [
+      4,
+      4
+    ],
+    "duration_bars": 48,
+    "rhythm": {
+      "primary_pulse_streams": [
+        {
+          "period": 51,
+          "phase_offset": 0,
+          "weight": 1.0
+        },
+        {
+          "period": 53,
+          "phase_offset": 0,
+          "weight": 0.8
+        }
+      ],
+      "resultant_pattern": "intermediate_48",
+      "density": 0.9,
+      "phase_resets": [
+        {
+          "target_stream": 0,
+          "reset_point": 16
+        },
+        {
+          "target_stream": 1,
+          "reset_point": 24
+        }
+      ]
+    },
+    "pitch": {
+      "primary_interval_seed": [
+        2,
+        3,
+        -5
+      ],
+      "contour_type": "complex",
+      "register_range": {
+        "min": 48,
+        "max": 84
+      },
+      "scale": "pentatonic_major",
+      "permutation_enabled": true,
+      "poly_pitch": {
+        "enabled": false
+      }
+    },
+    "form": {
+      "structure": [
+        12,
+        8,
+        12,
+        16
+      ],
+      "section_types": [
+        "A",
+        "B",
+        "A",
+        "C"
+      ],
+      "transitions": "standard"
+    },
+    "orchestration": {
+      "layers": [
+        {
+          "name": "layer_0",
+          "register": "low",
+          "density_weight": 0.4
+        },
+        {
+          "name": "layer_1",
+          "register": "mid",
+          "density_weight": 0.55
+        }
+      ]
+    },
+    "energy": {
+      "curve": "sine",
+      "saturation_point": 0.94
+    }
+  }
+}

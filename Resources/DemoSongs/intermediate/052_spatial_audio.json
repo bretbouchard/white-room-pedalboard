@@ -1,0 +1,109 @@
+{
+  "id": "intermediate_052",
+  "name": "Spatial Audio",
+  "category": "intermediate",
+  "difficulty": "intermediate",
+  "focus": [
+    "Stereo field",
+    "Panning patterns",
+    "Space perception"
+  ],
+  "duration_seconds": 150,
+  "agents": [
+    "Orchestration",
+    "Structure"
+  ],
+  "description": "Demonstrates: Stereo field, Panning patterns, Space perception",
+  "composer": "Claude (White Room System)",
+  "date_added": "2026-01-16",
+  "sequence": 52,
+  "session_model": {
+    "tempo": 163.0,
+    "time_signature": [
+      4,
+      4
+    ],
+    "duration_bars": 48,
+    "rhythm": {
+      "primary_pulse_streams": [
+        {
+          "period": 55,
+          "phase_offset": 0,
+          "weight": 1.0
+        },
+        {
+          "period": 57,
+          "phase_offset": 0,
+          "weight": 0.8
+        }
+      ],
+      "resultant_pattern": "intermediate_52",
+      "density": 0.9,
+      "phase_resets": [
+        {
+          "target_stream": 0,
+          "reset_point": 16
+        },
+        {
+          "target_stream": 1,
+          "reset_point": 24
+        }
+      ]
+    },
+    "pitch": {
+      "primary_interval_seed": [
+        2,
+        3,
+        -5
+      ],
+      "contour_type": "complex",
+      "register_range": {
+        "min": 48,
+        "max": 84
+      },
+      "scale": "pentatonic_major",
+      "permutation_enabled": true,
+      "poly_pitch": {
+        "enabled": false
+      }
+    },
+    "form": {
+      "structure": [
+        12,
+        8,
+        12,
+        16
+      ],
+      "section_types": [
+        "A",
+        "B",
+        "A",
+        "C"
+      ],
+      "transitions": "standard"
+    },
+    "orchestration": {
+      "layers": [
+        {
+          "name": "layer_0",
+          "register": "low",
+          "density_weight": 0.4
+        },
+        {
+          "name": "layer_1",
+          "register": "mid",
+          "density_weight": 0.55
+        },
+        {
+          "name": "layer_2",
+          "register": "mid_high",
+          "density_weight": 0.7
+        }
+      ]
+    },
+    "energy": {
+      "curve": "exponential",
+      "saturation_point": 0.96
+    }
+  }
+}
