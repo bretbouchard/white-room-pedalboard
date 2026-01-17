@@ -54,43 +54,11 @@
     <div class="header">
         <h1>📱 White Room Hardware</h1>
         <p>File Sharing Server - Access from Phone</p>
+        <p style="font-size: 14px; margin-top: 10px;">🆕 <strong>Reorganized!</strong> Now with project-centric structure and reusable components</p>
     </div>
 
     <div class="file-list">
-        <h2>📄 Available Files</h2>
-
-        <div class="file">
-            <a href="pb86_8button_schematic.pdf">pb86_8button_schematic.pdf</a>
-            <div class="info">
-                PB86 8-Button Circuit Schematic (3.7 KB)<br>
-                SPICE validated, ready for prototyping
-            </div>
-            <div class="timestamp">
-                Generated: January 16, 2026
-            </div>
-        </div>
-
-        <div class="file">
-            <a href="pb86_circuit_diagram.svg">pb86_circuit_diagram.svg</a>
-            <div class="info">
-                Visual circuit diagram with component boxes and symbols (SVG)<br>
-                <strong>BEST VIEW: Shows MCP23017, 74HC595, buttons, LEDs</strong>
-            </div>
-        </div>
-
-        <div class="file">
-            <a href="pb86_schematic_diagram.txt">pb86_schematic_diagram.txt</a>
-            <div class="info">
-                Complete ASCII schematic diagram
-            </div>
-        </div>
-
-        <div class="file">
-            <a href="../kicad_library_mapping.md">KiCad Library Mapping Guide</a>
-            <div class="info">
-                Component symbols and footprints reference
-            </div>
-        </div>
+        <h2>📄 Quick Start Guides</h2>
 
         <div class="file" style="border-left: 4px solid #34C759; background: #f0fff4;">
             <a href="WORKFLOW_SETUP_COMPLETE.md">✅ WORKFLOW_SETUP_COMPLETE.md</a>
@@ -100,16 +68,35 @@
                 Everything you need to create new circuit projects
             </div>
             <div class="timestamp">
-                Updated: January 16, 2026
+                Updated: January 17, 2026
             </div>
         </div>
 
-        <h3 style="margin-top: 30px; color: #007AFF;">🎹 New: Capacitive Touch XY Pad Project</h3>
+        <div class="file">
+            <a href="../QUICKSTART.md">🚀 QUICKSTART.md</a>
+            <div class="info">
+                Hardware platform quick start guide
+            </div>
+        </div>
+
+        <div class="file">
+            <a href="../HARDWARE_REORGANIZATION.md">📁 Hardware Reorganization Plan</a>
+            <div class="info">
+                <strong>NEW: Project-centric structure with reusable components</strong><br>
+                Shared component library, nested schematics workflow<br>
+                Component interface standards and migration guide
+            </div>
+            <div class="timestamp">
+                Created: January 17, 2026
+            </div>
+        </div>
+
+        <h3 style="margin-top: 30px; color: #007AFF;">🎹 Capacitive Touch XY Pad Project</h3>
 
         <div class="file" style="border-left: 4px solid #FF9500; background: #fff9f0;">
-            <a href="capacitive_touch_xy_pad_design.md">📐 Capacitive Touch XY Pad Design</a>
+            <a href="../projects/capacitive-touch-xy-pad/docs/design.md">📐 Capacitive Touch XY Pad Design</a>
             <div class="info">
-                <strong>NEW PROJECT: XY pad with PCB-only pressure sensing</strong><br>
+                <strong>COMPLETE: XY pad with PCB-only pressure sensing</strong><br>
                 8×8 mutual capacitance grid, 4 pressure levels, ESP32 compatible<br>
                 Complete design with electrode patterns, PCB stackup, and software algorithm
             </div>
@@ -119,7 +106,7 @@
         </div>
 
         <div class="file" style="border-left: 4px solid #FF9500; background: #fff9f0;">
-            <a href="capacitive_touch_spice_validation.md">✅ Capacitive Touch SPICE Validation</a>
+            <a href="../projects/capacitive-touch-xy-pad/spice_simulations/validation_report.md">✅ Capacitive Touch SPICE Validation</a>
             <div class="info">
                 <strong>VALIDATION PASSED: SPICE simulation results</strong><br>
                 Touch detection: 3.30V → 2.68V (18.7% change)<br>
@@ -132,7 +119,7 @@
         </div>
 
         <div class="file" style="border-left: 4px solid #FF9500; background: #fff9f0;">
-            <a href="capacitive_touch_kicad_guide.md">🔧 KiCad Schematic Guide</a>
+            <a href="../projects/capacitive-touch-xy-pad/schematics/README.md">🔧 KiCad Schematic Guide</a>
             <div class="info">
                 <strong>COMPLETE: Step-by-step KiCad instructions</strong><br>
                 Pin assignments, wiring connections, netlist included<br>
@@ -144,7 +131,7 @@
         </div>
 
         <div class="file" style="border-left: 4px solid #FF3B30; background: #fff0f0;">
-            <a href="capacitive_touch_fixed_kicad_guide.md">🚨 FIXED: KiCad Setup Guide</a>
+            <a href="../projects/capacitive-touch-xy-pad/pcb/FIXED_KICAD_GUIDE.md">🚨 FIXED: KiCad Setup Guide</a>
             <div class="info">
                 <strong>UPDATED: Fixed schematic error + complete setup</strong><br>
                 Step-by-step: Add libraries, place components, wire connections<br>
@@ -156,7 +143,7 @@
         </div>
 
         <div class="file" style="border-left: 4px solid #FF9500; background: #fff9f0;">
-            <a href="capacitive_touch_bom.md">🛒 Bill of Materials (BOM)</a>
+            <a href="../projects/capacitive-touch-xy-pad/docs/bom.md">🛒 Bill of Materials (BOM)</a>
             <div class="info">
                 <strong>COMPLETE: Component list with ordering info</strong><br>
                 ESP32 module, resistors, connectors, PCB specs<br>
@@ -167,10 +154,69 @@
             </div>
         </div>
 
+        <h3 style="margin-top: 30px; color: #007AFF;">🎮 PB86 8-Button Interface Project</h3>
+
+        <div class="file" style="border-left: 4px solid #FF9500; background: #fff9f0;">
+            <a href="../projects/pb86-8-button-interface/README.md">📋 PB86 8-Button Interface</a>
+            <div class="info">
+                <strong>NEW: 8-button panel with LED indicators</strong><br>
+                MCP23017 I2C I/O expander, 74HC595 shift register<br>
+                SPICE validated, ready for prototyping
+            </div>
+            <div class="timestamp">
+                Created: January 17, 2026
+            </div>
+        </div>
+
+        <div class="file" style="border-left: 4px solid #FF9500; background: #fff9f0;">
+            <a href="../projects/pb86-8-button-interface/docs/pb86_8button_schematic.pdf">📊 PB86 Schematic (PDF)</a>
+            <div class="info">
+                Complete circuit schematic for 8-button interface
+            </div>
+        </div>
+
+        <div class="file" style="border-left: 4px solid #FF9500; background: #fff9f0;">
+            <a href="../projects/pb86-8-button-interface/docs/pb86_circuit_diagram.svg">🎨 PB86 Circuit Diagram (SVG)</a>
+            <div class="info">
+                Visual circuit diagram with component boxes and symbols
+            </div>
+        </div>
+
+        <div class="file" style="border-left: 4px solid #FF9500; background: #fff9f0;">
+            <a href="../projects/pb86-8-button-interface/docs/pb86_schematic_diagram.txt">📝 PB86 Schematic (ASCII)</a>
+            <div class="info">
+                Complete ASCII schematic diagram
+            </div>
+        </div>
+
+        <h3 style="margin-top: 30px; color: #007AFF;">📦 Shared Components Library</h3>
+
+        <div class="file" style="border-left: 4px solid #AF52DE; background: #faf5ff;">
+            <a href="../shared/components/schematics/capacitive_touch_xy_pad/README.md">🧩 Capacitive Touch XY Pad - Reusable Component</a>
+            <div class="info">
+                <strong>NEW: Reusable component for nested schematics</strong><br>
+                Import into any KiCad project via hierarchical sheets<br>
+                Complete interface documentation, usage guide, validation results
+            </div>
+            <div class="timestamp">
+                Created: January 17, 2026
+            </div>
+        </div>
+
+        <h3 style="margin-top: 30px; color: #007AFF;">🔧 Reference Documentation</h3>
+
+        <div class="file">
+            <a href="../kicad_libraries/kicad_library_mapping.md">📚 KiCad Library Mapping Guide</a>
+            <div class="info">
+                Component symbols and footprints reference
+            </div>
+        </div>
+
     </div>
 
     <div style="text-align: center; margin-top: 30px; color: #666;">
         <p>Generated with Claude Code via Happy Engineering</p>
+        <p style="font-size: 12px; margin-top: 10px;">White Room Hardware Platform - Reorganized: January 17, 2026</p>
     </div>
 </body>
 </html>

@@ -1,0 +1,213 @@
+PB86 8-BUTTON CIRCUIT SCHEMATIC
+==================================
+
+Date: January 16, 2026
+SPICE Validated: LED current 15mA, Power 120mA total
+
+CIRCUIT OVERVIEW
+----------------
+
+    +5V电源 ──────────────────────────────┐
+                                        ││
+                                        ││  Pull-up Resistors (100kΩ each)
+                                        ││  (MCP23017 internal)
+                                        ││
+                                        ▼▼
+        ┌─────────────────────────────────────┐
+        │                                     │
+        │         MCP23017                    │
+        │      (I2C I/O Expander)             │
+        │                                     │
+        │  GPB0 ──── BUTTON1 ────┐            │
+        │  GPB1 ──── BUTTON2 ────┤            │
+        │  GPB2 ──── BUTTON3 ────┤            │
+        │  GPB3 ──── BUTTON4 ────┤            │
+        │  GPB4 ──── BUTTON5 ────┤            │
+        │  GPB5 ──── BUTTON6 ────┤            │
+        │  GPB6 ──── BUTTON7 ────┤            │
+        │  GPB7 ──── BUTTON8 ────┘            │
+        │                                     │
+        │  SDA ──── I2C Data                  │
+        │  SCL ──── I2C Clock                 │
+        │                                     │
+        └─────────────────────────────────────┘
+
+
+        ┌─────────────────────────────────────┐
+        │                                     │
+        │        74HC595                      │
+        │     (LED Shift Register)            │
+        │                                     │
+        │  QA ──┬── R1 ── LED1 ──┐           │
+        │  QB ──┼── R2 ── LED2 ──┤           │
+        │  QC ──┼── R3 ── LED3 ──┤           │
+        │  QD ──┼── R4 ── LED4 ──┤           │
+        │  QE ──┼── R5 ── LED5 ──┤           │
+        │  QF ──┼── R6 ── LED6 ──┤           │
+        │  QG ──┼── R7 ── LED7 ──┤           │
+        │  QH ──┴── R8 ── LED8 ──┘           │
+        │                                     │
+        │  DATA ── SPI Data                   │
+        │  LATCH ── SPI Latch                 │
+        │  CLOCK ── SPI Clock                 │
+        │                                     │
+        └─────────────────────────────────────┘
+
+
+BUTTON INPUT CIRCUIT (One of 8)
+---------------------------------
+
+       +5V
+        │
+        │  (100kΩ internal pull-up)
+        │
+        ├─────── GPB0 (MCP23017)
+        │
+       ─┴─  PB86 Button
+        │  (Pins 1-2: NO switch)
+        │
+       GND
+
+
+LED OUTPUT CIRCUIT (One of 8)
+--------------------------------
+
+       QA (74HC595)
+        │
+        │
+       ─┴─  R1 (150Ω)
+        │
+        │
+       ─┴─  LED1 Anode (+)
+        │
+       ─┴─  LED1 Cathode (-)
+        │
+       GND
+
+
+COMPONENT VALUES
+-----------------
+
+Resistors:
+  R1-R8: 150Ω, 1/4W, 5% (current limiting)
+  Pull-ups: 100kΩ (MCP23017 internal)
+
+LEDs:
+  D1-D8: Red LED, 20mA max, Vf ≈ 2.0V
+
+ICs:
+  MCP23017: I2C I/O Expander (DIP-28)
+  74HC595: 8-bit Shift Register (DIP-16)
+
+Connectors:
+  I2C: SDA, SCL, +5V, GND
+  SPI: DATA, LATCH, CLOCK, +5V, GND
+
+
+CIRCUIT ANALYSIS
+-----------------
+
+LED Current:
+  I_LED = (V_CC - V_LED) / R_total
+  I_LED = (5V - 2V) / (50Ω + 150Ω)
+  I_LED = 3V / 200Ω = 15mA ✅ (safe, <20mA max)
+
+Power Consumption:
+  Per LED: 15mA
+  All LEDs ON: 8 × 15mA = 120mA
+  Pull-ups: 8 × 0.05mA = 0.4mA
+  Total: ~120.4mA ✅ (well within USB 500mA limit)
+
+Button Detection:
+  Released: V_IN = 5V (through pull-up)
+  Pressed: V_IN = 0V (connected to GND)
+  Logic: HIGH = released, LOW = pressed
+
+
+PIN CONNECTIONS
+---------------
+
+PB86 Button (6 pins):
+  Pin 1: NO (normally open) ──→ +5V (via pull-up)
+  Pin 2: NO (normally open) ──→ Button switch
+  Pin 3: COMMON ─────────────→ GND (when pressed)
+  Pin 4: LED Anode (+) ──────→ Via 150Ω resistor
+  Pin 5: LED Anode (+) ──────→ Via 150Ω resistor
+  Pin 6: LED Cathode (-) ────→ GND
+
+MCP23017 (DIP-28):
+  Pin 1-8: GPB0-GPB7 (button inputs)
+  Pin 12: SCL (I2C clock)
+  Pin 13: SDA (I2C data)
+  Pin 15: A0 (address LSB)
+  Pin 16: A1 (address)
+  Pin 17: A2 (address MSB)
+  Pin 18: RESET
+  Pin 9: VSS (GND)
+  Pin 18: VDD (+5V)
+
+74HC595 (DIP-16):
+  Pin 1-7, 15: QA-QH (LED outputs)
+  Pin 8: GND
+  Pin 11: SH_CP (shift register clock)
+  Pin 12: ST_CP (storage register clock/latch)
+  Pin 13: ~OE (output enable, active low)
+  Pin 14: DS (data)
+  Pin 16: VCC (+5V)
+
+
+INTERFACING
+------------
+
+I2C (MCP23017):
+  SDA ──→ MCU I2C SDA
+  SCL ──→ MCU I2C SCL
+  Address: 0x20 (A2=A1=A0=GND)
+
+SPI (74HC595):
+  DATA ──→ MCU SPI MOSI
+  LATCH ──→ MCU GPIO (latch control)
+  CLOCK ──→ MCU SPI SCK
+
+
+VALIDATION STATUS
+-----------------
+
+✅ SPICE simulation completed
+✅ LED current: 15mA (safe)
+✅ Power consumption: ~120mA (acceptable)
+✅ Button detection: 5V/0V logic (reliable)
+✅ Circuit ready for breadboard prototype
+
+
+NEXT STEPS
+----------
+
+1. Breadboard prototype:
+   - Test button detection with MCP23017
+   - Test LED control with 74HC595
+   - Verify I2C and SPI communication
+
+2. Firmware development:
+   - Initialize I2C and configure MCP23017
+   - Initialize SPI for 74HC595
+   - Write button polling routine
+   - Write LED update routine
+
+3. PCB design (in KiCad):
+   - Use downloaded footprints
+   - Layout for through-hole assembly
+   - Add I2C/SPI connectors
+
+
+NOTES
+-----
+
+- All components are through-hole for easy assembly
+- MCP23017 provides 100kΩ internal pull-ups (no external resistors needed)
+- 74HC595 can be daisy-chained for more LEDs
+- I2C address can be configured with A2/A1/A0 pins
+- Use decoupling capacitors (100nF) near each IC power pin
+
+Generated with Claude Code
+via Happy Engineering
