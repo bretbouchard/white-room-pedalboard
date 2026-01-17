@@ -348,7 +348,7 @@ enum sch_transport_state_t: UInt32 {
 internal func sch_engine_create(_ out_engine: UnsafeMutablePointer<OpaquePointer?>) -> SchResult {
     NSLog("[JUCEEngine STUB] sch_engine_create called")
     // Stub: Create a fake opaque pointer
-    out_engine.pointee = UnsafeMutableRawPointer(bitPattern: 0x12345678)
+    out_engine.pointee = OpaquePointer(bitPattern: 0x12345678)
     return .ok
 }
 
