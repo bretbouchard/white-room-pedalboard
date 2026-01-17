@@ -45,9 +45,15 @@
 [submodule "juce_backend/effects/overdrive_pedal"]
 	path = juce_backend/effects/overdrive_pedal
 	url = https://github.com/bretbouchard/white-room-overdrive-pedal.git
+[submodule "juce_backend/effects/chorus_pedal"]
+	path = juce_backend/effects/chorus_pedal
+	url = https://github.com/bretbouchard/chorus_pedal.git
 [submodule "juce_backend/effects/pedals"]
 	path = juce_backend/effects/pedals
 	url = https://github.com/bretbouchard/white-room-pedals-framework.git
 [submodule "juce_backend/instruments/localgal"]
 	path = juce_backend/instruments/localgal
 	url = https://github.com/bretbouchard/local-galaxy-instrument.git
+[submodule "juce_backend/instruments/choral"]
+	path = juce_backend/instruments/choral
+	url = https://github.com/bretbouchard/choral_instrument.git
