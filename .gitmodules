@@ -1,7 +1,7 @@
 [submodule "juce_backend"]
 	path = juce_backend
 	url = https://github.com/bretbouchard/audio_agent_juce.git
-	branch = juce_backend_clean
+	branch = main
 [submodule "sdk"]
 	path = sdk
 	url = https://github.com/bretbouchard/schillinger-sdk.git
