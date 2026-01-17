@@ -1,0 +1,38 @@
+# JUCE Backend Root Files - Categorization
+
+## Build System (should go to docs/build/)
+- BUILD_MATRIX.md
+- BUILD_PLATFORMS.md
+- BUILD_SYSTEM_SUMMARY.md
+- PLUGIN_BUILD_INVENTORY.md
+- PLUGIN_BUILD_UPDATE_SUMMARY.md
+- STANDALONE_BUILD_REPORT.md
+- STANDALONE_COMPLETION_REPORT.md
+- STANDALONE_QUICK_REFERENCE.md
+
+## CLAP Format (should go to docs/formats/clap/)
+- CLAP_COMPLETION_REPORT.md
+- CLAP_IMPLEMENTATION.md
+
+## Completion Reports (should go to docs/reports/completion/)
+- IMPLEMENTATION_COMPLETE.md
+- NORMALIZATION_REPORT.md
+- PERFORMANCE_BENCHMARK_REPORT.md
+- UNDO_REDO_IMPLEMENTATION_COMPLETE.md
+
+## Architecture (should go to docs/architecture/)
+- CORE_DSP_ARCHITECTURE_COMPLETION.md
+
+## Deployment (should go to docs/deployment/)
+- DEPLOYMENT.md
+
+## Development (should go to docs/development/)
+- TDD_EXECUTION_SUMMARY.md
+- TESTING.md
+
+## Migration (should go to docs/migration/)
+- SUBTREE_SPLIT_README.md
+
+## Keep in Root:
+- README.md (essential)
+- CLAUDE.md (AI instructions)
