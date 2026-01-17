@@ -1,0 +1,113 @@
+{
+  "id": "showcase_025",
+  "name": "Harmonic Fields",
+  "category": "showcase",
+  "difficulty": "intermediate",
+  "focus": [
+    "Static harmony",
+    "Pitch field navigation",
+    "Non-functional harmony"
+  ],
+  "duration_seconds": 120,
+  "agents": [
+    "Pitch",
+    "Harmony"
+  ],
+  "description": "Demonstrates: Static harmony, Pitch field navigation, Non-functional harmony",
+  "performance_notes": "Focus on static harmony and how it interacts with other system elements.",
+  "composer": "Claude (White Room System)",
+  "date_added": "2026-01-16",
+  "sequence": 25,
+  "session_model": {
+    "tempo": 160,
+    "time_signature": [
+      4,
+      4
+    ],
+    "duration_bars": 32,
+    "rhythm": {
+      "primary_pulse_streams": [
+        {
+          "period": 28,
+          "phase_offset": 0,
+          "weight": 1.0
+        },
+        {
+          "period": 30,
+          "phase_offset": 1,
+          "weight": 0.8
+        }
+      ],
+      "resultant_pattern": "showcase_25",
+      "density": 1.125,
+      "phase_drift": {
+        "enabled": false,
+        "rate": 0
+      }
+    },
+    "pitch": {
+      "primary_interval_seed": [
+        2,
+        3,
+        -5,
+        1,
+        -3
+      ],
+      "contour_type": "moderate",
+      "register_range": {
+        "min": 48,
+        "max": 84
+      },
+      "scale": "pentatonic_major",
+      "rotation": {
+        "enabled": false,
+        "axis": "median",
+        "period": 0
+      }
+    },
+    "form": {
+      "structure": [
+        8,
+        8,
+        8,
+        8
+      ],
+      "section_types": [
+        "A",
+        "B",
+        "A",
+        "C"
+      ],
+      "transitions": "standard"
+    },
+    "orchestration": {
+      "layers": [
+        {
+          "name": "lead",
+          "register": "mid_high",
+          "density_weight": 0.7
+        },
+        {
+          "name": "texture",
+          "register": "mid",
+          "density_weight": 0.5
+        }
+      ]
+    },
+    "energy": {
+      "curve": "exponential",
+      "saturation_point": 0.75,
+      "oscillation": {
+        "enabled": false,
+        "period": 4
+      }
+    }
+  },
+  "preset_evolution": {
+    "enabled": false,
+    "predictability_metric": {
+      "threshold": 0.5,
+      "manipulation": "standard"
+    }
+  }
+}
