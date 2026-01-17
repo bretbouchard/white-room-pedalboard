@@ -51,7 +51,7 @@ public actor BackupRepository {
                 sql: "SELECT * FROM backups WHERE id = ?",
                 arguments: [id]
             ) {
-                return try mapRowToBackup(row)
+                return try Self.mapRowToBackup(row)
             }
             return nil
         }
@@ -101,7 +101,7 @@ public actor BackupRepository {
                 database,
                 sql: "SELECT * FROM backups ORDER BY timestamp DESC"
             )
-            return try rows.map { try mapRowToBackup($0) }
+            return try rows.map { try Self.mapRowToBackup($0) }
         }
     }
 
@@ -112,7 +112,7 @@ public actor BackupRepository {
                 database,
                 sql: "SELECT * FROM backups ORDER BY timestamp DESC LIMIT 1"
             ) {
-                return try mapRowToBackup(row)
+                return try Self.mapRowToBackup(row)
             }
             return nil
         }
@@ -126,7 +126,7 @@ public actor BackupRepository {
                 sql: "SELECT * FROM backups WHERE timestamp BETWEEN ? AND ? ORDER BY timestamp DESC",
                 arguments: [startDate, endDate]
             )
-            return try rows.map { try mapRowToBackup($0) }
+            return try rows.map { try Self.mapRowToBackup($0) }
         }
     }
 
@@ -138,7 +138,7 @@ public actor BackupRepository {
                 sql: "SELECT * FROM backups WHERE version = ? ORDER BY timestamp DESC",
                 arguments: [version]
             )
-            return try rows.map { try mapRowToBackup($0) }
+            return try rows.map { try Self.mapRowToBackup($0) }
         }
     }
 
@@ -178,7 +178,7 @@ public actor BackupRepository {
     // MARK: - Helper Methods
 
     /// Map database row to Backup model
-    private func mapRowToBackup(_ row: Row) throws -> Backup {
+    private static func mapRowToBackup(_ row: Row) throws -> Backup {
         return Backup(
             id: row["id"],
             timestamp: row["timestamp"],

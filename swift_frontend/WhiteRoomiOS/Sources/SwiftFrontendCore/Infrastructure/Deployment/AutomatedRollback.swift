@@ -278,7 +278,10 @@ public class AutomatedRollback: ObservableObject {
             }
         case .latency:
             if case .threshold(let threshold) = trigger.condition {
-                return metrics.latency.p95 >= threshold
+                if case .p95(let latencyValue) = metrics.latency {
+                    return latencyValue >= threshold
+                }
+                return false
             }
         case .crashRate:
             if case .threshold(let threshold) = trigger.condition {

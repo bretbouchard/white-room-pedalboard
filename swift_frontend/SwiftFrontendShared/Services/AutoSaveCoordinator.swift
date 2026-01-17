@@ -24,73 +24,95 @@ public class AutoSaveCoordinator: ObservableObject {
 
   private let autoSaveManager: AutoSaveManager
   private var cancellables = Set<AnyCancellable>()
+  private var currentSongId: String?
 
   public init(autoSaveManager: AutoSaveManager) {
     self.autoSaveManager = autoSaveManager
 
-    // Subscribe to AutoSaveManager changes
-    Task {
-      await autoSaveManager.$isDirty
-        .receive(on: RunLoop.main)
-        .assign(to: &$hasUnsavedChanges)
-    }
+    // Start periodic updates
+    startPeriodicUpdates()
+  }
 
+  /// Start periodic updates for last save time and count
+  private func startPeriodicUpdates() {
     Task {
-      await autoSaveManager.$lastSaveTime
-        .receive(on: RunLoop.main)
-        .assign(to: &$lastSaveTime)
+      while !Task.isCancelled {
+        await MainActor.run {
+          updateFromManager()
+        }
+        // Update every second
+        try? await Task.sleep(nanoseconds: 1_000_000_000)
+      }
     }
+  }
 
-    // Update autosave count periodically
+  /// Update from AutoSaveManager
+  private func updateFromManager() {
     Task {
+      let lastSave = await autoSaveManager.getLastSaveTime()
+      let history = await autoSaveManager.getSaveHistory()
+
       await MainActor.run {
-        updateAutosaveCount()
+        self.lastSaveTime = lastSave
+        self.autosaveCount = history.count
+        // Consider unsaved if we have a song but no recent save
+        self.hasUnsavedChanges = currentSongId != nil && (lastSave == nil || Date().timeIntervalSince(lastSave ?? Date()) > 5)
       }
     }
   }
 
   /// Update autosave count
   public func updateAutosaveCount() {
-    Task {
-      let count = try? await autoSaveManager.getAutosaves().count
-      await MainActor.run {
-        self.autosaveCount = count ?? 0
-      }
-    }
+    updateFromManager()
   }
 
   /// Save now
   public func saveNow() async throws {
-    try await autoSaveManager.saveNow()
+    try await autoSaveManager.triggerImmediateSave()
     await MainActor.run {
-      updateAutosaveCount()
+      updateFromManager()
     }
   }
 
-  /// Discard pending changes
+  /// Discard pending changes (stops auto-save)
   public func discardPending() {
     Task {
-      await autoSaveManager.discardPendingSave()
+      await autoSaveManager.stopAutoSave()
       await MainActor.run {
         hasUnsavedChanges = false
+        currentSongId = nil
       }
     }
   }
 
   /// Restore from autosave
-  public func restoreFromAutosave(_ autosaveId: String) async throws -> Song {
-    let song = try await autoSaveManager.restoreFromAutosave(autosaveId)
+  public func restoreFromAutosave(version: Int) async throws -> Song {
+    let song = try await autoSaveManager.restoreFromAutoSave(version: version)
     await MainActor.run {
       hasUnsavedChanges = true
+      currentSongId = song.id
     }
     return song
   }
 
-  /// Clear all autosaves
+  /// Clear all autosaves for current song
   public func clearAutosaves() async throws {
-    try await autoSaveManager.clearAutosaves()
+    guard let songId = currentSongId else {
+      return
+    }
+    try await autoSaveManager.clearAutoSaves(for: songId)
     await MainActor.run {
       autosaveCount = 0
+    }
+  }
+
+  /// Set the current song being tracked
+  public func setCurrentSong(_ song: Song) {
+    currentSongId = song.id
+    hasUnsavedChanges = false
+
+    Task {
+      await autoSaveManager.startAutoSave(for: song)
     }
   }
 }
@@ -104,9 +126,18 @@ public struct AutoSaveModifier: ViewModifier {
 
   public func body(content: Content) -> some View {
     content
-      .onChange(of: song) { oldValue, newValue in
+      .onAppear {
+        coordinator.setCurrentSong(song)
+      }
+      .onChange(of: song.id) { newValue in
+        coordinator.setCurrentSong(song)
+      }
+      .onChange(of: song) { newValue in
+        // Song changed, mark as unsaved
         Task {
-          await coordinator.autoSaveManager.markDirty(newValue)
+          await MainActor.run {
+            coordinator.hasUnsavedChanges = true
+          }
         }
       }
   }
