@@ -48,6 +48,6 @@
 [submodule "juce_backend/effects/pedals"]
 	path = juce_backend/effects/pedals
 	url = https://github.com/bretbouchard/white-room-pedals-framework.git
-[submodule "instruments/localgal"]
-	path = instruments/localgal
+[submodule "juce_backend/instruments/localgal"]
+	path = juce_backend/instruments/localgal
 	url = https://github.com/bretbouchard/local-galaxy-instrument.git
