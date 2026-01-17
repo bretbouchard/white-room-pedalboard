@@ -317,7 +317,7 @@ public class BlueGreenDeployment: ObservableObject {
 
     private func waitForDeploymentReady(
         version: String,
-        environment: Environment,
+        environment: DeploymentEnvironment,
         color: ActiveColor,
         timeout: TimeInterval = 600
     ) async throws -> Bool {

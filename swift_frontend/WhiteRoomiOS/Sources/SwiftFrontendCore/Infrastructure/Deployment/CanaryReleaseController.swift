@@ -10,16 +10,16 @@ public class CanaryReleaseController: ObservableObject {
 
     // MARK: - Private Properties
     private var monitoringTimer: Timer?
-    private var metricsCollector: MetricsCollector
-    private var deploymentClient: DeploymentClient
-    private var notificationService: NotificationService
+    private var metricsCollector: CanaryMetricsCollector
+    private var deploymentClient: CanaryDeploymentClient
+    private var notificationService: CanaryNotificationService
     private var cancellables = Set<AnyCancellable>()
 
     // MARK: - Initialization
     public init(
-        metricsCollector: MetricsCollector = .shared,
-        deploymentClient: DeploymentClient = .shared,
-        notificationService: NotificationService = .shared
+        metricsCollector: CanaryMetricsCollector = .shared,
+        deploymentClient: CanaryDeploymentClient = .shared,
+        notificationService: CanaryNotificationService = .shared
     ) {
         self.metricsCollector = metricsCollector
         self.deploymentClient = deploymentClient
@@ -105,7 +105,7 @@ public class CanaryReleaseController: ObservableObject {
         if updatedCanary.currentStep >= updatedCanary.trafficSchedule.count {
             updatedCanary.status = .successful
             updatedCanary.completedAt = Date()
-            await promoteCanary(updatedCanary)
+            try await promoteCanary(updatedCanary)
             return .successful
         }
 
@@ -253,7 +253,18 @@ public class CanaryReleaseController: ObservableObject {
         let smokeTestResults = try await deploymentClient.runSmokeTests(version: config.version)
 
         guard smokeTestResults.allSatisfy({ $0.passed }) else {
-            throw CanaryError.smokeTestFailed(smokeTestResults.filter { !$0.passed })
+            let failedResults = smokeTestResults.filter { !$0.passed }
+            let testResults = failedResults.map { result in
+                TestResult(
+                    name: result.message,
+                    passed: result.passed,
+                    duration: 0,
+                    timestamp: Date(),
+                    filePath: nil,
+                    errorMessage: result.details.isEmpty ? "Test failed" : result.details.joined(separator: ", ")
+                )
+            }
+            throw CanaryError.smokeTestFailed(testResults)
         }
 
         NSLog("[CanaryRelease] Canary version deployed and validated")
@@ -385,7 +396,7 @@ public class CanaryReleaseController: ObservableObject {
 
 // MARK: - Supporting Types
 
-public enum CanaryStatus {
+public enum CanaryStatus: String, Codable {
     case pending
     case running
     case paused
@@ -658,7 +669,7 @@ public enum CanaryError: LocalizedError {
         case .invalidTrafficSchedule:
             return "Traffic schedule must be monotonically increasing"
         case .smokeTestFailed(let results):
-            return "Smoke tests failed: \(results.map { $0.message }.joined(separator: ", "))"
+            return "Smoke tests failed: \(results.map { $0.errorMessage ?? "Unknown error" }.joined(separator: ", "))"
         case .deploymentFailed(let reason):
             return "Deployment failed: \(reason)"
         }
@@ -667,8 +678,8 @@ public enum CanaryError: LocalizedError {
 
 // MARK: - Supporting Services
 
-public class MetricsCollector {
-    public static let shared = MetricsCollector()
+public class CanaryMetricsCollector {
+    public static let shared = CanaryMetricsCollector()
 
     private init() {}
 
@@ -708,8 +719,8 @@ public class MetricsCollector {
     }
 }
 
-public class DeploymentClient {
-    public static let shared = DeploymentClient()
+public class CanaryDeploymentClient {
+    public static let shared = CanaryDeploymentClient()
 
     private init() {}
 
@@ -752,8 +763,8 @@ public class DeploymentClient {
     }
 }
 
-public class NotificationService {
-    public static let shared = NotificationService()
+public class CanaryNotificationService {
+    public static let shared = CanaryNotificationService()
 
     private init() {}
 

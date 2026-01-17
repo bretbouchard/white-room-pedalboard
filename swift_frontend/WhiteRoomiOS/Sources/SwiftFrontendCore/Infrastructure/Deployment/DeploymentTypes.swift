@@ -8,7 +8,7 @@ public enum DeploymentEnvironment: String, Codable {
 }
 
 /// Deployment-specific validation result to avoid conflicts
-public struct DeploymentValidationResult: Identifiable, Codable {
+public struct DeploymentCheckResult: Identifiable, Codable {
     public let id: UUID
     public let type: ValidationType
     public let passed: Bool
@@ -41,6 +41,10 @@ public struct DeploymentValidationResult: Identifiable, Codable {
         case userAcceptance = "user_acceptance"
     }
 }
+
+// Backward compatibility alias
+@available(*, deprecated, message: "Use DeploymentCheckResult instead")
+public typealias DeploymentValidationResult = DeploymentCheckResult
 
 /// Deployment-specific notification severity
 public enum DeploymentNotificationSeverity: String, Codable {

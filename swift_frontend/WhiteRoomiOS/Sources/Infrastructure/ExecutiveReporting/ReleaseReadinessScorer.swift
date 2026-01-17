@@ -811,14 +811,3 @@ public struct ERPerformanceBaseline {
         self.memoryUsage = memoryUsage
     }
 }
-
-public enum ERGrade: Int, Comparable {
-    case plus = 4
-    case standard = 3
-    case minus = 2
-    case F = 0
-
-    public static func < (lhs: ERGrade, rhs: ERGrade) -> Bool {
-        return lhs.rawValue < rhs.rawValue
-    }
-}

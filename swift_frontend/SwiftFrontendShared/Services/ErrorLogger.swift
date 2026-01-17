@@ -11,6 +11,7 @@ import os.log
 #if canImport(UIKit)
 import UIKit
 #endif
+import SwiftUI
 
 // =============================================================================
 // MARK: - Error Logger
@@ -412,6 +413,6 @@ public struct AppState: Codable, Sendable {
 // MARK: - Notification Names
 // =============================================================================
 
-public extension Notification.Name {
-    static let logEntryAdded = Notification.Name("logEntryAdded")
+public extension Foundation.Notification.Name {
+    static let logEntryAdded = Foundation.Notification.Name("logEntryAdded")
 }

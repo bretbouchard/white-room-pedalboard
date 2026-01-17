@@ -1,6 +1,10 @@
 import SwiftUI
 import Charts
 
+// Import ExecutiveReporting types with explicit module prefix
+// All ER* types (ERGrade, ERTrendDirection, etc.) are defined in a central location
+// to avoid duplication and ambiguity across the module.
+
 /// Executive dashboard for quality metrics and trends
 public struct ExecutiveDashboard: View {
     @StateObject private var viewModel = DashboardViewModel()
@@ -528,146 +532,9 @@ public struct ReleaseReadiness {
     }
 }
 
-public enum ERGrade: Int, Comparable {
-    case plus = 4
-    case standard = 3
-    case minus = 2
-    case F = 0
+// MARK: - Module Coverage
+// Note: ModuleCoverage is now defined in ExecutiveReportingTypes.swift
 
-    public static func < (lhs: ERGrade, rhs: ERGrade) -> Bool {
-        return lhs.rawValue < rhs.rawValue
-    }
-
-    public var letter: String {
-        switch self {
-        case .plus: return "A+"
-        case .standard: return "A"
-        case .minus: return "A-"
-        case .F: return "F"
-        }
-    }
-}
-
-public enum ERTrendDirection {
-    case improving
-    case stable
-    case declining
-}
-
-public struct ERQualityDataPoint: Identifiable {
-    public let id = UUID()
-    public let date: Date
-    public let passRate: Double
-    public let coverage: Double
-
-    public init(date: Date, passRate: Double, coverage: Double) {
-        self.date = date
-        self.passRate = passRate
-        self.coverage = coverage
-    }
-
-    func toChartData() -> ChartData {
-        ChartData(
-            x: formatDate(date),
-            y: passRate,
-            series: "Pass Rate"
-        )
-    }
-
-    private func formatDate(_ date: Date) -> String {
-        let formatter = DateFormatter()
-        formatter.dateStyle = .short
-        return formatter.string(from: date)
-    }
-}
-
-public struct ERPerformanceDataPoint: Identifiable {
-    public let id = UUID()
-    public let date: Date
-    public let buildTime: Double
-    public let testTime: Double
-
-    public init(date: Date, buildTime: Double, testTime: Double) {
-        self.date = date
-        self.buildTime = buildTime
-        self.testTime = testTime
-    }
-
-    func toChartData() -> ChartData {
-        ChartData(
-            x: formatDate(date),
-            y: buildTime,
-            series: "Build Time"
-        )
-    }
-
-    private func formatDate(_ date: Date) -> String {
-        let formatter = DateFormatter()
-        formatter.dateStyle = .short
-        return formatter.string(from: date)
-    }
-}
-
-public struct ModuleCoverage: Identifiable {
-    public let id = UUID()
-    public let module: String
-    public let coverage: Double
-    public let linesCovered: Int
-    public let totalLines: Int
-
-    public init(module: String, coverage: Double, linesCovered: Int, totalLines: Int) {
-        self.module = module
-        self.coverage = coverage
-        self.linesCovered = linesCovered
-        self.totalLines = totalLines
-    }
-
-    func toChartData() -> ChartData {
-        ChartData(
-            x: module,
-            y: coverage,
-            series: "Coverage"
-        )
-    }
-}
-
-public struct DeploymentRisk {
-    public let score: Int              // 0-100
-    public let level: RiskLevel
-    public let factors: [RiskFactor]
-
-    public init(score: Int, level: RiskLevel, factors: [RiskFactor]) {
-        self.score = score
-        self.level = level
-        self.factors = factors
-    }
-
-    public enum RiskLevel {
-        case low
-        case medium
-        case high
-        case critical
-    }
-}
-
-public struct RiskFactor {
-    public let description: String
-    public let impact: Impact
-    public let likelihood: Likelihood
-
-    public enum Impact {
-        case low
-        case medium
-        case high
-        case critical
-    }
-
-    public enum Likelihood {
-        case low
-        case medium
-        case high
-    }
-}
 
 public struct TestFailure: Identifiable {
     public let id = UUID()

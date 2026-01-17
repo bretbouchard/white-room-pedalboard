@@ -14,8 +14,8 @@ public class AutomatedRollback: ObservableObject {
     // MARK: - Private Properties
     private var rollbackConfig: RollbackConfig
     private var deploymentManager: DeploymentManagerProtocol
-    private var metricsCollector: RollbackMetricsCollector
-    private var notificationService: RollbackNotificationService
+    private var metricsCollector: RollbackMetricsCollectorImpl
+    private var notificationService: RollbackNotificationServiceImpl
     private var monitoringTimer: Timer?
     private var rollbackCooldown: Date?
     private var rollbackCount: Int = 0
@@ -24,8 +24,8 @@ public class AutomatedRollback: ObservableObject {
     public init(
         config: RollbackConfig = .default,
         deploymentManager: DeploymentManagerProtocol = DeploymentManager.shared,
-        metricsCollector: RollbackMetricsCollector = .shared,
-        notificationService: RollbackNotificationService = .shared
+        metricsCollector: RollbackMetricsCollectorImpl = .shared,
+        notificationService: RollbackNotificationServiceImpl = .shared
     ) {
         self.rollbackConfig = config
         self.deploymentManager = deploymentManager
@@ -330,7 +330,7 @@ public class AutomatedRollback: ObservableObject {
     private func validateRollbackResult(
         _ deployment: Deployment,
         rollbackVersion: String
-    ) async throws -> ValidationResult {
+    ) async throws -> RollbackValidationResult {
         NSLog("[Rollback] Validating rollback to \(rollbackVersion)")
 
         var details: [String] = []
@@ -367,7 +367,7 @@ public class AutomatedRollback: ObservableObject {
 
         let passed = currentVersion == rollbackVersion && health.isHealthy
 
-        return ValidationResult(
+        return RollbackValidationResult(
             type: .userAcceptance,
             passed: passed,
             message: passed ? "Rollback validation successful" : "Rollback validation failed",
@@ -404,7 +404,7 @@ public class AutomatedRollback: ObservableObject {
         // In production, get current deployment from deployment manager
         return Deployment(
             version: "1.0.0",
-            environment: Environment.production,
+            environment: DeploymentEnvironment.production,
             deployedAt: Date().addingTimeInterval(-3600),
             deploymentType: .blueGreen
         )
@@ -689,7 +689,7 @@ public struct RollbackRecord: Identifiable, Codable {
     public let completedAt: Date
     public let duration: TimeInterval
     public let successful: Bool
-    public let postRollbackValidation: ValidationResult
+    public let postRollbackValidation: RollbackValidationResult
     public let userImpact: UserImpact
 
     public init(
@@ -702,7 +702,7 @@ public struct RollbackRecord: Identifiable, Codable {
         completedAt: Date,
         duration: TimeInterval,
         successful: Bool,
-        postRollbackValidation: ValidationResult,
+        postRollbackValidation: RollbackValidationResult,
         userImpact: UserImpact
     ) {
         self.id = id
@@ -881,7 +881,7 @@ public class DeploymentManager: DeploymentManagerProtocol {
     }
 }
 
-public protocol RollbackMetricsCollector {
+public protocol RollbackMetricsCollectorProtocol {
     func collectRollbackMetrics() async throws -> RollbackMetrics
     func checkSystemHealth() async -> SystemHealth
     func collectPerformanceMetrics() async throws -> PerformanceMetrics
@@ -909,8 +909,8 @@ public enum LatencyMetric {
     case average(Double)
 }
 
-public class RollbackMetricsCollector: RollbackMetricsCollector {
-    public static let shared = RollbackMetricsCollector()
+public class RollbackMetricsCollectorImpl: RollbackMetricsCollectorProtocol {
+    public static let shared = RollbackMetricsCollectorImpl()
 
     private init() {}
 
@@ -932,15 +932,15 @@ public class RollbackMetricsCollector: RollbackMetricsCollector {
     }
 }
 
-public protocol RollbackNotificationService {
+public protocol RollbackNotificationServiceProtocol {
     func sendNotification(title: String, message: String, severity: NotificationSeverity) async
     func sendCriticalNotification(title: String, message: String) async
     func sendWarningNotification(title: String, message: String) async
     func sendInfoNotification(title: String, message: String) async
 }
 
-public class RollbackNotificationService: RollbackNotificationService {
-    public static let shared = RollbackNotificationService()
+public class RollbackNotificationServiceImpl: RollbackNotificationServiceProtocol {
+    public static let shared = RollbackNotificationServiceImpl()
 
     private init() {}
 
@@ -958,5 +958,33 @@ public class RollbackNotificationService: RollbackNotificationService {
 
     public func sendInfoNotification(title: String, message: String) async {
         await sendNotification(title: title, message: message, severity: .info)
+    }
+}
+
+// MARK: - Rollback Validation Result
+
+/// Rollback-specific validation result
+public struct RollbackValidationResult: Identifiable, Codable {
+    public let id: UUID
+    public let type: DeploymentCheckResult.ValidationType
+    public let passed: Bool
+    public let message: String
+    public let details: [String]
+    public let timestamp: Date
+
+    public init(
+        id: UUID = UUID(),
+        type: DeploymentCheckResult.ValidationType,
+        passed: Bool,
+        message: String,
+        details: [String],
+        timestamp: Date = Date()
+    ) {
+        self.id = id
+        self.type = type
+        self.passed = passed
+        self.message = message
+        self.details = details
+        self.timestamp = timestamp
     }
 }

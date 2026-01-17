@@ -852,3 +852,22 @@ All instruments are **production-ready** with comprehensive testing, extensive d
 **Document Version:** 1.0
 **Last Updated:** December 26, 2025
 **Project Location:** `/Users/bretbouchard/apps/schill/juce_backend/`
+
+## Plugin Formats
+
+This plugin is available in the following formats:
+
+- **VST3**: Cross-platform plugin format (Windows, macOS, Linux)
+- **Audio Unit (AU)**: macOS-only format (macOS 10.15+)
+- **CLAP**: Modern cross-platform format (CLAP 1.1+)
+- **LV2**: Linux plugin format (LV2 1.18+)
+- **AUv3**: iOS format (iOS 13+)
+- **Standalone**: Desktop application (Windows, macOS, Linux)
+
+### Build Status
+
+See docs/BUILD.md for build instructions and current status.
+
+### Installation
+
+Each format installs to its standard system location. See docs/BUILD.md for details.

@@ -30,7 +30,6 @@ targets:
         includes: [ "**/*.swift" ]
         excludes: [
           "Tests/**",
-          "Repositories/BackupRepository.swift",
           "Repositories/MixGraphRepository.swift",
           "Repositories/UserRepository.swift",
           "Repositories/PerformanceRepository.swift",

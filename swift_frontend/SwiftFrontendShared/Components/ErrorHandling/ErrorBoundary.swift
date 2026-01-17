@@ -570,8 +570,8 @@ public extension View {
 // MARK: - Notification Names
 // =============================================================================
 
-public extension Notification.Name {
-    static let errorOccurred = Notification.Name("errorOccurred")
+public extension Foundation.Notification.Name {
+    static let errorOccurred = Foundation.Notification.Name("errorOccurred")
 }
 
 // =============================================================================

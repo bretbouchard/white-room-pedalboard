@@ -87,7 +87,7 @@ public struct RestoreResult: Codable, Sendable {
 }
 
 /// Result of backup validation
-public struct ValidationResult: Codable, Sendable {
+public struct BackupValidationResult: Codable, Sendable {
     /// Whether songs JSON is valid
     public var validSongs: Bool = false
 

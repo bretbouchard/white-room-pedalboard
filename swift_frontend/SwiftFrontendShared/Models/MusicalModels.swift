@@ -201,7 +201,7 @@ public enum TempoTransition: String, Codable, Sendable {
 
  Used when validating models, configurations, or deployments.
  */
-public struct ValidationResult: Sendable {
+public struct GenericValidationResult: Sendable {
     public let isValid: Bool
     public let errors: [String]
     public let warnings: [String]
@@ -217,27 +217,18 @@ public struct ValidationResult: Sendable {
     }
 
     /// Convenience initializer for success
-    public static var valid: ValidationResult {
-        ValidationResult(isValid: true, errors: [], warnings: [])
+    public static var valid: GenericValidationResult {
+        GenericValidationResult(isValid: true, errors: [], warnings: [])
     }
 
     /// Convenience initializer for single error
-    public static func error(_ message: String) -> ValidationResult {
-        ValidationResult(isValid: false, errors: [message], warnings: [])
+    public static func error(_ message: String) -> GenericValidationResult {
+        GenericValidationResult(isValid: false, errors: [message], warnings: [])
     }
 
     /// Convenience initializer for multiple errors
-    public static func errors(_ messages: [String]) -> ValidationResult {
-        ValidationResult(isValid: false, errors: messages, warnings: [])
+    public static func errors(_ messages: [String]) -> GenericValidationResult {
+        GenericValidationResult(isValid: false, errors: messages, warnings: [])
     }
 }
 
-// =============================================================================
-// MARK: - Deprecated Types (for migration period)
-// =============================================================================
-
-// These aliases are provided for backward compatibility during migration.
-// They will be removed in a future version.
-
-@available(*, deprecated, message: "Use ValidationResult instead")
-public typealias DeploymentValidationResult = ValidationResult

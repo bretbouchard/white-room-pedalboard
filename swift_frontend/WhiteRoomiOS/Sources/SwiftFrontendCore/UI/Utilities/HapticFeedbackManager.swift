@@ -8,6 +8,7 @@
 
 import UIKit
 import Foundation
+import SwiftUI
 
 // =============================================================================
 // MARK: - Haptic Feedback Manager
@@ -287,7 +288,7 @@ public struct AccessibilityHelpers {
     /**
      Create accessibility hint for sync modes
      */
-    public static func syncModeHint(mode: MultiSongState.SyncMode) -> String {
+    public static func syncModeHint(mode: SyncMode) -> String {
         switch mode {
         case .independent:
             return "Songs play at their own tempo independently"
@@ -374,7 +375,11 @@ public extension View {
 
     /**
      Add custom accessibility actions for song controls
+
+     NOTE: SongPlayerState type was deleted in git reset. This function is commented out
+     until the type is restored or a replacement is implemented.
      */
+    /*
     func songAccessibilityActions(
         song: SongPlayerState,
         onTogglePlay: @escaping () -> Void,
@@ -402,6 +407,7 @@ public extension View {
             }
         }
     }
+    */
 
     /**
      Add accessibility rotor for navigation

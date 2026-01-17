@@ -40,7 +40,7 @@ public actor BackupManager {
     public func createBackup(description: String? = nil) async throws -> Backup {
         let timestamp = Date()
 
-        // Backup songs
+        // Backup songs (encode as SharedSong)
         let songs = try await songRepository.getAll()
         let songsData = try JSONEncoder().encode(songs)
         let songsJSON = String(data: songsData, encoding: .utf8)!
@@ -88,15 +88,15 @@ public actor BackupManager {
 
         var result = RestoreResult()
 
-        // Restore songs
+        // Restore songs (decode as SharedSong)
         if let songsData = backup.songsJSON.data(using: .utf8) {
-            let songs = try JSONDecoder().decode([Song].self, from: songsData)
+            let songs = try JSONDecoder().decode([SharedSong].self, from: songsData)
 
             for song in songs {
                 do {
                     // Check if song already exists
                     if let existing = try await songRepository.read(id: song.id) {
-                        // Update existing song
+                        // Update existing song (convert to SharedSong if needed)
                         try await songRepository.update(song)
                     } else {
                         // Create new song
@@ -167,17 +167,17 @@ public actor BackupManager {
     }
 
     /// Validate backup integrity
-    public func validateBackup(_ backupId: String) async throws -> ValidationResult {
+    public func validateBackup(_ backupId: String) async throws -> BackupValidationResult {
         guard let backup = try await backupRepository.read(id: backupId) else {
             throw BackupError.backupNotFound
         }
 
-        var result = ValidationResult()
+        var result = BackupValidationResult()
 
-        // Validate songs JSON
+        // Validate songs JSON (validate as SharedSong)
         if let songsData = backup.songsJSON.data(using: .utf8) {
             do {
-                _ = try JSONDecoder().decode([Song].self, from: songsData)
+                _ = try JSONDecoder().decode([SharedSong].self, from: songsData)
                 result.validSongs = true
             } catch {
                 result.errors.append("Invalid songs JSON: \(error.localizedDescription)")
