@@ -69,6 +69,24 @@
 [submodule "juce_backend/effects/filter_pedal"]
 	path = juce_backend/effects/filter_pedal
 	url = https://github.com/bretbouchard/white-room-filter.git
+[submodule "juce_backend/effects/distortion_pedal"]
+	path = juce_backend/effects/distortion_pedal
+	url = https://github.com/bretbouchard/white-room-distortion.git
+[submodule "juce_backend/effects/classic_distortion_pedal"]
+	path = juce_backend/effects/classic_distortion_pedal
+	url = https://github.com/bretbouchard/white-room-classic_distortion.git
+[submodule "juce_backend/effects/modern_distortion_pedal"]
+	path = juce_backend/effects/modern_distortion_pedal
+	url = https://github.com/bretbouchard/white-room-modern_distortion.git
+[submodule "juce_backend/effects/fuzz_pedal"]
+	path = juce_backend/effects/fuzz_pedal
+	url = https://github.com/bretbouchard/white-room-fuzz.git
+[submodule "juce_backend/effects/octave_pedal"]
+	path = juce_backend/effects/octave_pedal
+	url = https://github.com/bretbouchard/white-room-octave.git
+[submodule "juce_backend/effects/volume_pedal"]
+	path = juce_backend/effects/volume_pedal
+	url = https://github.com/bretbouchard/white-room-volume.git
 [submodule "juce_backend/effects/pedals"]
 	path = juce_backend/effects/pedals
 	url = https://github.com/bretbouchard/white-room-pedals-framework.git
