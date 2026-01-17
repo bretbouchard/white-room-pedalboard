@@ -143,12 +143,29 @@ async function validateApiKey(
     throw new AuthenticationError("Invalid API key format");
   }
 
-  // Mock validation - replace with actual API key validation
+  // ========================================================================
+  // MOCK API KEYS FOR DEVELOPMENT/TESTING ONLY
+  // ========================================================================
+  // These are NOT real Stripe API keys. They are placeholder values used
+  // for development and testing purposes only.
+  //
+  // Real API keys should:
+  // 1. Be stored in environment variables (process.env.STRIPE_SECRET_KEY)
+  // 2. Never be committed to git
+  // 3. Be rotated if accidentally exposed
+  //
+  // These mock keys are clearly identifiable by their patterns:
+  // - "sk_test_1234567890abcdef..." - contains sequential numbers
+  // - "sk_live_abcdef1234567890..." - contains alphabetical sequence
+  // ========================================================================
+
   const mockApiKeys = {
+    // Mock test key (clearly fake - contains "1234567890")
     sk_test_1234567890abcdef1234567890abcdef: {
       id: "api_user_1",
       permissions: ["core", "analysis"],
     },
+    // Mock live key (clearly fake - contains "abcdef")
     sk_live_abcdef1234567890abcdef1234567890: {
       id: "api_user_2",
       permissions: ["core", "analysis", "admin"],
