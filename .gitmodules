@@ -48,6 +48,27 @@
 [submodule "juce_backend/effects/chorus_pedal"]
 	path = juce_backend/effects/chorus_pedal
 	url = https://github.com/bretbouchard/chorus_pedal.git
+[submodule "juce_backend/effects/delay_pedal"]
+	path = juce_backend/effects/delay_pedal
+	url = https://github.com/bretbouchard/white-room-delay.git
+[submodule "juce_backend/effects/reverb_pedal"]
+	path = juce_backend/effects/reverb_pedal
+	url = https://github.com/bretbouchard/white-room-reverb.git
+[submodule "juce_backend/effects/flanger_pedal"]
+	path = juce_backend/effects/flanger_pedal
+	url = https://github.com/bretbouchard/white-room-flanger.git
+[submodule "juce_backend/effects/tremolo_pedal"]
+	path = juce_backend/effects/tremolo_pedal
+	url = https://github.com/bretbouchard/white-room-tremolo.git
+[submodule "juce_backend/effects/compressor_pedal"]
+	path = juce_backend/effects/compressor_pedal
+	url = https://github.com/bretbouchard/white-room-compressor.git
+[submodule "juce_backend/effects/eq_pedal"]
+	path = juce_backend/effects/eq_pedal
+	url = https://github.com/bretbouchard/white-room-eq.git
+[submodule "juce_backend/effects/filter_pedal"]
+	path = juce_backend/effects/filter_pedal
+	url = https://github.com/bretbouchard/white-room-filter.git
 [submodule "juce_backend/effects/pedals"]
 	path = juce_backend/effects/pedals
 	url = https://github.com/bretbouchard/white-room-pedals-framework.git
