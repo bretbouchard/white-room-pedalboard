@@ -25,8 +25,8 @@ public struct SurfaceRootView: View {
 
     // MARK: - Environment
 
-    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
-    @Environment(\.verticalSizeClass) private var verticalSizeClass
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass: UserInterfaceSizeClass?
+    @Environment(\.verticalSizeClass) private var verticalSizeClass: UserInterfaceSizeClass?
 
     // MARK: - Computed Properties
 

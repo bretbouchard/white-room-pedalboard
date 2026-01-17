@@ -274,7 +274,7 @@ public struct TrackInteractionModifier: ViewModifier {
     let element: String
     let screen: String
 
-    @Environment(\.isEnabled) private var isEnabled
+    @Environment(\.isEnabled) private var isEnabled: Bool
 
     public func body(content: Content) -> some View {
         if isEnabled {

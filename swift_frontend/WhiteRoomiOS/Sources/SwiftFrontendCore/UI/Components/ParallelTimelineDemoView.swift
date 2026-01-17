@@ -156,7 +156,7 @@ public struct ParallelTimelineDemoView: View {
                         Text(tab.rawValue)
                             .font(.caption)
                             .fontWeight(selectedTab == tab ? .semibold : .regular)
-                            .foregroundColor(selectedTab == tab .accentColor : .secondary)
+                            .foregroundColor(selectedTab == tab ? accentColor : .secondary)
                     }
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 12)

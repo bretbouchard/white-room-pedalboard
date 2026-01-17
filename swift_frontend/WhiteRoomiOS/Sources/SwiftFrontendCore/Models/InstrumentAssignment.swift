@@ -7,21 +7,10 @@
 //
 
 import Foundation
+import Combine
 
-/// Represents the type/category of instrument
-enum InstrumentType: String, Codable, CaseIterable {
-    case piano = "piano"
-    case organ = "organ"
-    case guitar = "guitar"
-    case bass = "bass"
-    case strings = "strings"
-    case brass = "brass"
-    case woodwinds = "woodwinds"
-    case percussion = "percussion"
-    case synth = "synth"
-    case drums = "drums"
-    case other = "other"
-
+/// Extension to add UI properties to InstrumentType from PerformanceModels
+extension InstrumentType {
     /// Display name for the instrument type
     var displayName: String {
         switch self {
@@ -31,10 +20,11 @@ enum InstrumentType: String, Codable, CaseIterable {
         case .bass: return "Bass"
         case .strings: return "Strings"
         case .brass: return "Brass"
-        case .woodwinds: return "Woodwinds"
+        case .winds: return "Winds"
         case .percussion: return "Percussion"
         case .synth: return "Synth"
         case .drums: return "Drums"
+        case .vocal: return "Vocal"
         case .other: return "Other"
         }
     }
@@ -48,10 +38,11 @@ enum InstrumentType: String, Codable, CaseIterable {
         case .bass: return "guitars"
         case .strings: return "music.note"
         case .brass: return "trumpet"
-        case .woodwinds: return "wind"
+        case .winds: return "wind"
         case .percussion: return "drum"
         case .synth: return "slider.horizontal.3"
         case .drums: return "speaker.wave.3"
+        case .vocal: return "mic"
         case .other: return "music.quarternote.3"
         }
     }
@@ -65,11 +56,12 @@ enum InstrumentType: String, Codable, CaseIterable {
         case .bass: return "#EF4444"     // Red
         case .strings: return "#10B981"  // Green
         case .brass: return "#F97316"    // Orange
-        case .woodwinds: return "#06B6D4" // Cyan
+        case .winds: return "#06B6D4"    // Cyan
         case .percussion: return "#EC4899" // Pink
         case .synth: return "#6366F1"    // Indigo
         case .drums: return "#64748B"    // Slate
-        case .other: return "#78716C"     // Stone
+        case .vocal: return "#A855F7"    // Purple
+        case .other: return "#78716C"    // Stone
         }
     }
 }
@@ -104,7 +96,7 @@ struct PluginInfo: Codable {
 }
 
 /// Represents an assigned instrument in a song
-struct InstrumentAssignment: Codable, Identifiable {
+struct MIDIInstrumentAssignment: Codable, Identifiable {
     let id: String
     var name: String
     var type: InstrumentType
@@ -194,8 +186,8 @@ struct InstrumentAssignment: Codable, Identifiable {
 }
 
 /// Manages instrument assignments for a song
-class InstrumentAssignmentManager: Observableable, Codable {
-    @Published var assignments: [String: InstrumentAssignment] = [:]
+class MIDIInstrumentAssignmentManager: Observableable, Codable {
+    @Published var assignments: [String: MIDIInstrumentAssignment] = [:]
 
     /// Create a new manager
     init() {}
@@ -205,7 +197,7 @@ class InstrumentAssignmentManager: Observableable, Codable {
     ///   - trackId: Track identifier
     ///   - instrument: Instrument assignment
     /// - Throws: InstrumentValidationError if validation fails
-    func assignInstrument(trackId: String, instrument: InstrumentAssignment) throws {
+    func assignInstrument(trackId: String, instrument: MIDIInstrumentAssignment) throws {
         // Validate instrument
         try instrument.validate()
 
@@ -227,7 +219,7 @@ class InstrumentAssignmentManager: Observableable, Codable {
     /// Get instrument for track
     /// - Parameter trackId: Track identifier
     /// - Returns: Instrument assignment or nil
-    func getInstrument(trackId: String) -> InstrumentAssignment? {
+    func getInstrument(trackId: String) -> MIDIInstrumentAssignment? {
         return assignments[trackId]
     }
 
@@ -239,7 +231,7 @@ class InstrumentAssignmentManager: Observableable, Codable {
 
     /// Get all assignments
     /// - Returns: Array of all instrument assignments
-    func getAllAssignments() -> [InstrumentAssignment] {
+    func getAllAssignments() -> [MIDIInstrumentAssignment] {
         return Array(assignments.values)
     }
 
@@ -278,7 +270,7 @@ class InstrumentAssignmentManager: Observableable, Codable {
     /// Get instruments by type
     /// - Parameter type: Instrument type
     /// - Returns: Array of instruments of the specified type
-    func getInstrumentsByType(_ type: InstrumentType) -> [InstrumentAssignment] {
+    func getInstrumentsByType(_ type: InstrumentType) -> [MIDIInstrumentAssignment] {
         return assignments.values.filter { $0.type == type }
     }
 
@@ -302,7 +294,7 @@ class InstrumentAssignmentManager: Observableable, Codable {
 
     required init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        assignments = try container.decode([String: InstrumentAssignment].self, forKey: .assignments)
+        assignments = try container.decode([String: MIDIInstrumentAssignment].self, forKey: .assignments)
     }
 
     func encode(to encoder: Encoder) throws {

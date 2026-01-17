@@ -193,8 +193,8 @@ public class DashboardViewModel: ObservableObject {
         buildTime: 0.0
     )
 
-    @Published var qualityTrend: [QualityDataPoint] = []
-    @Published var performanceTrend: [PerformanceDataPoint] = []
+    @Published var qualityTrend: [ERQualityDataPoint] = []
+    @Published var performanceTrend: [ERPerformanceDataPoint] = []
     @Published var coverageByModule: [ModuleCoverage] = []
     @Published var deploymentRisk: DeploymentRisk = DeploymentRisk(
         score: 0,
@@ -222,9 +222,9 @@ public class DashboardViewModel: ObservableObject {
         successRate: 0.0
     )
 
-    @Published var passRateTrend: TrendDirection = .stable
-    @Published var coverageTrend: TrendDirection = .stable
-    @Published var buildTimeTrend: TrendDirection = .stable
+    @Published var passRateTrend: ERTrendDirection = .stable
+    @Published var coverageTrend: ERTrendDirection = .stable
+    @Published var buildTimeTrend: ERTrendDirection = .stable
 
     @Published var isRefreshing: Bool = false
     @Published var pdfData: Data?
@@ -325,7 +325,7 @@ public class DashboardViewModel: ObservableObject {
         )
     }
 
-    private func calculateOverallTrend() -> TrendDirection {
+    private func calculateOverallTrend() -> ERTrendDirection {
         let improvingCount = [passRateTrend, coverageTrend].filter { $0 == .improving }.count
         let decliningCount = [passRateTrend, coverageTrend].filter { $0 == .declining }.count
 
@@ -438,7 +438,7 @@ public class DashboardViewModel: ObservableObject {
     private func calculateTrend<T>(
         for data: [T],
         metric: KeyPath<T, Double>
-    ) -> TrendDirection {
+    ) -> ERTrendDirection {
         guard data.count >= 2 else { return .stable }
 
         let recent = data.suffix(7)
@@ -493,7 +493,7 @@ public struct KeyMetrics {
 
 public struct ReleaseReadiness {
     public let overallScore: Int      // 0-100
-    public let testGrade: Grade
+    public let testGrade: ERGrade
     public let recommendation: Recommendation
     public let blockers: [String]
     public let warnings: [String]
@@ -511,7 +511,7 @@ public struct ReleaseReadiness {
         }
     }
 
-    public init(overallScore: Int, testGrade: Grade, recommendation: Recommendation,
+    public init(overallScore: Int, testGrade: ERGrade, recommendation: Recommendation,
                 blockers: [String], warnings: [String]) {
         self.overallScore = overallScore
         self.testGrade = testGrade
@@ -528,13 +528,13 @@ public struct ReleaseReadiness {
     }
 }
 
-public enum Grade: Int, Comparable {
+public enum ERGrade: Int, Comparable {
     case plus = 4
     case standard = 3
     case minus = 2
     case F = 0
 
-    public static func < (lhs: Grade, rhs: Grade) -> Bool {
+    public static func < (lhs: ERGrade, rhs: ERGrade) -> Bool {
         return lhs.rawValue < rhs.rawValue
     }
 
@@ -548,13 +548,13 @@ public enum Grade: Int, Comparable {
     }
 }
 
-public enum TrendDirection {
+public enum ERTrendDirection {
     case improving
     case stable
     case declining
 }
 
-public struct QualityDataPoint: Identifiable {
+public struct ERQualityDataPoint: Identifiable {
     public let id = UUID()
     public let date: Date
     public let passRate: Double
@@ -581,7 +581,7 @@ public struct QualityDataPoint: Identifiable {
     }
 }
 
-public struct PerformanceDataPoint: Identifiable {
+public struct ERPerformanceDataPoint: Identifiable {
     public let id = UUID()
     public let date: Date
     public let buildTime: Double

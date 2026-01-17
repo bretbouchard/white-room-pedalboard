@@ -4,7 +4,7 @@ import Combine
 
 /// Visualizes quality trends with interactive charts and anomaly detection
 public class TrendVisualizer: ObservableObject {
-    @Published var trends: [QualityTrend] = []
+    @Published var trends: [TrendVisualizerQualityTrend] = []
     @Published var anomalies: [TrendAnomaly] = []
     @Published var prediction: TrendPrediction?
     @Published var isLoading: Bool = false
@@ -21,7 +21,7 @@ public class TrendVisualizer: ObservableObject {
 
     /// Loads trends for a specific metric
     public func loadTrends(
-        for metric: QualityMetric,
+        for metric: TrendVisualizerQualityMetric,
         from startDate: Date,
         to endDate: Date
     ) {
@@ -52,7 +52,7 @@ public class TrendVisualizer: ObservableObject {
     }
 
     /// Generates comprehensive trend report
-    public func generateTrendReport(_ trends: [QualityTrend]) -> TrendReport {
+    public func generateTrendReport(_ trends: [TrendVisualizerQualityTrend]) -> TrendReport {
         let anomalies = detectAnomalies(in: trends)
         let prediction = predictFutureTrend(trends, daysAhead: 7)
 
@@ -66,7 +66,7 @@ public class TrendVisualizer: ObservableObject {
     }
 
     /// Detects anomalies in trend data
-    public func detectAnomalies(in trends: [QualityTrend]) -> [TrendAnomaly] {
+    public func detectAnomalies(in trends: [TrendVisualizerQualityTrend]) -> [TrendAnomaly] {
         guard trends.count >= 5 else { return [] }
 
         var detectedAnomalies: [TrendAnomaly] = []
@@ -115,7 +115,7 @@ public class TrendVisualizer: ObservableObject {
 
     /// Predicts future trend using linear regression
     public func predictFutureTrend(
-        _ trends: [QualityTrend],
+        _ trends: [TrendVisualizerQualityTrend],
         daysAhead: Int
     ) -> TrendPrediction? {
         guard trends.count >= 3 else { return nil }
@@ -152,7 +152,7 @@ public class TrendVisualizer: ObservableObject {
         let confidence = max(0, min(1, rSquared))
 
         // Determine trend direction
-        let trendDirection: TrendDirection
+        let trendDirection: TrendVisualizerDirection
         if abs(slope) < 0.01 {
             trendDirection = .stable
         } else {
@@ -174,7 +174,7 @@ public class TrendVisualizer: ObservableObject {
     // MARK: - Private Methods
 
     private func generateSummary(
-        trends: [QualityTrend],
+        trends: [TrendVisualizerQualityTrend],
         anomalies: [TrendAnomaly],
         prediction: TrendPrediction?
     ) -> String {
@@ -210,7 +210,7 @@ public class TrendVisualizer: ObservableObject {
     }
 
     private func determineCause(
-        _ trend: QualityTrend,
+        _ trend: TrendVisualizerQualityTrend,
         deviation: Double
     ) -> String? {
         // Analyze context to determine likely cause
@@ -239,14 +239,14 @@ public class TrendVisualizer: ObservableObject {
 
 // MARK: - Supporting Types
 
-public struct QualityTrend: Identifiable {
+public struct TrendVisualizerQualityTrend: Identifiable {
     public let id = UUID()
     public let date: Date
-    public let metric: QualityMetric
+    public let metric: TrendVisualizerQualityMetric
     public let value: Double
-    public let context: TrendContext?
+    public let context: TrendVisualizerContext?
 
-    public init(date: Date, metric: QualityMetric, value: Double, context: TrendContext? = nil) {
+    public init(date: Date, metric: TrendVisualizerQualityMetric, value: Double, context: TrendVisualizerContext? = nil) {
         self.date = date
         self.metric = metric
         self.value = value
@@ -254,7 +254,7 @@ public struct QualityTrend: Identifiable {
     }
 }
 
-public enum QualityMetric: String, CaseIterable {
+public enum TrendVisualizerQualityMetric: String, CaseIterable {
     case testCoverage = "Test Coverage"
     case passRate = "Pass Rate"
     case flakyTestCount = "Flaky Test Count"
@@ -287,7 +287,7 @@ public struct TrendContext {
 public struct TrendAnomaly: Identifiable {
     public let id = UUID()
     public let date: Date
-    public let metric: QualityMetric
+    public let metric: TrendVisualizerQualityMetric
     public let expectedValue: Double
     public let actualValue: Double
     public let deviation: Double
@@ -296,7 +296,7 @@ public struct TrendAnomaly: Identifiable {
 
     public init(
         date: Date,
-        metric: QualityMetric,
+        metric: TrendVisualizerQualityMetric,
         expectedValue: Double,
         actualValue: Double,
         deviation: Double,
@@ -330,20 +330,20 @@ public enum AnomalySeverity {
 }
 
 public struct TrendPrediction {
-    public let metric: QualityMetric
+    public let metric: TrendVisualizerQualityMetric
     public let currentValue: Double
     public let predictedValue: Double
     public let confidence: Double
     public let date: Date
-    public let trendDirection: TrendDirection
+    public let trendDirection: TrendVisualizerDirection
 
     public init(
-        metric: QualityMetric,
+        metric: TrendVisualizerQualityMetric,
         currentValue: Double,
         predictedValue: Double,
         confidence: Double,
         date: Date,
-        trendDirection: TrendDirection
+        trendDirection: TrendVisualizerDirection
     ) {
         self.metric = metric
         self.currentValue = currentValue
@@ -354,7 +354,7 @@ public struct TrendPrediction {
     }
 }
 
-public enum TrendDirection: String {
+public enum TrendVisualizerDirection: String {
     case improving = "Improving"
     case stable = "Stable"
     case declining = "Declining"
@@ -377,15 +377,15 @@ public enum TrendDirection: String {
 }
 
 public struct TrendReport {
-    public let metric: QualityMetric
-    public let trends: [QualityTrend]
+    public let metric: TrendVisualizerQualityMetric
+    public let trends: [TrendVisualizerQualityTrend]
     public let anomalies: [TrendAnomaly]
     public let prediction: TrendPrediction?
     public let summary: String
 
     public init(
-        metric: QualityMetric,
-        trends: [QualityTrend],
+        metric: TrendVisualizerQualityMetric,
+        trends: [TrendVisualizerQualityTrend],
         anomalies: [TrendAnomaly],
         prediction: TrendPrediction?,
         summary: String
@@ -404,21 +404,21 @@ public class TrendDataService {
     public init() {}
 
     public func fetchTrends(
-        metric: QualityMetric,
+        metric: TrendVisualizerQualityMetric,
         from startDate: Date,
         to endDate: Date
-    ) async throws -> [QualityTrend] {
+    ) async throws -> [TrendVisualizerQualityTrend] {
         // This would fetch from your data source
         // For now, return mock data
         return generateMockTrends(metric: metric, from: startDate, to: endDate)
     }
 
     private func generateMockTrends(
-        metric: QualityMetric,
+        metric: TrendVisualizerQualityMetric,
         from startDate: Date,
         to endDate: Date
-    ) -> [QualityTrend] {
-        var trends: [QualityTrend] = []
+    ) -> [TrendVisualizerQualityTrend] {
+        var trends: [TrendVisualizerQualityTrend] = []
         var currentDate = startDate
 
         let baseValue: Double = {
@@ -438,7 +438,7 @@ public class TrendDataService {
             let randomVariation = Double.random(in: -5...5)
             let value = max(0, baseValue + randomVariation)
 
-            let trend = QualityTrend(
+            let trend = TrendVisualizerQualityTrend(
                 date: currentDate,
                 metric: metric,
                 value: value,
@@ -457,7 +457,7 @@ public class TrendDataService {
 
 public struct TrendVisualizerView: View {
     @StateObject private var visualizer = TrendVisualizer()
-    @State private var selectedMetric: QualityMetric = .testCoverage
+    @State private var selectedMetric: TrendVisualizerQualityMetric = .testCoverage
     @State private var dateRange: DateRange = .last30Days
 
     public init() {}
@@ -467,7 +467,7 @@ public struct TrendVisualizerView: View {
             // Controls
             HStack {
                 Picker("Metric", selection: $selectedMetric) {
-                    ForEach(QualityMetric.allCases, id: \.self) { metric in
+                    ForEach(TrendVisualizerQualityMetric.allCases, id: \.self) { metric in
                         Text(metric.rawValue).tag(metric)
                     }
                 }
@@ -525,7 +525,7 @@ public struct TrendVisualizerView: View {
 }
 
 private struct TrendChartView: View {
-    let trends: [QualityTrend]
+    let trends: [TrendVisualizerQualityTrend]
     let prediction: TrendPrediction?
 
     var body: some View {
@@ -682,10 +682,10 @@ private enum DateRange {
     }
 }
 
-// MARK: - QualityTrend Extension
+// MARK: - TrendVisualizerQualityTrend Extension
 
-private extension QualityTrend {
-    func isAnomaly(in trends: [QualityTrend]) -> Bool {
+private extension TrendVisualizerQualityTrend {
+    func isAnomaly(in trends: [TrendVisualizerQualityTrend]) -> Bool {
         let visualizer = TrendVisualizer()
         let anomalies = visualizer.detectAnomalies(in: trends)
         return anomalies.contains { $0.date == self.date && $0.metric == self.metric }

@@ -24,14 +24,14 @@ import Combine
  - Smooth animations and haptic feedback
  - Accessibility support (VoiceOver)
  */
-struct MovingSidewalkView: View {
+public struct MovingSidewalkView: View {
 
     // MARK: - Properties
 
     @StateObject private var state = MultiSongState()
     @Environment(\.theme) var theme
-    @Environment(\.horizontalSizeClass) var horizontalSizeClass
-    @Environment(\.verticalSizeClass) var verticalSizeClass
+    @Environment(\.horizontalSizeClass) var horizontalSizeClass: UserInterfaceSizeClass?
+    @Environment(\.verticalSizeClass) var verticalSizeClass: UserInterfaceSizeClass?
 
     /// Scroll position for song cards
     @State private var scrollOffset: CGFloat = 0

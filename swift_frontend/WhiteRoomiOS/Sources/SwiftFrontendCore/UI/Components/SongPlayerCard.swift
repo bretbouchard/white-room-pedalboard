@@ -449,9 +449,8 @@ struct SongPlayerCard: View {
 }
 
 #Preview("Multiple Songs") {
-    let state = MultiSongState()
-    state.songs = SongPlayerState.demoSongs()
+    let state = MultiSongState.createEmptySession()
 
-    return MovingSidewalkView()
+    MovingSidewalkView()
         .environmentObject(state)
 }

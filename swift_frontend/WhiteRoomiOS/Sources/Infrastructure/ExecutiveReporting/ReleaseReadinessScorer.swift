@@ -512,7 +512,7 @@ public class ReleaseReadinessScorer {
         return Int(totalWeightedScore)
     }
 
-    private func calculateGrade(_ score: Int) -> Grade {
+    private func calculateGrade(_ score: Int) -> ERGrade {
         switch score {
         case 97...100: return .plus
         case 93..<97: return .standard
@@ -575,7 +575,7 @@ public struct ReleaseInfo {
     public let testResults: TestResults
     public let qualityMetrics: QualityMetrics
     public let securityScan: SecurityScanResults
-    public let performanceBaseline: PerformanceBaseline
+    public let performanceBaseline: ERPerformanceBaseline
 
     public init(
         version: String,
@@ -584,7 +584,7 @@ public struct ReleaseInfo {
         testResults: TestResults,
         qualityMetrics: QualityMetrics,
         securityScan: SecurityScanResults,
-        performanceBaseline: PerformanceBaseline
+        performanceBaseline: ERPerformanceBaseline
     ) {
         self.version = version
         self.targetDate = targetDate
@@ -599,7 +599,7 @@ public struct ReleaseInfo {
 public struct Scorecard {
     public let overallScore: Int
     public let categories: [CategoryScore]
-    public let grade: Grade
+    public let grade: ERGrade
     public let recommendation: Recommendation
     public let blockers: [Blocker]
     public let warnings: [Warning]
@@ -609,7 +609,7 @@ public struct Scorecard {
     public init(
         overallScore: Int,
         categories: [CategoryScore],
-        grade: Grade,
+        grade: ERGrade,
         recommendation: Recommendation,
         blockers: [Blocker],
         warnings: [Warning],
@@ -796,7 +796,7 @@ public struct SecurityScanResults {
     }
 }
 
-public struct PerformanceBaseline {
+public struct ERPerformanceBaseline {
     public let averageBuildTime: TimeInterval
     public let averageTestTime: TimeInterval
     public let memoryUsage: Int64
@@ -812,13 +812,13 @@ public struct PerformanceBaseline {
     }
 }
 
-public enum Grade: Int, Comparable {
+public enum ERGrade: Int, Comparable {
     case plus = 4
     case standard = 3
     case minus = 2
     case F = 0
 
-    public static func < (lhs: Grade, rhs: Grade) -> Bool {
+    public static func < (lhs: ERGrade, rhs: ERGrade) -> Bool {
         return lhs.rawValue < rhs.rawValue
     }
 }

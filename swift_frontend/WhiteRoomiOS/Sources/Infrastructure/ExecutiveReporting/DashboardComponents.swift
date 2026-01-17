@@ -119,7 +119,7 @@ public struct MetricCard: View {
 public struct QuickStatCard: View {
     let title: String
     let value: String
-    let trend: TrendDirection
+    let trend: ERTrendDirection
     let color: Color
 
     public var body: some View {
@@ -151,9 +151,9 @@ public struct QuickStatCard: View {
 // MARK: - Quality Trend Chart
 
 public struct QualityTrendChart: View {
-    let data: [QualityDataPoint]
+    let data: [ERQualityDataPoint]
 
-    public init(data: [QualityDataPoint]) {
+    public init(data: [ERQualityDataPoint]) {
         self.data = data
     }
 
@@ -195,9 +195,9 @@ public struct QualityTrendChart: View {
 // MARK: - Performance Trend Chart
 
 public struct PerformanceTrendChart: View {
-    let data: [PerformanceDataPoint]
+    let data: [ERPerformanceDataPoint]
 
-    public init(data: [PerformanceDataPoint]) {
+    public init(data: [ERPerformanceDataPoint]) {
         self.data = data
     }
 
@@ -887,13 +887,13 @@ public class DashboardDataService {
         )
     }
 
-    public func fetchQualityTrend(days: Int) async throws -> [QualityDataPoint] {
-        var trends: [QualityDataPoint] = []
+    public func fetchQualityTrend(days: Int) async throws -> [ERQualityDataPoint] {
+        var trends: [ERQualityDataPoint] = []
         let calendar = Calendar.current
 
         for i in 0..<days {
             if let date = calendar.date(byAdding: .day, value: -i, to: Date()) {
-                trends.append(QualityDataPoint(
+                trends.append(ERQualityDataPoint(
                     date: date,
                     passRate: 92.0 + Double.random(in: -2...2),
                     coverage: 75.0 + Double.random(in: -3...3)
@@ -904,13 +904,13 @@ public class DashboardDataService {
         return trends.reversed()
     }
 
-    public func fetchPerformanceTrend(days: Int) async throws -> [PerformanceDataPoint] {
-        var trends: [PerformanceDataPoint] = []
+    public func fetchPerformanceTrend(days: Int) async throws -> [ERPerformanceDataPoint] {
+        var trends: [ERPerformanceDataPoint] = []
         let calendar = Calendar.current
 
         for i in 0..<days {
             if let date = calendar.date(byAdding: .day, value: -i, to: Date()) {
-                trends.append(PerformanceDataPoint(
+                trends.append(ERPerformanceDataPoint(
                     date: date,
                     buildTime: 300.0 + Double.random(in: -60...60),
                     testTime: 180.0 + Double.random(in: -30...30)

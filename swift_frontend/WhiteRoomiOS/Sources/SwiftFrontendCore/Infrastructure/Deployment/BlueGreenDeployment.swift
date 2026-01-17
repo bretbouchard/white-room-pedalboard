@@ -5,7 +5,7 @@ import Combine
 public class BlueGreenDeployment: ObservableObject {
     // MARK: - Published Properties
     @Published public var activeDeployment: BGDeployment?
-    @Published public var environmentState: EnvironmentState = .idle
+    @Published public var environmentState: EnvironmentState = .idle(color: .blue)
     @Published public var deploymentHistory: [BGDeployment] = []
 
     // MARK: - Private Properties
@@ -31,7 +31,7 @@ public class BlueGreenDeployment: ObservableObject {
     // MARK: - Public Methods
 
     /// Deploy a new version using blue-green strategy
-    public func deploy(_ version: String, to environment: Environment) async throws -> BGDeployment {
+    public func deploy(_ version: String, to environment: DeploymentEnvironment) async throws -> BGDeployment {
         NSLog("[BlueGreen] Starting deployment of version \(version) to \(environment)")
 
         // Validate preconditions
@@ -133,17 +133,17 @@ public class BlueGreenDeployment: ObservableObject {
     }
 
     /// Validate deployment health and functionality
-    public func validateDeployment(_ deployment: BGDeployment) async throws -> [ValidationResult] {
+    public func validateDeployment(_ deployment: BGDeployment) async throws -> [DeploymentValidationResult] {
         NSLog("[BlueGreen] Validating deployment \(deployment.id)")
 
-        var results: [ValidationResult] = []
+        var results: [DeploymentValidationResult] = []
 
         // Health check validation
         let healthResult = await healthChecker.checkHealth(
             version: deployment.version,
             environment: deployment.environment
         )
-        results.append(ValidationResult(
+        results.append(DeploymentValidationResult(
             type: .healthCheck,
             passed: healthResult.isHealthy,
             message: healthResult.message,
@@ -155,7 +155,7 @@ public class BlueGreenDeployment: ObservableObject {
         }
 
         // Smoke tests
-        let smokeTestResults = try await validator.runSmokeTests(
+        let smokeTestResults: [DeploymentValidationResult] = try await validator.runSmokeTests(
             version: deployment.version,
             environment: deployment.environment
         )
@@ -166,14 +166,14 @@ public class BlueGreenDeployment: ObservableObject {
         }
 
         // Integration tests
-        let integrationTestResults = try await validator.runIntegrationTests(
+        let integrationTestResults: [DeploymentValidationResult] = try await validator.runIntegrationTests(
             version: deployment.version,
             environment: deployment.environment
         )
         results.append(contentsOf: integrationTestResults)
 
         // Performance validation
-        let performanceResult = try await validator.validatePerformance(
+        let performanceResult: DeploymentValidationResult = try await validator.validatePerformance(
             version: deployment.version,
             environment: deployment.environment,
             baselineVersion: deployment.activeColor == .blue ? deployment.greenState.version : deployment.blueState.version
@@ -241,7 +241,7 @@ public class BlueGreenDeployment: ObservableObject {
 
     // MARK: - Private Methods
 
-    private func validatePreconditions(environment: Environment) async throws {
+    private func validatePreconditions(environment: DeploymentEnvironment) async throws {
         // Check if there's already an active deployment
         if activeDeployment != nil {
             throw BlueGreenError.deploymentInProgress
@@ -265,7 +265,7 @@ public class BlueGreenDeployment: ObservableObject {
         }
     }
 
-    private func determineActiveColor(environment: Environment) async throws -> ActiveColor {
+    private func determineActiveColor(environment: DeploymentEnvironment) async throws -> ActiveColor {
         let state = await deploymentClient.getEnvironmentState(environment: environment)
 
         if state.blueActive {
@@ -277,7 +277,7 @@ public class BlueGreenDeployment: ObservableObject {
         }
     }
 
-    private func getEnvironmentState(environment: Environment, color: ActiveColor) async -> EnvironmentState {
+    private func getEnvironmentState(environment: DeploymentEnvironment, color: ActiveColor) async -> EnvironmentState {
         let info = await deploymentClient.getEnvironmentInfo(environment: environment, color: color)
 
         return EnvironmentState(
@@ -296,7 +296,7 @@ public class BlueGreenDeployment: ObservableObject {
         )
     }
 
-    private func deployToEnvironment(version: String, environment: Environment, color: ActiveColor) async throws {
+    private func deployToEnvironment(version: String, environment: DeploymentEnvironment, color: ActiveColor) async throws {
         NSLog("[BlueGreen] Deploying version \(version) to \(color)")
 
         try await deploymentClient.deployVersion(
@@ -392,26 +392,26 @@ public class BlueGreenDeployment: ObservableObject {
 public struct BGDeployment: Identifiable, Codable {
     public let id: UUID
     public let version: String
-    public let environment: Environment
+    public let environment: DeploymentEnvironment
     public var status: DeploymentStatus
     public var blueState: EnvironmentState
     public var greenState: EnvironmentState
     public var activeColor: ActiveColor
     public let startedAt: Date
     public var completedAt: Date?
-    public var validationResults: [ValidationResult]
+    public var validationResults: [DeploymentValidationResult]
 
     public init(
         id: UUID = UUID(),
         version: String,
-        environment: Environment,
+        environment: DeploymentEnvironment,
         status: DeploymentStatus,
         blueState: EnvironmentState,
         greenState: EnvironmentState,
         activeColor: ActiveColor,
         startedAt: Date,
         completedAt: Date?,
-        validationResults: [ValidationResult]
+        validationResults: [DeploymentValidationResult]
     ) {
         self.id = id
         self.version = version
@@ -434,12 +434,6 @@ public struct BGDeployment: Identifiable, Codable {
         case completed
         case failed
     }
-}
-
-public enum Environment: String, Codable {
-    case development = "development"
-    case staging = "staging"
-    case production = "production"
 }
 
 public enum ActiveColor: String, Codable {
@@ -475,59 +469,6 @@ public struct EnvironmentState: Codable {
     }
 }
 
-public struct ResourceUsage: Codable {
-    public var cpuPercentage: Double
-    public var memoryMB: Int
-    public var diskMB: Int
-    public var networkMB: Int
-
-    public init(
-        cpuPercentage: Double,
-        memoryMB: Int,
-        diskMB: Int,
-        networkMB: Int
-    ) {
-        self.cpuPercentage = cpuPercentage
-        self.memoryMB = memoryMB
-        self.diskMB = diskMB
-        self.networkMB = networkMB
-    }
-}
-
-public struct ValidationResult: Identifiable, Codable {
-    public let id: UUID
-    public let type: ValidationType
-    public let passed: Bool
-    public let message: String
-    public let details: [String]
-    public let timestamp: Date
-
-    public init(
-        id: UUID = UUID(),
-        type: ValidationType,
-        passed: Bool,
-        message: String,
-        details: [String],
-        timestamp: Date = Date()
-    ) {
-        self.id = id
-        self.type = type
-        self.passed = passed
-        self.message = message
-        self.details = details
-        self.timestamp = timestamp
-    }
-
-    public enum ValidationType: String, Codable {
-        case healthCheck = "health_check"
-        case smokeTest = "smoke_test"
-        case integrationTest = "integration_test"
-        case performanceTest = "performance_test"
-        case securityScan = "security_scan"
-        case userAcceptance = "user_acceptance"
-    }
-}
-
 public enum BlueGreenError: LocalizedError {
     case deploymentInProgress
     case unhealthyEnvironment(String)
@@ -535,8 +476,8 @@ public enum BlueGreenError: LocalizedError {
     case noActiveEnvironment
     case deploymentTimeout
     case trafficSwitchFailed
-    case validationFailed([ValidationResult])
-    case rollbackFailed([ValidationResult])
+    case validationFailed([DeploymentValidationResult])
+    case rollbackFailed([DeploymentValidationResult])
     case noActiveDeployment
 
     public var errorDescription: String? {
@@ -566,14 +507,14 @@ public enum BlueGreenError: LocalizedError {
 // MARK: - Supporting Protocols and Services
 
 public protocol DeploymentClientProtocol {
-    func deployVersion(version: String, environment: Environment, color: ActiveColor) async throws
-    func updateActiveColor(environment: Environment, color: ActiveColor) async throws
-    func removeDeployment(environment: Environment, color: ActiveColor) async throws
-    func getEnvironmentState(environment: Environment) async -> EnvironmentStateInfo
-    func getEnvironmentInfo(environment: Environment, color: ActiveColor) async -> EnvironmentInfo
-    func isDeploymentReady(version: String, environment: Environment, color: ActiveColor) async -> Bool
-    func verifyActiveVersion(environment: Environment, expectedVersion: String) async throws -> Bool
-    func checkResourceAvailability(environment: Environment) async -> Bool
+    func deployVersion(version: String, environment: DeploymentEnvironment, color: ActiveColor) async throws
+    func updateActiveColor(environment: DeploymentEnvironment, color: ActiveColor) async throws
+    func removeDeployment(environment: DeploymentEnvironment, color: ActiveColor) async throws
+    func getEnvironmentState(environment: DeploymentEnvironment) async -> EnvironmentStateInfo
+    func getEnvironmentInfo(environment: DeploymentEnvironment, color: ActiveColor) async -> EnvironmentInfo
+    func isDeploymentReady(version: String, environment: DeploymentEnvironment, color: ActiveColor) async -> Bool
+    func verifyActiveVersion(environment: DeploymentEnvironment, expectedVersion: String) async throws -> Bool
+    func checkResourceAvailability(environment: DeploymentEnvironment) async -> Bool
 }
 
 public struct EnvironmentStateInfo {
@@ -595,26 +536,26 @@ public struct EnvironmentInfo {
 public class DeploymentClientAdapter: DeploymentClientProtocol {
     public init() {}
 
-    public func deployVersion(version: String, environment: Environment, color: ActiveColor) async throws {
+    public func deployVersion(version: String, environment: DeploymentEnvironment, color: ActiveColor) async throws {
         NSLog("[DeploymentClient] Deploying version \(version) to \(environment)-\(color)")
         // In production, execute actual deployment
     }
 
-    public func updateActiveColor(environment: Environment, color: ActiveColor) async throws {
+    public func updateActiveColor(environment: DeploymentEnvironment, color: ActiveColor) async throws {
         NSLog("[DeploymentClient] Updating active color to \(color) in \(environment)")
         // In production, update load balancer
     }
 
-    public func removeDeployment(environment: Environment, color: ActiveColor) async throws {
+    public func removeDeployment(environment: DeploymentEnvironment, color: ActiveColor) async throws {
         NSLog("[DeploymentClient] Removing \(color) deployment in \(environment)")
         // In production, remove deployment resources
     }
 
-    public func getEnvironmentState(environment: Environment) async -> EnvironmentStateInfo {
+    public func getEnvironmentState(environment: DeploymentEnvironment) async -> EnvironmentStateInfo {
         return EnvironmentStateInfo(blueActive: true, greenActive: false)
     }
 
-    public func getEnvironmentInfo(environment: Environment, color: ActiveColor) async -> EnvironmentInfo {
+    public func getEnvironmentInfo(environment: DeploymentEnvironment, color: ActiveColor) async -> EnvironmentInfo {
         return EnvironmentInfo(
             version: "1.0.0",
             healthy: true,
@@ -627,15 +568,15 @@ public class DeploymentClientAdapter: DeploymentClientProtocol {
         )
     }
 
-    public func isDeploymentReady(version: String, environment: Environment, color: ActiveColor) async -> Bool {
+    public func isDeploymentReady(version: String, environment: DeploymentEnvironment, color: ActiveColor) async -> Bool {
         return true
     }
 
-    public func verifyActiveVersion(environment: Environment, expectedVersion: String) async throws -> Bool {
+    public func verifyActiveVersion(environment: DeploymentEnvironment, expectedVersion: String) async throws -> Bool {
         return true
     }
 
-    public func checkResourceAvailability(environment: Environment) async -> Bool {
+    public func checkResourceAvailability(environment: DeploymentEnvironment) async -> Bool {
         return true
     }
 }
@@ -645,7 +586,7 @@ public class HealthChecker {
 
     private init() {}
 
-    public func checkHealth(version: String, environment: Environment) async -> HealthCheckResult {
+    public func checkHealth(version: String, environment: DeploymentEnvironment) async -> HealthCheckResult {
         // In production, perform actual health checks
         return HealthCheckResult(
             isHealthy: true,
@@ -655,26 +596,20 @@ public class HealthChecker {
     }
 }
 
-public struct HealthCheckResult {
-    let isHealthy: Bool
-    let message: String
-    let details: [String]
-}
-
 public class DeploymentValidator {
     public static let shared = DeploymentValidator()
 
     private init() {}
 
-    public func runSmokeTests(version: String, environment: Environment) async throws -> [ValidationResult] {
+    public func runSmokeTests(version: String, environment: DeploymentEnvironment) async throws -> [DeploymentValidationResult] {
         return [
-            ValidationResult(
+            DeploymentValidationResult(
                 type: .smokeTest,
                 passed: true,
                 message: "API endpoint test",
                 details: ["Response time: 50ms"]
             ),
-            ValidationResult(
+            DeploymentValidationResult(
                 type: .smokeTest,
                 passed: true,
                 message: "Authentication test",
@@ -683,9 +618,9 @@ public class DeploymentValidator {
         ]
     }
 
-    public func runIntegrationTests(version: String, environment: Environment) async throws -> [ValidationResult] {
+    public func runIntegrationTests(version: String, environment: DeploymentEnvironment) async throws -> [DeploymentValidationResult] {
         return [
-            ValidationResult(
+            DeploymentValidationResult(
                 type: .integrationTest,
                 passed: true,
                 message: "Database integration",
@@ -696,10 +631,10 @@ public class DeploymentValidator {
 
     public func validatePerformance(
         version: String,
-        environment: Environment,
+        environment: DeploymentEnvironment,
         baselineVersion: String?
-    ) async throws -> ValidationResult {
-        return ValidationResult(
+    ) async throws -> DeploymentValidationResult {
+        return DeploymentValidationResult(
             type: .performanceTest,
             passed: true,
             message: "Performance validation",
@@ -709,22 +644,15 @@ public class DeploymentValidator {
 }
 
 public protocol NotificationServiceProtocol {
-    func sendNotification(title: String, message: String, severity: NotificationSeverity) async
+    func sendNotification(title: String, message: String, severity: DeploymentNotificationSeverity) async
 }
 
 public class NotificationServiceAdapter: NotificationServiceProtocol {
     public init() {}
 
-    public func sendNotification(title: String, message: String, severity: NotificationSeverity) async {
+    public func sendNotification(title: String, message: String, severity: DeploymentNotificationSeverity) async {
         NSLog("[NotificationService] [\(severity)] \(title): \(message)")
     }
-}
-
-public enum NotificationSeverity: String {
-    case info
-    case success
-    case warning
-    case critical
 }
 
 // MARK: - Environment State Extensions
@@ -737,8 +665,46 @@ extension EnvironmentState {
             healthy: true,
             url: "",
             replicas: 0,
-            resources: ResourceUsage(cpuPercentage: 0, memoryMB: 0, diskMB: 0, networkMB: 0),
+            resources: ResourceUsage(
+                cpuPercentage: 0.0,
+                memoryMB: 0,
+                diskMB: 0,
+                networkMB: 0
+            ),
             lastUpdated: Date()
         )
+    }
+}
+
+// MARK: - Supporting Types
+
+public struct ResourceUsage: Codable {
+    public var cpuPercentage: Double
+    public var memoryMB: Int
+    public var diskMB: Int
+    public var networkMB: Int
+
+    public init(
+        cpuPercentage: Double,
+        memoryMB: Int,
+        diskMB: Int,
+        networkMB: Int
+    ) {
+        self.cpuPercentage = cpuPercentage
+        self.memoryMB = memoryMB
+        self.diskMB = diskMB
+        self.networkMB = networkMB
+    }
+}
+
+public struct HealthCheckResult {
+    public let isHealthy: Bool
+    public let message: String
+    public let details: [String]
+
+    public init(isHealthy: Bool, message: String, details: [String]) {
+        self.isHealthy = isHealthy
+        self.message = message
+        self.details = details
     }
 }

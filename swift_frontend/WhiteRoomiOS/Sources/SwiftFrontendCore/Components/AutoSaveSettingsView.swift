@@ -27,7 +27,7 @@ public struct AutoSaveSettingsView: View {
     // MARK: - Properties
 
     @Binding var configuration: AutoSaveManager.Configuration
-    @Environment(\.dismiss) private var dismiss
+    @SwiftUI.Environment(\.dismiss) private var dismiss: DismissAction
 
     @State private var isShowingDeleteConfirmation = false
 

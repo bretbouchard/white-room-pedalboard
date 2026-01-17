@@ -4,7 +4,7 @@ import Foundation
 
 /// Concrete error enum for all Schillinger SDK errors
 public enum SchillingerError: LocalizedError {
-    case validation(ValidationError)
+    case validation(SchillingerValidationError)
     case network(NetworkError)
     case authentication(AuthenticationError)
     case processing(ProcessingError)
@@ -12,7 +12,7 @@ public enum SchillingerError: LocalizedError {
     case rateLimit(RateLimitError)
     case cache(CacheError)
     case offline(OfflineError)
-    
+
     public var code: String {
         switch self {
         case .validation(let error): error.code
@@ -25,7 +25,7 @@ public enum SchillingerError: LocalizedError {
         case .offline(let error): error.code
         }
     }
-    
+
     public var category: ErrorCategory {
         switch self {
         case .validation(let error): error.category
@@ -38,7 +38,7 @@ public enum SchillingerError: LocalizedError {
         case .offline(let error): error.category
         }
     }
-    
+
     public var details: [String: Any]? {
         switch self {
         case .validation(let error): error.details
@@ -51,7 +51,7 @@ public enum SchillingerError: LocalizedError {
         case .offline(let error): error.details
         }
     }
-    
+
     public var suggestions: [String] {
         switch self {
         case .validation(let error): error.suggestions
@@ -64,7 +64,7 @@ public enum SchillingerError: LocalizedError {
         case .offline(let error): error.suggestions
         }
     }
-    
+
     public var errorDescription: String? {
         switch self {
         case .validation(let error): error.errorDescription
@@ -77,7 +77,7 @@ public enum SchillingerError: LocalizedError {
         case .offline(let error): error.errorDescription
         }
     }
-    
+
     public var failureReason: String? {
         switch self {
         case .validation(let error): error.failureReason
@@ -90,7 +90,7 @@ public enum SchillingerError: LocalizedError {
         case .offline(let error): error.failureReason
         }
     }
-    
+
     public var recoverySuggestion: String? {
         switch self {
         case .validation(let error): error.recoverySuggestion
@@ -119,7 +119,8 @@ public enum ErrorCategory: String, CaseIterable {
 // MARK: - Specific Error Types
 
 /// Validation errors for input parameters
-public struct ValidationError: LocalizedError {
+// Renamed from ValidationError to SchillingerValidationError to avoid conflict with WhiteRoomErrors.ValidationError
+public struct SchillingerValidationError: LocalizedError {
     public let code: String
     public let category: ErrorCategory = .validation
     public let field: String
@@ -127,7 +128,7 @@ public struct ValidationError: LocalizedError {
     public let expected: String
     public let details: [String: Any]?
     public let suggestions: [String]
-    
+
     public init(field: String, value: Any?, expected: String, code: String = "VALIDATION_ERROR") {
         self.field = field
         self.value = value
@@ -139,24 +140,24 @@ public struct ValidationError: LocalizedError {
             "expected": expected
         ]
         self.suggestions = [
-            NSLocalizedString("validation.suggestion.check_field", 
-                            value: "Please provide a valid \(field) value", 
+            NSLocalizedString("validation.suggestion.check_field",
+                            value: "Please provide a valid \(field) value",
                             comment: "Validation error suggestion")
         ]
     }
-    
+
     public var errorDescription: String? {
-        return NSLocalizedString("validation.error.invalid_field", 
-                                value: "Invalid \(field): expected \(expected), got \(String(describing: value))", 
+        return NSLocalizedString("validation.error.invalid_field",
+                                value: "Invalid \(field): expected \(expected), got \(String(describing: value))",
                                 comment: "Validation error description")
     }
-    
+
     public var failureReason: String? {
-        return NSLocalizedString("validation.failure.invalid_input", 
-                                value: "The provided input does not meet the required format", 
+        return NSLocalizedString("validation.failure.invalid_input",
+                                value: "The provided input does not meet the required format",
                                 comment: "Validation failure reason")
     }
-    
+
     public var recoverySuggestion: String? {
         return suggestions.joined(separator: "\n")
     }

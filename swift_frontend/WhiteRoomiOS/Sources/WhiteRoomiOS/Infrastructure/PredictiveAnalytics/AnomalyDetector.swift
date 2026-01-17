@@ -119,7 +119,8 @@ public actor AnomalyDetector {
 
             // Check for status change
             if testResult.passed != previous.passed {
-                let changeType: SuddenChangeType = testResult.passed ? .fixed : .regressed
+                let changeType = testResult.passed ? SuddenChange.SuddenChangeType.fixed : SuddenChange.SuddenChangeType.regressed
+                let severity = testResult.passed ? Anomaly.AnomalySeverity.info : Anomaly.AnomalySeverity.critical
 
                 changes.append(
                     SuddenChange(
@@ -128,7 +129,7 @@ public actor AnomalyDetector {
                         previousValue: previous.passed ? 1.0 : 0.0,
                         newValue: testResult.passed ? 1.0 : 0.0,
                         percentChange: testResult.passed ? Double.infinity : -Double.infinity,
-                        severity: testResult.passed ? .info : .critical,
+                        severity: severity,
                         timestamp: testResult.timestamp
                     )
                 )
@@ -140,7 +141,8 @@ public actor AnomalyDetector {
                 (durationChange / previous.duration) * 100 : 0
 
             if abs(durationPercentChange) > 30 { // 30% threshold
-                let changeType: SuddenChangeType = durationChange > 0 ? .slowed : .spedUp
+                let changeType = durationChange > 0 ? SuddenChange.SuddenChangeType.slowed : SuddenChange.SuddenChangeType.spedUp
+                let severity = abs(durationPercentChange) > 50 ? Anomaly.AnomalySeverity.warning : Anomaly.AnomalySeverity.info
 
                 changes.append(
                     SuddenChange(
@@ -149,7 +151,7 @@ public actor AnomalyDetector {
                         previousValue: previous.duration,
                         newValue: testResult.duration,
                         percentChange: durationPercentChange,
-                        severity: abs(durationPercentChange) > 50 ? .warning : .info,
+                        severity: severity,
                         timestamp: testResult.timestamp
                     )
                 )
@@ -182,7 +184,7 @@ public actor AnomalyDetector {
             let deviation = abs(value - mean)
 
             if deviation > threshold {
-                let severity: OutlierSeverity = deviation > (2 * threshold) ? .extreme : .moderate
+                let severity = deviation > (2 * threshold) ? Outlier.OutlierSeverity.extreme : Outlier.OutlierSeverity.moderate
 
                 outliers.append(
                     Outlier(
@@ -294,7 +296,7 @@ public actor AnomalyDetector {
         metricName: String,
         actualValue: Double,
         expectedValue: Double
-    ) -> AnomalyType {
+    ) -> Anomaly.AnomalyType {
 
         let lowercased = metricName.lowercased()
 
@@ -323,8 +325,8 @@ public actor AnomalyDetector {
 
     private func determineSeverity(
         deviationPercent: Double,
-        type: AnomalyType
-    ) -> AnomalySeverity {
+        type: Anomaly.AnomalyType
+    ) -> Anomaly.AnomalySeverity {
 
         // Critical types
         if type == .spikeInFailures || type == .memoryLeak {
@@ -358,8 +360,8 @@ public actor AnomalyDetector {
     }
 
     private func generateRecommendation(
-        type: AnomalyType,
-        severity: AnomalySeverity
+        type: Anomaly.AnomalyType,
+        severity: Anomaly.AnomalySeverity
     ) -> String {
 
         switch type {
@@ -381,126 +383,3 @@ public actor AnomalyDetector {
     }
 }
 
-// MARK: - Supporting Types
-
-public struct TestMetric: Codable, Sendable {
-    let name: String
-    let value: Double
-    let unit: String?
-    let timestamp: Date
-
-    public init(
-        name: String,
-        value: Double,
-        unit: String? = nil,
-        timestamp: Date = Date()
-    ) {
-        self.name = name
-        self.value = value
-        self.unit = unit
-        self.timestamp = timestamp
-    }
-}
-
-public struct TestBaseline: Codable, Sendable {
-    let values: [String: Double] // Expected values for each metric
-    let thresholds: [String: Double] // Percentage deviation thresholds
-    let sampleCount: Int
-    let timestamp: Date
-
-    public init(
-        values: [String: Double],
-        thresholds: [String: Double],
-        sampleCount: Int,
-        timestamp: Date
-    ) {
-        self.values = values
-        self.thresholds = thresholds
-        self.sampleCount = sampleCount
-        self.timestamp = timestamp
-    }
-}
-
-public struct Anomaly: Codable, Sendable, Identifiable {
-    public let id = UUID()
-    let type: AnomalyType
-    let severity: AnomalySeverity
-    let description: String
-    let metric: String
-    let actualValue: Double
-    let expectedValue: Double
-    let deviationPercent: Double
-    let recommendation: String
-
-    public enum AnomalyType: String, Codable {
-        case performanceDegradation
-        case spikeInFailures
-        case unusualPassRate
-        case memoryLeak
-        case timingAnomaly
-    }
-
-    public enum Anverity: Int, Codable {
-        case critical = 3
-        case warning = 2
-        case info = 1
-    }
-}
-
-public struct TestRunResult: Codable, Sendable {
-    let testResults: [TestResult]
-    let timestamp: Date
-    let duration: TimeInterval
-
-    public init(
-        testResults: [TestResult],
-        timestamp: Date = Date(),
-        duration: TimeInterval
-    ) {
-        self.testResults = testResults
-        self.timestamp = timestamp
-        self.duration = duration
-    }
-}
-
-public struct SuddenChange: Codable, Sendable, Identifiable {
-    public let id = UUID()
-    let testName: String
-    let changeType: SuddenChangeType
-    let previousValue: Double
-    let newValue: Double
-    let percentChange: Double
-    let severity: AnomalySeverity
-    let timestamp: Date
-
-    public enum SuddenChangeType: String, Codable {
-        case regressed
-        case fixed
-        case slowed
-        case spedUp
-    }
-}
-
-public struct Outlier: Codable, Sendable, Identifiable {
-    public let id = UUID()
-    let index: Int
-    let value: Double
-    let mean: Double
-    let deviation: Double
-    let standardDeviations: Double
-    let severity: OutlierSeverity
-
-    public enum OutlierSeverity: String, Codable {
-        case moderate
-        case extreme
-    }
-}
-
-// Fix for AnomalySeverity enum
-extension Anomaly {
-    public enum AnomalySeverity: Int, Codable {
-        case critical = 3
-        case warning = 2
-        case info = 1
-    }
-}

@@ -527,8 +527,10 @@ public class ProgressiveDelivery: ObservableObject {
                 throw ProgressiveDeliveryError.invalidStageConfig
             }
         case .experiment, .monitoring:
-            guard stage.duration != nil || case .customConfig = stage.config else {
-                throw ProgressiveDeliveryError.invalidStageConfig
+            if stage.duration == nil {
+                guard case .customConfig = stage.config else {
+                    throw ProgressiveDeliveryError.invalidStageConfig
+                }
             }
         case .blueGreen, .validation:
             break // No specific config required
@@ -609,7 +611,7 @@ public struct DeliveryConfig {
     public let autoAdvance: Bool
     public let approvalRequired: [Int]
     public let rollbackOnFailure: Bool
-    public let stakeholders: [Stakeholder]
+    public let stakeholders: [DeliveryStakeholder]
 
     public init(
         version: String,
@@ -617,7 +619,7 @@ public struct DeliveryConfig {
         autoAdvance: Bool,
         approvalRequired: [Int],
         rollbackOnFailure: Bool,
-        stakeholders: [Stakeholder]
+        stakeholders: [DeliveryStakeholder]
     ) {
         self.version = version
         self.stages = stages
@@ -634,8 +636,8 @@ public struct DeliveryStage: Identifiable, Codable {
     public let type: StageType
     public let order: Int
     public let config: StageConfig
-    public let successCriteria: SuccessCriteria
-    public let rollbackStrategy: RollbackStrategy
+    public let successCriteria: DeploymentValidationResult
+    public let rollbackStrategy: String
     public let duration: TimeInterval?
     public let approvalRequired: Bool
     public var status: StageStatus
@@ -646,8 +648,8 @@ public struct DeliveryStage: Identifiable, Codable {
         type: StageType,
         order: Int,
         config: StageConfig,
-        successCriteria: SuccessCriteria,
-        rollbackStrategy: RollbackStrategy,
+        successCriteria: DeploymentValidationResult,
+        rollbackStrategy: String,
         duration: TimeInterval?,
         approvalRequired: Bool,
         status: StageStatus = .pending
@@ -788,7 +790,7 @@ public struct DeliveryResult {
     public let lessonsLearned: [String]
 }
 
-public struct Stakeholder {
+public struct DeliveryStakeholder {
     public let name: String
     public let email: String
     public let role: String
@@ -803,7 +805,7 @@ public enum ProgressiveDeliveryError: LocalizedError {
     case emptyPipeline
     case invalidStageOrder
     case invalidStageConfig
-    case validationFailed([ValidationResult])
+    case validationFailed([DeploymentValidationResult])
     case metricsUnhealthy(MonitoringMetrics)
 
     public var errorDescription: String? {
@@ -844,9 +846,9 @@ public class ProgressiveDeliveryMetrics {
         return "Experiment completed successfully"
     }
 
-    public func runValidationTests(version: String) async throws -> [ValidationResult] {
+    public func runValidationTests(version: String) async throws -> [DeploymentValidationResult] {
         return [
-            ValidationResult(
+            DeploymentValidationResult(
                 type: .smokeTest,
                 passed: true,
                 message: "All tests passed",
@@ -875,7 +877,7 @@ public struct MonitoringMetrics {
 }
 
 public protocol ProgressiveNotificationService {
-    func sendNotification(title: String, message: String, severity: NotificationSeverity) async
+    func sendNotification(title: String, message: String, severity: DeploymentNotificationSeverity) async
 }
 
 public class ProgressiveNotificationService: ProgressiveNotificationService {
@@ -883,14 +885,7 @@ public class ProgressiveNotificationService: ProgressiveNotificationService {
 
     private init() {}
 
-    public func sendNotification(title: String, message: String, severity: NotificationSeverity) async {
+    public func sendNotification(title: String, message: String, severity: DeploymentNotificationSeverity) async {
         NSLog("[NotificationService] [\(severity)] \(title): \(message)")
     }
-}
-
-public enum NotificationSeverity: String {
-    case info
-    case success
-    case warning
-    case critical
 }

@@ -7,6 +7,8 @@
 //
 
 import Foundation
+import SwiftUI
+import Combine
 
 // =============================================================================
 // MARK: - Multi Song State
@@ -17,39 +19,55 @@ import Foundation
 
  This model manages multiple songs playing simultaneously with independent
  tempo, volume, and transport controls for each song.
+
+ Now an ObservableObject class to support SwiftUI's @StateObject and @ObservedObject.
  */
-public struct MultiSongState: Equatable, Codable, Sendable {
+public final class MultiSongState: ObservableObject, Codable, Sendable {
 
     /**
      Unique identifier for this multi-song session
      */
-    public var id: String
+    @Published public var id: String
 
     /**
      All song slots (up to 9 songs for tvOS grid)
      */
-    public var songs: [SongSlot]
+    @Published public var songs: [SongSlot]
 
     /**
      Master transport controls
      */
-    public var masterTransport: MasterTransport
+    @Published public var masterTransport: MasterTransport
 
     /**
      Session metadata
      */
-    public var metadata: SessionMetadata
+    @Published public var metadata: SessionMetadata
+
+    /**
+     Master tempo (applied based on sync mode)
+     */
+    @Published public var masterTempo: Double
+
+    /**
+     Current sync mode for tempo coordination
+     */
+    @Published public var syncMode: SyncMode = .independent
 
     public init(
         id: String,
         songs: [SongSlot],
         masterTransport: MasterTransport,
-        metadata: SessionMetadata
+        metadata: SessionMetadata,
+        masterTempo: Double = 120.0,
+        syncMode: SyncMode = .independent
     ) {
         self.id = id
         self.songs = songs
         self.masterTransport = masterTransport
         self.metadata = metadata
+        self.masterTempo = masterTempo
+        self.syncMode = syncMode
     }
 
     /**
@@ -70,8 +88,41 @@ public struct MultiSongState: Equatable, Codable, Sendable {
             id: UUID().uuidString,
             songs: slots,
             masterTransport: MasterTransport(isPlaying: false, masterVolume: 0.8),
-            metadata: SessionMetadata(name: "New Session", createdAt: Date())
+            metadata: SessionMetadata(name: "New Session", createdAt: Date()),
+            masterTempo: 120.0,
+            syncMode: .independent
         )
+    }
+
+    // MARK: - Codable
+
+    enum CodingKeys: String, CodingKey {
+        case id
+        case songs
+        case masterTransport
+        case metadata
+        case masterTempo
+        case syncMode
+    }
+
+    public required init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(String.self, forKey: .id)
+        songs = try container.decode([SongSlot].self, forKey: .songs)
+        masterTransport = try container.decode(MasterTransport.self, forKey: .masterTransport)
+        metadata = try container.decode(SessionMetadata.self, forKey: .metadata)
+        masterTempo = try container.decodeIfPresent(Double.self, forKey: .masterTempo) ?? 120.0
+        syncMode = try container.decodeIfPresent(SyncMode.self, forKey: .syncMode) ?? .independent
+    }
+
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(id, forKey: .id)
+        try container.encode(songs, forKey: .songs)
+        try container.encode(masterTransport, forKey: .masterTransport)
+        try container.encode(metadata, forKey: .metadata)
+        try container.encode(masterTempo, forKey: .masterTempo)
+        try container.encode(syncMode, forKey: .syncMode)
     }
 }
 

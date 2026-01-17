@@ -150,7 +150,7 @@ extension Dictionary where Key == String, Value == String {
 
 extension String {
     var jsonDictionary: [String: String]? {
-        guard let data = using: .utf8,
+        guard let data = data(using: .utf8),
               let dict = try? JSONDecoder().decode([String: String].self, from: data) else { return nil }
         return dict
     }

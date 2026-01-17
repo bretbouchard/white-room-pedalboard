@@ -796,6 +796,3 @@ public struct InstrumentProjection: Equatable, Codable, Sendable {
         case custom
     }
 }
-
-// Performance type alias for backward compatibility
-public typealias Performance = PerformanceState

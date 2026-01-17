@@ -119,7 +119,7 @@ struct InstrumentAssignmentView: View {
         }
     }
 
-    private func updateInstrument(trackId: String, instrument: InstrumentAssignment) {
+    private func updateInstrument(trackId: String, instrument: MIDIInstrumentAssignment) {
         do {
             try manager.assignInstrument(trackId: trackId, instrument: instrument)
         } catch {
@@ -130,7 +130,7 @@ struct InstrumentAssignmentView: View {
 
 /// Row component for displaying an instrument assignment
 struct InstrumentAssignmentRow: View {
-    let assignment: InstrumentAssignment
+    let assignment: MIDIInstrumentAssignment
 
     var body: some View {
         HStack(spacing: 12) {
@@ -178,12 +178,12 @@ struct InstrumentAssignmentRow: View {
 
 /// Instrument picker sheet
 struct InstrumentPickerView: View {
-    @Binding var selectedInstrument: InstrumentAssignment?
+    @Binding var selectedInstrument: MIDIInstrumentAssignment?
     @Environment(\.dismiss) var dismiss
 
     let instrumentTypes: [InstrumentType] = [
         .piano, .organ, .guitar, .bass, .strings,
-        .brass, .woodwinds, .percussion, .synth, .drums
+        .brass, .winds, .percussion, .synth, .drums
     ]
 
     var body: some View {
@@ -239,7 +239,7 @@ struct InstrumentPickerView: View {
 
 /// Sheet for adding a new instrument
 struct AddInstrumentSheet: View {
-    @ObservedObject var manager: InstrumentAssignmentManager
+    @ObservedObject var manager: MIDIInstrumentAssignmentManager
     @Environment(\.dismiss) var dismiss
 
     @State private var trackId = ""

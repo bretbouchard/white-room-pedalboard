@@ -20,7 +20,7 @@ public actor SongRepository {
     // MARK: - CRUD Operations
 
     /// Create a new song in the database
-    public func create(_ song: Song) async throws {
+    public func create(_ song: SharedSong) async throws {
         try await db.write { database in
             let trackConfigsJSON = try JSONEncoder().encode(song.trackConfigs)
             let sectionsJSON = try JSONEncoder().encode(song.sections)
@@ -55,7 +55,7 @@ public actor SongRepository {
     }
 
     /// Read a song by ID
-    public func read(id: String) async throws -> Song? {
+    public func read(id: String) async throws -> SharedSong? {
         try await db.read { database in
             if let row = try Row.fetchOne(
                 database,
@@ -69,7 +69,7 @@ public actor SongRepository {
     }
 
     /// Update an existing song
-    public func update(_ song: Song) async throws {
+    public func update(_ song: SharedSong) async throws {
         try await db.write { database in
             let trackConfigsJSON = try JSONEncoder().encode(song.trackConfigs)
             let sectionsJSON = try JSONEncoder().encode(song.sections)
@@ -116,7 +116,7 @@ public actor SongRepository {
     // MARK: - Query Operations
 
     /// Get all songs ordered by name
-    public func getAll() async throws -> [Song] {
+    public func getAll() async throws -> [SharedSong] {
         try await db.read { database in
             let rows = try Row.fetchAll(
                 database,
@@ -127,7 +127,7 @@ public actor SongRepository {
     }
 
     /// Search songs by name, composer, genre, or mood
-    public func search(query: String) async throws -> [Song] {
+    public func search(query: String) async throws -> [SharedSong] {
         try await db.read { database in
             let searchPattern = "%\(query)%"
             let rows = try Row.fetchAll(
@@ -147,7 +147,7 @@ public actor SongRepository {
     }
 
     /// Get songs by genre
-    public func getByGenre(_ genre: String) async throws -> [Song] {
+    public func getByGenre(_ genre: String) async throws -> [SharedSong] {
         try await db.read { database in
             let rows = try Row.fetchAll(
                 database,
@@ -159,7 +159,7 @@ public actor SongRepository {
     }
 
     /// Get songs by composer
-    public func getByComposer(_ composer: String) async throws -> [Song] {
+    public func getByComposer(_ composer: String) async throws -> [SharedSong] {
         try await db.read { database in
             let rows = try Row.fetchAll(
                 database,
@@ -171,7 +171,7 @@ public actor SongRepository {
     }
 
     /// Get recently created songs
-    public func getRecentlyCreated(limit: Int = 20) async throws -> [Song] {
+    public func getRecentlyCreated(limit: Int = 20) async throws -> [SharedSong] {
         try await db.read { database in
             let rows = try Row.fetchAll(
                 database,
@@ -183,7 +183,7 @@ public actor SongRepository {
     }
 
     /// Get recently updated songs
-    public func getRecentlyUpdated(limit: Int = 20) async throws -> [Song] {
+    public func getRecentlyUpdated(limit: Int = 20) async throws -> [SharedSong] {
         try await db.read { database in
             let rows = try Row.fetchAll(
                 database,
@@ -195,7 +195,7 @@ public actor SongRepository {
     }
 
     /// Get songs within a tempo range
-    public func getByTempoRange(min: Double, max: Double) async throws -> [Song] {
+    public func getByTempoRange(min: Double, max: Double) async throws -> [SharedSong] {
         try await db.read { database in
             let rows = try Row.fetchAll(
                 database,
@@ -207,7 +207,7 @@ public actor SongRepository {
     }
 
     /// Get songs by difficulty
-    public func getByDifficulty(_ difficulty: String) async throws -> [Song] {
+    public func getByDifficulty(_ difficulty: String) async throws -> [SharedSong] {
         try await db.read { database in
             let rows = try Row.fetchAll(
                 database,
@@ -221,7 +221,7 @@ public actor SongRepository {
     // MARK: - Helper Methods
 
     /// Map database row to Song model
-    private func mapRowToSong(_ row: Row) throws -> Song {
+    private func mapRowToSong(_ row: Row) throws -> SharedSong {
         let id: String = row["id"]
         let name: String = row["name"]
         let tempo: Double = row["tempo"]
@@ -231,15 +231,15 @@ public actor SongRepository {
         let rolesJSON: String = row["roles_json"]
         let trackConfigsJSON: String = row["mix_graph_json"]
 
-        let sections = try JSONDecoder().decode([Section].self, from: sectionsJSON.data(using: .utf8)!)
-        let roles = try JSONDecoder().decode([Role].self, from: rolesJSON.data(using: .utf8)!)
-        let trackConfigs = try JSONDecoder().decode([TrackConfig].self, from: trackConfigsJSON.data(using: .utf8)!)
+        let sections = try JSONDecoder().decode([SharedSection].self, from: sectionsJSON.data(using: .utf8)!)
+        let roles = try JSONDecoder().decode([SharedRole].self, from: rolesJSON.data(using: .utf8)!)
+        let trackConfigs = try JSONDecoder().decode([SharedTrackConfig].self, from: trackConfigsJSON.data(using: .utf8)!)
 
         // Build metadata
-        let metadata = SongMetadata(
+        let metadata = SharedSongMetadata(
             name: name,
             tempo: tempo,
-            timeSignature: TimeSignature(
+            timeSignature: SharedTimeSignature(
                 numerator: row["time_signature_numerator"],
                 denominator: row["time_signature_denominator"]
             ),
@@ -250,7 +250,7 @@ public actor SongRepository {
             rating: row["rating"]
         )
 
-        return Song(
+        return SharedSong(
             id: id,
             metadata: metadata,
             trackConfigs: trackConfigs,
@@ -262,51 +262,5 @@ public actor SongRepository {
 
 // MARK: - Supporting Types
 
-/// Song model (simplified for repository layer)
-public struct Song: Codable, Identifiable {
-    public let id: String
-    public let metadata: SongMetadata
-    public let trackConfigs: [TrackConfig]
-    public let sections: [Section]
-    public let roles: [Role]
-
-    public var name: String { metadata.name }
-    public var tempo: Double { metadata.tempo }
-    public var timeSignature: TimeSignature { metadata.timeSignature }
-}
-
-public struct SongMetadata: Codable {
-    public let name: String
-    public let tempo: Double
-    public let timeSignature: TimeSignature
-    public let composer: String?
-    public let genre: String?
-    public let mood: String?
-    public let difficulty: String?
-    public let rating: Double?
-}
-
-public struct TimeSignature: Codable {
-    public let numerator: Int
-    public let denominator: Int
-}
-
-public struct Section: Codable, Identifiable {
-    public let id: String
-    public let name: String
-    public let startBar: Int
-    public let endBar: Int
-}
-
-public struct Role: Codable, Identifiable {
-    public let id: String
-    public let name: String
-    public let type: String
-}
-
-public struct TrackConfig: Codable, Identifiable {
-    public let id: String
-    public let name: String
-    public let volume: Double?
-    public let pan: Double?
-}
+// NOTE: These types are now defined in Song.swift as SharedSong, SongMetadata, etc.
+// The repository now uses the types from Models/Song.swift to avoid duplication

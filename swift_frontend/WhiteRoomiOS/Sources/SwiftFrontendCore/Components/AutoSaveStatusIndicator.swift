@@ -199,7 +199,7 @@ public struct AutoSaveStatusIndicatorDetailed: View {
 public struct AutoSaveHistoryView: View {
 
     let saveHistory: [AutoSaveManager.AutoSaveState]
-    @Environment(\.dismiss) private var dismiss
+    @SwiftUI.Environment(\.dismiss) private var dismiss
 
     public var body: some View {
         NavigationView {

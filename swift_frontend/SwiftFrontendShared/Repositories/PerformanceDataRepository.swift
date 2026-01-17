@@ -201,7 +201,7 @@ extension Array where Element == String {
 
 extension String {
     var jsonArray: [String]? {
-        guard let data = using: .utf8,
+        guard let data = data(using: .utf8),
               let array = try? JSONDecoder().decode([String].self, from: data) else { return nil }
         return array
     }

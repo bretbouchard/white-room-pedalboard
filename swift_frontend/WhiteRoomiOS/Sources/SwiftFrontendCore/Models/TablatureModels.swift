@@ -37,10 +37,6 @@ public struct TabNote: Identifiable, Equatable, Codable {
         self.startTime = startTime
         self.duration = duration
     }
-
-    public static func == (lhs: TabNote, rhs: TabNote) -> Bool {
-        lhs.id == rhs.id
-    }
 }
 
 // =============================================================================

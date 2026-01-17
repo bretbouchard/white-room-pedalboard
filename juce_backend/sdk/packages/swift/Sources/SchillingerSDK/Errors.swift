@@ -4,7 +4,7 @@ import Foundation
 
 /// Concrete error enum for all Schillinger SDK errors
 public enum SchillingerError: LocalizedError {
-    case validation(ValidationError)
+    case validation(SchillingerValidationError)
     case network(NetworkError)
     case authentication(AuthenticationError)
     case processing(ProcessingError)
@@ -12,95 +12,95 @@ public enum SchillingerError: LocalizedError {
     case rateLimit(RateLimitError)
     case cache(CacheError)
     case offline(OfflineError)
-    
+
     public var code: String {
         switch self {
-        case .validation(let error): return error.code
-        case .network(let error): return error.code
-        case .authentication(let error): return error.code
-        case .processing(let error): return error.code
-        case .configuration(let error): return error.code
-        case .rateLimit(let error): return error.code
-        case .cache(let error): return error.code
-        case .offline(let error): return error.code
+        case .validation(let error): error.code
+        case .network(let error): error.code
+        case .authentication(let error): error.code
+        case .processing(let error): error.code
+        case .configuration(let error): error.code
+        case .rateLimit(let error): error.code
+        case .cache(let error): error.code
+        case .offline(let error): error.code
         }
     }
-    
+
     public var category: ErrorCategory {
         switch self {
-        case .validation(let error): return error.category
-        case .network(let error): return error.category
-        case .authentication(let error): return error.category
-        case .processing(let error): return error.category
-        case .configuration(let error): return error.category
-        case .rateLimit(let error): return error.category
-        case .cache(let error): return error.category
-        case .offline(let error): return error.category
+        case .validation(let error): error.category
+        case .network(let error): error.category
+        case .authentication(let error): error.category
+        case .processing(let error): error.category
+        case .configuration(let error): error.category
+        case .rateLimit(let error): error.category
+        case .cache(let error): error.category
+        case .offline(let error): error.category
         }
     }
-    
+
     public var details: [String: Any]? {
         switch self {
-        case .validation(let error): return error.details
-        case .network(let error): return error.details
-        case .authentication(let error): return error.details
-        case .processing(let error): return error.details
-        case .configuration(let error): return error.details
-        case .rateLimit(let error): return error.details
-        case .cache(let error): return error.details
-        case .offline(let error): return error.details
+        case .validation(let error): error.details
+        case .network(let error): error.details
+        case .authentication(let error): error.details
+        case .processing(let error): error.details
+        case .configuration(let error): error.details
+        case .rateLimit(let error): error.details
+        case .cache(let error): error.details
+        case .offline(let error): error.details
         }
     }
-    
+
     public var suggestions: [String] {
         switch self {
-        case .validation(let error): return error.suggestions
-        case .network(let error): return error.suggestions
-        case .authentication(let error): return error.suggestions
-        case .processing(let error): return error.suggestions
-        case .configuration(let error): return error.suggestions
-        case .rateLimit(let error): return error.suggestions
-        case .cache(let error): return error.suggestions
-        case .offline(let error): return error.suggestions
+        case .validation(let error): error.suggestions
+        case .network(let error): error.suggestions
+        case .authentication(let error): error.suggestions
+        case .processing(let error): error.suggestions
+        case .configuration(let error): error.suggestions
+        case .rateLimit(let error): error.suggestions
+        case .cache(let error): error.suggestions
+        case .offline(let error): error.suggestions
         }
     }
-    
+
     public var errorDescription: String? {
         switch self {
-        case .validation(let error): return error.errorDescription
-        case .network(let error): return error.errorDescription
-        case .authentication(let error): return error.errorDescription
-        case .processing(let error): return error.errorDescription
-        case .configuration(let error): return error.errorDescription
-        case .rateLimit(let error): return error.errorDescription
-        case .cache(let error): return error.errorDescription
-        case .offline(let error): return error.errorDescription
+        case .validation(let error): error.errorDescription
+        case .network(let error): error.errorDescription
+        case .authentication(let error): error.errorDescription
+        case .processing(let error): error.errorDescription
+        case .configuration(let error): error.errorDescription
+        case .rateLimit(let error): error.errorDescription
+        case .cache(let error): error.errorDescription
+        case .offline(let error): error.errorDescription
         }
     }
-    
+
     public var failureReason: String? {
         switch self {
-        case .validation(let error): return error.failureReason
-        case .network(let error): return error.failureReason
-        case .authentication(let error): return error.failureReason
-        case .processing(let error): return error.failureReason
-        case .configuration(let error): return error.failureReason
-        case .rateLimit(let error): return error.failureReason
-        case .cache(let error): return error.failureReason
-        case .offline(let error): return error.failureReason
+        case .validation(let error): error.failureReason
+        case .network(let error): error.failureReason
+        case .authentication(let error): error.failureReason
+        case .processing(let error): error.failureReason
+        case .configuration(let error): error.failureReason
+        case .rateLimit(let error): error.failureReason
+        case .cache(let error): error.failureReason
+        case .offline(let error): error.failureReason
         }
     }
-    
+
     public var recoverySuggestion: String? {
         switch self {
-        case .validation(let error): return error.recoverySuggestion
-        case .network(let error): return error.recoverySuggestion
-        case .authentication(let error): return error.recoverySuggestion
-        case .processing(let error): return error.recoverySuggestion
-        case .configuration(let error): return error.recoverySuggestion
-        case .rateLimit(let error): return error.recoverySuggestion
-        case .cache(let error): return error.recoverySuggestion
-        case .offline(let error): return error.recoverySuggestion
+        case .validation(let error): error.recoverySuggestion
+        case .network(let error): error.recoverySuggestion
+        case .authentication(let error): error.recoverySuggestion
+        case .processing(let error): error.recoverySuggestion
+        case .configuration(let error): error.recoverySuggestion
+        case .rateLimit(let error): error.recoverySuggestion
+        case .cache(let error): error.recoverySuggestion
+        case .offline(let error): error.recoverySuggestion
         }
     }
 }
@@ -119,7 +119,8 @@ public enum ErrorCategory: String, CaseIterable {
 // MARK: - Specific Error Types
 
 /// Validation errors for input parameters
-public struct ValidationError: LocalizedError {
+// Renamed from ValidationError to SchillingerValidationError to avoid conflict with WhiteRoomErrors.ValidationError
+public struct SchillingerValidationError: LocalizedError {
     public let code: String
     public let category: ErrorCategory = .validation
     public let field: String
@@ -127,7 +128,7 @@ public struct ValidationError: LocalizedError {
     public let expected: String
     public let details: [String: Any]?
     public let suggestions: [String]
-    
+
     public init(field: String, value: Any?, expected: String, code: String = "VALIDATION_ERROR") {
         self.field = field
         self.value = value
@@ -139,24 +140,24 @@ public struct ValidationError: LocalizedError {
             "expected": expected
         ]
         self.suggestions = [
-            NSLocalizedString("validation.suggestion.check_field", 
-                            value: "Please provide a valid \(field) value", 
+            NSLocalizedString("validation.suggestion.check_field",
+                            value: "Please provide a valid \(field) value",
                             comment: "Validation error suggestion")
         ]
     }
-    
+
     public var errorDescription: String? {
-        return NSLocalizedString("validation.error.invalid_field", 
-                                value: "Invalid \(field): expected \(expected), got \(String(describing: value))", 
+        return NSLocalizedString("validation.error.invalid_field",
+                                value: "Invalid \(field): expected \(expected), got \(String(describing: value))",
                                 comment: "Validation error description")
     }
-    
+
     public var failureReason: String? {
-        return NSLocalizedString("validation.failure.invalid_input", 
-                                value: "The provided input does not meet the required format", 
+        return NSLocalizedString("validation.failure.invalid_input",
+                                value: "The provided input does not meet the required format",
                                 comment: "Validation failure reason")
     }
-    
+
     public var recoverySuggestion: String? {
         return suggestions.joined(separator: "\n")
     }

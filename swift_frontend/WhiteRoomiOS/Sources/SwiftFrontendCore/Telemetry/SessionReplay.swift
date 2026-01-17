@@ -326,8 +326,8 @@ public class SessionReplay {
         }
     }
 
-    private func createMetadata() -> SessionMetadata {
-        SessionMetadata(
+    private func createMetadata() -> ReplaySessionMetadata {
+        ReplaySessionMetadata(
             appVersion: Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "unknown",
             buildNumber: Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "unknown",
             deviceModel: UIDevice.current.model,
@@ -348,13 +348,13 @@ public struct Session: Codable {
     public let id: UUID
     public let timestamp: Date
     public let events: [ReplayEvent]
-    public let metadata: SessionMetadata
+    public let metadata: ReplaySessionMetadata
 }
 
 /**
- Session metadata
+ Session metadata for replay sessions
  */
-public struct SessionMetadata: Codable {
+public struct ReplaySessionMetadata: Codable {
     public let appVersion: String
     public let buildNumber: String
     public let deviceModel: String

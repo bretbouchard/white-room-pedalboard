@@ -246,7 +246,7 @@ public class CanaryReleaseController: ObservableObject {
         // Deploy to canary environment
         try await deploymentClient.deployVersion(
             version: config.version,
-            environment: .production
+            environment: DeploymentEnvironment.production
         )
 
         // Run smoke tests
@@ -713,7 +713,7 @@ public class DeploymentClient {
 
     private init() {}
 
-    public func deployVersion(version: String, environment: Environment) async throws {
+    public func deployVersion(version: String, environment: DeploymentEnvironment) async throws {
         NSLog("[DeploymentClient] Deploying version \(version) to \(environment)")
         // In production, execute actual deployment
     }
@@ -727,26 +727,29 @@ public class DeploymentClient {
         // In production, update load balancer configuration
     }
 
-    public func runSmokeTests(version: String) async throws -> [TestResult] {
+    public func runSmokeTests(version: String) async throws -> [DeploymentValidationResult] {
         NSLog("[DeploymentClient] Running smoke tests for version \(version)")
         return [
-            TestResult(name: "Health Check", passed: true, message: "OK"),
-            TestResult(name: "API Connectivity", passed: true, message: "OK"),
-            TestResult(name: "Database Connection", passed: true, message: "OK")
+            DeploymentValidationResult(
+                type: .healthCheck,
+                passed: true,
+                message: "Health Check",
+                details: ["OK"]
+            ),
+            DeploymentValidationResult(
+                type: .integrationTest,
+                passed: true,
+                message: "API Connectivity",
+                details: ["OK"]
+            ),
+            DeploymentValidationResult(
+                type: .integrationTest,
+                passed: true,
+                message: "Database Connection",
+                details: ["OK"]
+            )
         ]
     }
-}
-
-public struct TestResult {
-    public let name: String
-    public let passed: Bool
-    public let message: String
-}
-
-public enum Environment: String {
-    case development
-    case staging
-    case production
 }
 
 public class NotificationService {
@@ -754,15 +757,8 @@ public class NotificationService {
 
     private init() {}
 
-    public func sendNotification(title: String, message: String, severity: NotificationSeverity) async {
+    public func sendNotification(title: String, message: String, severity: DeploymentNotificationSeverity) async {
         NSLog("[NotificationService] [\(severity)] \(title): \(message)")
         // In production, send to Slack, email, PagerDuty, etc.
     }
-}
-
-public enum NotificationSeverity: String {
-    case info
-    case success
-    case warning
-    case critical
 }

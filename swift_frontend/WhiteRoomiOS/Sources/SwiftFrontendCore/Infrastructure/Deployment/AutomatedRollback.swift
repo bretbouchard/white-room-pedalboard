@@ -1,6 +1,9 @@
 import Foundation
 import Combine
 
+// Type alias for compatibility
+public typealias NotificationSeverity = DeploymentNotificationSeverity
+
 /// Manages automated rollback operations for failed deployments
 public class AutomatedRollback: ObservableObject {
     // MARK: - Published Properties
@@ -401,7 +404,7 @@ public class AutomatedRollback: ObservableObject {
         // In production, get current deployment from deployment manager
         return Deployment(
             version: "1.0.0",
-            environment: .production,
+            environment: Environment.production,
             deployedAt: Date().addingTimeInterval(-3600),
             deploymentType: .blueGreen
         )
@@ -718,7 +721,7 @@ public struct RollbackRecord: Identifiable, Codable {
 
 public struct DeploymentInfo: Codable {
     public let version: String
-    public let environment: Environment
+    public let environment: DeploymentEnvironment
     public let deployedAt: Date
     public let deploymentType: DeploymentType
 
@@ -813,21 +816,21 @@ public enum RollbackError: LocalizedError {
 // MARK: - Supporting Protocols
 
 public protocol DeploymentManagerProtocol {
-    func rollbackToVersion(_ version: String, environment: Environment) async throws
-    func getCurrentVersion(environment: Environment) async throws -> String
-    func getDeploymentHistory(environment: Environment, limit: Int) async -> [Deployment]
+    func rollbackToVersion(_ version: String, environment: DeploymentEnvironment) async throws
+    func getCurrentVersion(environment: DeploymentEnvironment) async throws -> String
+    func getDeploymentHistory(environment: DeploymentEnvironment, limit: Int) async -> [Deployment]
 }
 
 public struct Deployment {
     let version: String
-    let environment: Environment
+    let environment: DeploymentEnvironment
     let deployedAt: Date
     let deploymentType: DeploymentInfo.DeploymentType
     let status: DeploymentStatus
 
     init(
         version: String,
-        environment: Environment,
+        environment: DeploymentEnvironment,
         deployedAt: Date,
         deploymentType: DeploymentInfo.DeploymentType,
         status: DeploymentStatus = .successful
@@ -851,16 +854,16 @@ public class DeploymentManager: DeploymentManagerProtocol {
 
     private init() {}
 
-    public func rollbackToVersion(_ version: String, environment: Environment) async throws {
+    public func rollbackToVersion(_ version: String, environment: DeploymentEnvironment) async throws {
         NSLog("[DeploymentManager] Rolling back to \(version) in \(environment)")
         // In production, execute actual rollback
     }
 
-    public func getCurrentVersion(environment: Environment) async throws -> String {
+    public func getCurrentVersion(environment: DeploymentEnvironment) async throws -> String {
         return "1.0.0"
     }
 
-    public func getDeploymentHistory(environment: Environment, limit: Int) async -> [Deployment] {
+    public func getDeploymentHistory(environment: DeploymentEnvironment, limit: Int) async -> [Deployment] {
         return [
             Deployment(
                 version: "1.0.0",

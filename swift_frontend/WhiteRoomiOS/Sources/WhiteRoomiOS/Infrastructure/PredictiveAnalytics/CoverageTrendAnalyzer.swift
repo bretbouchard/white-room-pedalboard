@@ -95,7 +95,7 @@ public actor CoverageTrendAnalyzer {
             return CoveragePrediction(
                 date: Date().addingTimeInterval(Double(daysAhead) * 86400),
                 predictedCoverage: 0,
-                confidenceInterval: (0, 0),
+                confidenceInterval: CoveragePrediction.ConfidenceInterval(lower: 0, upper: 0),
                 confidence: 0
             )
         }
@@ -117,7 +117,7 @@ public actor CoverageTrendAnalyzer {
         return CoveragePrediction(
             date: Date().addingTimeInterval(Double(daysAhead) * 86400),
             predictedCoverage: clampedCoverage,
-            confidenceInterval: (lowerBound, upperBound),
+            confidenceInterval: CoveragePrediction.ConfidenceInterval(lower: lowerBound, upper: upperBound),
             confidence: trend.confidence
         )
     }
@@ -374,7 +374,7 @@ public actor CoverageTrendAnalyzer {
         let ssResidual = zip(x, y).map { xi, yi in
             let yPredicted = slope * xi + intercept
             return pow(yi - yPredicted, 2)
-        }.reduce(0, +)
+        }.reduce(0.0, +)
 
         let rSquared = ssTotal > 0 ? 1 - (ssResidual / ssTotal) : 0
 
@@ -405,81 +405,3 @@ public actor CoverageTrendAnalyzer {
     }
 }
 
-// MARK: - Supporting Types
-
-public struct CoverageSnapshot: Codable, Sendable {
-    let date: Date
-    let overallCoverage: Double
-    let moduleCoverage: [String: Double]
-    let fileCoverage: [String: Double]
-
-    public init(
-        date: Date,
-        overallCoverage: Double,
-        moduleCoverage: [String: Double],
-        fileCoverage: [String: Double]
-    ) {
-        self.date = date
-        self.overallCoverage = overallCoverage
-        self.moduleCoverage = moduleCoverage
-        self.fileCoverage = fileCoverage
-    }
-}
-
-public struct CoverageTrend: Codable, Sendable {
-    let overallTrend: TrendDirection
-    let rateOfChange: Double // % per day
-    let projectedDate: Date? // When target will be reached
-    let riskAreas: [CodeArea]
-    let confidence: Double // 0-1
-
-    public enum TrendDirection: String, Codable {
-        case improving
-        case stable
-        case declining
-    }
-}
-
-public struct CoveragePrediction: Codable, Sendable {
-    let date: Date
-    let predictedCoverage: Double
-    let confidenceInterval: (Double, Double) // (lower, upper)
-    let confidence: Double
-}
-
-public struct CodeArea: Codable, Sendable {
-    let name: String
-    let type: AreaType
-    let oldCoverage: Double
-    let newCoverage: Double
-    let change: Double // Negative for decline
-    let severity: DeclineSeverity
-
-    public enum AreaType: String, Codable {
-        case module
-        case file
-    }
-}
-
-public enum DeclineSeverity: String, Codable {
-    case low
-    case medium
-    case high
-    case critical
-}
-
-public struct ModuleCoverageStatistics: Codable, Sendable {
-    let moduleName: String
-    let averageCoverage: Double
-    let minCoverage: Double
-    let maxCoverage: Double
-    let trend: CoverageTrendAnalyzer.TrendDirection
-}
-
-public struct PeriodComparison: Codable, Sendable {
-    let period1Average: Double
-    let period2Average: Double
-    let absoluteChange: Double
-    let percentChange: Double
-    let improved: Bool
-}

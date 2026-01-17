@@ -481,12 +481,8 @@ public final class MasterTransportController: ObservableObject {
 
 // MARK: - Supporting Types
 
-/// Transport state
-public enum TransportState: Equatable, Codable {
-    case stopped
-    case playing
-    case paused
-}
+// TransportState is now canonical in SwiftFrontendShared/MusicalModels.swift
+// This comment reminds us to use that version instead of duplicating
 
 /// Sync mode for tempo coordination
 public enum SyncMode: Equatable, Codable, CaseIterable {

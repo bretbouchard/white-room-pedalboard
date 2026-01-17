@@ -220,7 +220,7 @@ public actor QualityScoringModel {
         let ssResidual = zip(x, y).map { xi, yi in
             let yPredicted = slope * xi + (sumY - slope * sumX) / n
             return pow(yi - yPredicted, 2)
-        }.reduce(0, +)
+        }.reduce(0.0, +)
 
         let rSquared = ssTotal > 0 ? 1 - (ssResidual / ssTotal) : 0
         let confidence = max(0, min(1, rSquared))
@@ -393,81 +393,3 @@ public actor QualityScoringModel {
     }
 }
 
-// MARK: - Supporting Types
-
-public struct QualityScore: Codable, Sendable {
-    let overall: Int
-    let testCoverage: Int
-    let stability: Int
-    let performance: Int
-    let accessibility: Int
-    let confidence: Double
-    let grade: Grade
-
-    public static let empty = QualityScore(
-        overall: 0,
-        testCoverage: 0,
-        stability: 0,
-        performance: 0,
-        accessibility: 0,
-        confidence: 0,
-        grade: .standard
-    )
-}
-
-public enum Grade: String, Codable {
-    case plus
-    case standard
-    case minus
-
-    public var letter: String {
-        switch self {
-        case .plus: return "+"
-        case .standard: return ""
-        case .minus: return "-"
-        }
-    }
-}
-
-public struct QualityPrediction: Codable, Sendable {
-    let currentScore: QualityScore
-    let predictedScore: QualityScore
-    let scoreDelta: Int
-    let impact: ImpactLevel
-    let confidence: Double
-    let recommendations: [String]
-}
-
-public enum ImpactLevel: String, Codable {
-    case significantImprovement
-    case moderateImprovement
-    case minorImprovement
-    case neutral
-    case minorDecline
-    case moderateDecline
-    case significantDecline
-
-    public var description: String {
-        switch self {
-        case .significantImprovement: return "Significant Improvement"
-        case .moderateImprovement: return "Moderate Improvement"
-        case .minorImprovement: return "Minor Improvement"
-        case .neutral: return "Neutral"
-        case .minorDecline: return "Minor Decline"
-        case .moderateDecline: return "Moderate Decline"
-        case .significantDecline: return "Significant Decline"
-        }
-    }
-}
-
-public struct QualityTrend: Codable, Sendable {
-    let direction: TrendDirection
-    let magnitude: Double
-    let confidence: Double
-}
-
-public enum TrendDirection: String, Codable {
-    case improving
-    case stable
-    case declining
-}

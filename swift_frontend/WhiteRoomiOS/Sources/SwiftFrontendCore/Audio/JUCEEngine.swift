@@ -241,7 +241,7 @@ public class JUCEEngine: ObservableObject {
             throw JUCEEngineError.engineNotInitialized
         }
 
-        let ffiState: sch_transport_state_t
+        let ffiState: SchTransportStateFFI
         switch state {
         case .stopped:
             ffiState = .stopped
@@ -306,11 +306,13 @@ public enum JUCEEngineError: Error, LocalizedError {
 
 // MARK: - Supporting Types
 
-public enum TransportState {
-    case stopped
-    case playing
-    case recording
-    case paused
+// TransportState is now canonical in SwiftFrontendShared/MusicalModels.swift
+// This enum is for FFI mapping only
+internal enum SchTransportStateFFI: UInt32 {
+    case stopped = 0
+    case playing = 1
+    case recording = 2
+    case paused = 3
 }
 
 // MARK: - FFI Constants
@@ -329,14 +331,6 @@ struct sch_audio_config_t {
 struct sch_string_t {
     var data: UnsafeMutablePointer<CChar>?
     var length: Int
-}
-
-/// FFI Transport state
-enum sch_transport_state_t: UInt32 {
-    case stopped = 0
-    case playing = 1
-    case recording = 2
-    case paused = 3
 }
 
 // MARK: - FFI Function Declarations
@@ -424,7 +418,7 @@ internal func sch_engine_set_performance_blend(
 }
 
 /// Set transport state
-internal func sch_engine_set_transport(_ engine: OpaquePointer?, _ state: sch_transport_state_t) -> SchResult {
+internal func sch_engine_set_transport(_ engine: OpaquePointer?, _ state: SchTransportStateFFI) -> SchResult {
     NSLog("[JUCEEngine STUB] sch_engine_set_transport: \(state)")
     return .ok
 }

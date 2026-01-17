@@ -417,8 +417,8 @@ struct VisualTimeline: View {
 
             // Parallel progress bars
             VStack(spacing: 4) {
-                ForEach(state.songs) { song in
-                    SongProgressRow(song: song)
+                ForEach(state.songs) { slot in
+                    SongProgressRow(slot: slot)
                 }
             }
         }
@@ -437,15 +437,15 @@ struct VisualTimeline: View {
  */
 struct SongProgressRow: View {
 
-    @ObservedObject var song: SongPlayerState
+    var slot: SongSlot
     @Environment(\.theme) var theme
 
     var body: some View {
         HStack(spacing: 8) {
             // Song name
-            Text(song.name)
+            Text(slot.song?.name ?? "Empty")
                 .font(.caption2)
-                .foregroundColor(song.isMuted ? theme.palette.text.tertiary : theme.palette.text.secondary)
+                .foregroundColor(slot.transport.isMuted ? theme.palette.text.tertiary : theme.palette.text.secondary)
                 .frame(width: 80, alignment: .leading)
                 .lineLimit(1)
 
@@ -462,27 +462,27 @@ struct SongProgressRow: View {
                         .fill(
                             LinearGradient(
                                 gradient: Gradient(colors: [
-                                    song.isSolo ? theme.palette.accent.secondary : theme.palette.accent.primary,
-                                    song.isSolo ? theme.palette.accent.tertiary : theme.palette.accent.secondary
+                                    slot.transport.isSolo ? theme.palette.accent.secondary : theme.palette.accent.primary,
+                                    slot.transport.isSolo ? theme.palette.accent.tertiary : theme.palette.accent.secondary
                                 ]),
                                 startPoint: .leading,
                                 endPoint: .trailing
                             )
                         )
-                        .frame(width: geometry.size.width * song.progress, height: 4)
-                        .opacity(song.isMuted ? 0.3 : 1.0)
+                        .frame(width: geometry.size.width * (slot.transport.currentPosition / 180.0), height: 4) // Assuming 3 min song
+                        .opacity(slot.transport.isMuted ? 0.3 : 1.0)
 
                     // Playhead
                     Circle()
-                        .fill(song.isPlaying ? theme.palette.feedback.success : theme.palette.text.tertiary)
+                        .fill(slot.transport.isPlaying ? theme.palette.feedback.success : theme.palette.text.tertiary)
                         .frame(width: 8, height: 8)
-                        .offset(x: (geometry.size.width * song.progress) - 4)
+                        .offset(x: (geometry.size.width * (slot.transport.currentPosition / 180.0)) - 4)
                 }
             }
             .frame(height: 4)
 
             // Current time
-            Text(song.formattedTime)
+            Text(String(format: "%02d:%02d", Int(slot.transport.currentPosition) / 60, Int(slot.transport.currentPosition) % 60))
                 .font(.caption2)
                 .foregroundColor(theme.palette.text.tertiary)
                 .frame(width: 40, alignment: .trailing)
@@ -495,10 +495,9 @@ struct SongProgressRow: View {
 // =============================================================================
 
 #Preview("Master Controls") {
-    let state = MultiSongState()
-    state.songs = SongPlayerState.demoSongs()
+    let state = MultiSongState.createEmptySession()
 
-    return VStack {
+    VStack {
         Spacer()
 
         MasterTransportControls(state: state)
@@ -506,5 +505,5 @@ struct SongProgressRow: View {
 
         Spacer()
     }
-    .background(theme.palette.background.primary)
+    .background(Color(UIColor.systemBackground))
 }

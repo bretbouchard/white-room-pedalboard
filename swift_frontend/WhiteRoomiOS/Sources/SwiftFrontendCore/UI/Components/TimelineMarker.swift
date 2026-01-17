@@ -50,7 +50,7 @@ public struct TimelineMarker: View {
 
     // MARK: - Environment
 
-    @Environment(\.colorScheme) private var colorScheme
+    @Environment(\.colorScheme) private var colorScheme: ColorScheme
 
     // MARK: - Computed Properties
 

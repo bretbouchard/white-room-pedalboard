@@ -12,14 +12,14 @@ import Foundation
 extension Song {
 
     /// Instrument assignments for tracks in this song
-    var instrumentAssignments: InstrumentAssignmentManager {
+    var instrumentAssignments: MIDIInstrumentAssignmentManager {
         get {
-            if let assignments = objc_getAssociatedObject(self, &AssociatedKeys.instrumentAssignments) as? InstrumentAssignmentManager {
+            if let assignments = objc_getAssociatedObject(self, &AssociatedKeys.instrumentAssignments) as? MIDIInstrumentAssignmentManager {
                 return assignments
             }
 
             // Create new manager if not exists
-            let manager = InstrumentAssignmentManager()
+            let manager = MIDIInstrumentAssignmentManager()
             self.instrumentAssignments = manager
             return manager
         }
@@ -32,7 +32,7 @@ extension Song {
     /// - Parameters:
     ///   - trackId: Track identifier
     ///   - instrument: Instrument assignment
-    func assignInstrument(to trackId: String, instrument: InstrumentAssignment) throws {
+    func assignInstrument(to trackId: String, instrument: MIDIInstrumentAssignment) throws {
         try instrumentAssignments.assignInstrument(trackId: trackId, instrument: instrument)
         setHasUnsavedChanges(true)
     }
@@ -40,7 +40,7 @@ extension Song {
     /// Get instrument for track
     /// - Parameter trackId: Track identifier
     /// - Returns: Instrument assignment or nil
-    func getInstrument(for trackId: String) -> InstrumentAssignment? {
+    func getInstrument(for trackId: String) -> MIDIInstrumentAssignment? {
         return instrumentAssignments.getInstrument(trackId: trackId)
     }
 
@@ -53,7 +53,7 @@ extension Song {
 
     /// Get all instrument assignments
     /// - Returns: Array of all assignments
-    func getAllInstrumentAssignments() -> [InstrumentAssignment] {
+    func getAllInstrumentAssignments() -> [MIDIInstrumentAssignment] {
         return instrumentAssignments.getAllAssignments()
     }
 
@@ -108,7 +108,7 @@ extension Song {
             return
         }
 
-        let manager = InstrumentAssignmentManager()
+        let manager = MIDIInstrumentAssignmentManager()
 
         for (trackId, instrumentData) in assignmentsData {
             guard let id = instrumentData["id"] as? String,

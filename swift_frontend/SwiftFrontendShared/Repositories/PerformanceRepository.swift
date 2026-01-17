@@ -2,14 +2,25 @@
 //  PerformanceRepository.swift
 //  SwiftFrontendShared
 //
-//  Repository pattern implementation for Performance CRUD operations
+//  Repository pattern implementation for Arrangement Performance CRUD operations
 //  Thread-safe actor with GRDB integration
 //
 
 import Foundation
 import GRDB
 
-/// Repository for Performance CRUD operations
+/// Arrangement performance model for database storage
+public struct ArrangementPerformance: Codable, Identifiable {
+    public let id: String
+    public let songId: String
+    public let name: String
+    public let arrangementStyle: ArrangementStyle
+    public let density: Double
+    public let instrumentation: [String: Int]
+    public let mixTargets: [MixTarget]
+}
+
+/// Repository for Arrangement Performance CRUD operations
 public actor PerformanceRepository {
     private let db: DatabaseQueue
 
@@ -20,7 +31,7 @@ public actor PerformanceRepository {
     // MARK: - CRUD Operations
 
     /// Create a new performance in the database
-    public func create(_ performance: Performance) async throws {
+    public func create(_ performance: ArrangementPerformance) async throws {
         try await db.write { database in
             let instrumentationJSON = try JSONEncoder().encode(performance.instrumentation)
             let mixTargetsJSON = try JSONEncoder().encode(performance.mixTargets)
@@ -47,7 +58,7 @@ public actor PerformanceRepository {
     }
 
     /// Read a performance by ID
-    public func read(id: String) async throws -> Performance? {
+    public func read(id: String) async throws -> ArrangementPerformance? {
         try await db.read { database in
             if let row = try Row.fetchOne(
                 database,
@@ -61,7 +72,7 @@ public actor PerformanceRepository {
     }
 
     /// Update an existing performance
-    public func update(_ performance: Performance) async throws {
+    public func update(_ performance: ArrangementPerformance) async throws {
         try await db.write { database in
             let instrumentationJSON = try JSONEncoder().encode(performance.instrumentation)
             let mixTargetsJSON = try JSONEncoder().encode(performance.mixTargets)
@@ -100,7 +111,7 @@ public actor PerformanceRepository {
     // MARK: - Query Operations
 
     /// Get all performances ordered by name
-    public func getAll() async throws -> [Performance] {
+    public func getAll() async throws -> [ArrangementPerformance] {
         try await db.read { database in
             let rows = try Row.fetchAll(
                 database,
@@ -111,7 +122,7 @@ public actor PerformanceRepository {
     }
 
     /// Get all performances for a specific song
-    public func getBySongId(_ songId: String) async throws -> [Performance] {
+    public func getBySongId(_ songId: String) async throws -> [ArrangementPerformance] {
         try await db.read { database in
             let rows = try Row.fetchAll(
                 database,
@@ -123,7 +134,7 @@ public actor PerformanceRepository {
     }
 
     /// Get performances by arrangement style
-    public func getByArrangementStyle(_ style: ArrangementStyle) async throws -> [Performance] {
+    public func getByArrangementStyle(_ style: ArrangementStyle) async throws -> [ArrangementPerformance] {
         try await db.read { database in
             let rows = try Row.fetchAll(
                 database,
@@ -135,7 +146,7 @@ public actor PerformanceRepository {
     }
 
     /// Get performances with specific instrumentation
-    public func getByInstrumentation(_ instrumentationMap: [String: Int]) async throws -> [Performance] {
+    public func getByInstrumentation(_ instrumentationMap: [String: Int]) async throws -> [ArrangementPerformance] {
         try await db.read { database in
             // Search for performances that contain the specified instruments
             let allPerformances = try getAll()
@@ -154,7 +165,7 @@ public actor PerformanceRepository {
     }
 
     /// Get most played performances (by update count or last played)
-    public func getMostPlayed(limit: Int = 20) async throws -> [Performance] {
+    public func getMostPlayed(limit: Int = 20) async throws -> [ArrangementPerformance] {
         try await db.read { database in
             let rows = try Row.fetchAll(
                 database,
@@ -166,7 +177,7 @@ public actor PerformanceRepository {
     }
 
     /// Get recently created performances
-    public func getRecentlyCreated(limit: Int = 20) async throws -> [Performance] {
+    public func getRecentlyCreated(limit: Int = 20) async throws -> [ArrangementPerformance] {
         try await db.read { database in
             let rows = try Row.fetchAll(
                 database,
@@ -178,7 +189,7 @@ public actor PerformanceRepository {
     }
 
     /// Get performances within a density range
-    public func getByDensityRange(min: Double, max: Double) async throws -> [Performance] {
+    public func getByDensityRange(min: Double, max: Double) async throws -> [ArrangementPerformance] {
         try await db.read { database in
             let rows = try Row.fetchAll(
                 database,
@@ -190,7 +201,7 @@ public actor PerformanceRepository {
     }
 
     /// Search performances by name
-    public func search(query: String) async throws -> [Performance] {
+    public func search(query: String) async throws -> [ArrangementPerformance] {
         try await db.read { database in
             let searchPattern = "%\(query)%"
             let rows = try Row.fetchAll(
@@ -204,8 +215,8 @@ public actor PerformanceRepository {
 
     // MARK: - Helper Methods
 
-    /// Map database row to Performance model
-    private func mapRowToPerformance(_ row: Row) throws -> Performance {
+    /// Map database row to ArrangementPerformance model
+    private func mapRowToPerformance(_ row: Row) throws -> ArrangementPerformance {
         let id: String = row["id"]
         let songId: String = row["song_id"]
         let name: String = row["name"]
@@ -224,7 +235,7 @@ public actor PerformanceRepository {
         let instrumentation = try JSONDecoder().decode([String: Int].self, from: instrumentationJSON.data(using: .utf8)!)
         let mixTargets = try JSONDecoder().decode([MixTarget].self, from: mixTargetsJSON.data(using: .utf8)!)
 
-        return Performance(
+        return ArrangementPerformance(
             id: id,
             songId: songId,
             name: name,
@@ -237,17 +248,6 @@ public actor PerformanceRepository {
 }
 
 // MARK: - Supporting Types
-
-/// Performance model
-public struct Performance: Codable, Identifiable {
-    public let id: String
-    public let songId: String
-    public let name: String
-    public let arrangementStyle: ArrangementStyle
-    public let density: Double
-    public let instrumentation: [String: Int]
-    public let mixTargets: [MixTarget]
-}
 
 /// Arrangement style enum
 public enum ArrangementStyle: String, Codable {

@@ -3,7 +3,7 @@
 //  SwiftFrontendCore
 //
 //  Created by White Room AI
-//  Copyright © 2026 White Room. All rights reserved.
+//  Copyright Â© 2026 White Room. All rights reserved.
 //
 //  Multi-Song Audio Engine - Song Player Instance
 //
@@ -13,6 +13,7 @@
 
 import Foundation
 import AVFoundation
+import Combine
 
 // =============================================================================
 // MARK: - Song Player Instance

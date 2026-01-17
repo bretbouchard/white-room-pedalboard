@@ -317,64 +317,13 @@ public enum MarkerType: String, Codable {
 }
 
 // =============================================================================
-// MARK: - Tempo Change
-// =============================================================================
-
-/**
- Tempo change event
- */
-public struct TempoChange: Codable, Sendable {
-    public var beatPosition: Double
-    public var tempo: Double
-    public var transition: TempoTransition
-
-    public init(
-        beatPosition: Double,
-        tempo: Double,
-        transition: TempoTransition = .immediate
-    ) {
-        self.beatPosition = beatPosition
-        self.tempo = tempo
-        self.transition = transition
-    }
-}
-
-/**
- Tempo transition type
- */
-public enum TempoTransition: String, Codable {
-    case immediate
-    case ramp
-    case gradual
-}
-
-// =============================================================================
-// MARK: - Time Signature Change
-// =============================================================================
-
-/**
- Time signature change event
- */
-public struct TimeSignatureChange: Codable, Sendable {
-    public var beatPosition: Double
-    public var numerator: Int
-    public var denominator: Int
-
-    public init(
-        beatPosition: Double,
-        numerator: Int,
-        denominator: Int
-    ) {
-        self.beatPosition = beatPosition
-        self.numerator = numerator
-        self.denominator = denominator
-    }
-}
-
-
-// =============================================================================
 // MARK: - Arrangement Style
 // =============================================================================
+
+// NOTE: TempoChange, TimeSignatureChange, and TempoTransition are now imported from SwiftFrontendShared/MusicalModels.swift
+// to avoid type ambiguity across modules.
+
+
 
 /**
  Arrangement style enumeration for musical performances

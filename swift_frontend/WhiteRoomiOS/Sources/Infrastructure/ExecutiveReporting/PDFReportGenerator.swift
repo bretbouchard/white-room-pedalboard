@@ -43,7 +43,7 @@ public class PDFReportGenerator {
     }
 
     /// Generates trend report as PDF data
-    public func generateTrendReport(_ trends: [QualityTrend]) throws -> Data {
+    public func generateTrendReport(_ trends: [ERQualityTrend]) throws -> Data {
         let chartData = trends.map { trend in
             ChartData(
                 x: formatDate(trend.date),
@@ -693,13 +693,13 @@ public struct ReportData {
 
 public struct ExecutiveSummary {
     public let overallQuality: Int
-    public let trend: TrendDirection
+    public let trend: ERTrendDirection
     public let keyAchievements: [String]
     public let criticalIssues: [String]
     public let recommendations: [String]
     public let nextSteps: [String]
 
-    public init(overallQuality: Int, trend: TrendDirection, keyAchievements: [String],
+    public init(overallQuality: Int, trend: ERTrendDirection, keyAchievements: [String],
                 criticalIssues: [String], recommendations: [String], nextSteps: [String]) {
         self.overallQuality = overallQuality
         self.trend = trend
@@ -725,11 +725,11 @@ public struct ReleaseInfo {
     public let testResults: TestResults
     public let qualityMetrics: QualityMetrics
     public let securityScan: SecurityScanResults
-    public let performanceBaseline: PerformanceBaseline
+    public let performanceBaseline: ERPerformanceBaseline
 
     public init(version: String, targetDate: Date, features: [Feature], testResults: TestResults,
                 qualityMetrics: QualityMetrics, securityScan: SecurityScanResults,
-                performanceBaseline: PerformanceBaseline) {
+                performanceBaseline: ERPerformanceBaseline) {
         self.version = version
         self.targetDate = targetDate
         self.features = features
@@ -796,25 +796,13 @@ public struct SecurityScanResults {
     }
 }
 
-public struct PerformanceBaseline {
-    public let averageBuildTime: TimeInterval
-    public let averageTestTime: TimeInterval
-    public let memoryUsage: Int64
-
-    public init(averageBuildTime: TimeInterval, averageTestTime: TimeInterval, memoryUsage: Int64) {
-        self.averageBuildTime = averageBuildTime
-        self.averageTestTime = averageTestTime
-        self.memoryUsage = memoryUsage
-    }
-}
-
-public struct QualityTrend {
+public struct ERQualityTrend {
     public let date: Date
-    public let metric: QualityMetric
+    public let metric: ERQualityMetric
     public let value: Double
-    public let context: TrendContext?
+    public let context: ERTrendContext?
 
-    public init(date: Date, metric: QualityMetric, value: Double, context: TrendContext?) {
+    public init(date: Date, metric: ERQualityMetric, value: Double, context: ERTrendContext?) {
         self.date = date
         self.metric = metric
         self.value = value
@@ -822,7 +810,7 @@ public struct QualityTrend {
     }
 }
 
-public enum QualityMetric: String {
+public enum ERQualityMetric: String {
     case testCoverage = "Test Coverage"
     case passRate = "Pass Rate"
     case flakyTestCount = "Flaky Tests"
@@ -832,7 +820,7 @@ public enum QualityMetric: String {
     case defectEscapeRate = "Defect Escape Rate"
 }
 
-public struct TrendContext {
+public struct ERTrendContext {
     public let commitHash: String?
     public let prNumber: Int?
     public let author: String?

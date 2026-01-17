@@ -17,7 +17,7 @@ public struct SweepControlView: View {
 
     // MARK: - Environment
 
-    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass: UserInterfaceSizeClass?
 
     private let availablePerformances: [PerformanceInfo]
     private let onBlendChanged: (PerformanceInfo, PerformanceInfo, Double) -> Void

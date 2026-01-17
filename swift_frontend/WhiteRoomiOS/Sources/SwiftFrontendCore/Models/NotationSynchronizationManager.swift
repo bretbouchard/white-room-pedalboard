@@ -105,7 +105,7 @@ public class NotationSynchronizationManager: ObservableObject {
 
         NotificationCenter.default.post(
             name: .tempoDidChange,
-            object: TempoChange(tempo: tempo, timestamp: Date())
+            object: TempoSyncChange(tempo: tempo, timestamp: Date())
         )
     }
 
@@ -115,7 +115,7 @@ public class NotationSynchronizationManager: ObservableObject {
 
         NotificationCenter.default.post(
             name: .timeSignatureDidChange,
-            object: TimeSignatureChange(timeSignature: timeSignature, timestamp: Date())
+            object: TimeSignatureSyncChange(timeSignature: timeSignature, timestamp: Date())
         )
     }
 
@@ -224,8 +224,8 @@ public enum SyncUpdate: Equatable {
     case noteEdit(NoteEdit)
     case selectionChange(SelectionChange)
     case playbackPosition(PlaybackPositionChange)
-    case tempo(TempoChange)
-    case timeSignature(TimeSignatureChange)
+    case tempo(TempoSyncChange)
+    case timeSignature(TimeSignatureSyncChange)
 }
 
 /// Note edit information
@@ -256,26 +256,16 @@ public struct PlaybackPositionChange: Equatable, Codable {
     var timestamp: Date
 }
 
-/// Tempo change
-public struct TempoChange: Equatable, Codable {
+/// Tempo sync change (for notification synchronization, not musical tempo)
+public struct TempoSyncChange: Equatable, Codable {
     var tempo: Double
     var timestamp: Date
 }
 
-/// Time signature change
-public struct TimeSignatureChange: Equatable, Codable {
+/// Time signature sync change (for notification synchronization, not musical events)
+public struct TimeSignatureSyncChange: Equatable, Codable {
     var timeSignature: TimeSignature
     var timestamp: Date
-}
-
-/// Time signature
-public struct TimeSignature: Equatable, Codable {
-    var numerator: Int
-    var denominator: Int
-
-    static let fourFour = TimeSignature(numerator: 4, denominator: 4)
-    static let threeFour = TimeSignature(numerator: 3, denominator: 4)
-    static let sixEight = TimeSignature(numerator: 6, denominator: 8)
 }
 
 /// View focus change

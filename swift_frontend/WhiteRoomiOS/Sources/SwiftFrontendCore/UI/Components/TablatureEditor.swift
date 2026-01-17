@@ -31,8 +31,8 @@ public struct TablatureEditor: View {
 
     // MARK: - Environment
 
-    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
-    @Environment(\.verticalSizeClass) private var verticalSizeClass
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass: UserInterfaceSizeClass?
+    @Environment(\.verticalSizeClass) private var verticalSizeClass: UserInterfaceSizeClass?
 
     // MARK: - Computed Properties
 
@@ -531,96 +531,6 @@ public struct TablatureEditor: View {
     // MARK: - Initialization
 
     public init() {}
-}
-
-// MARK: - Tab Note Model
-
-struct TabNote: Identifiable {
-    let id = UUID()
-    var stringIndex: Int
-    var fret: Int
-    var technique: NoteTechnique?
-    var velocity: Int = 100
-}
-
-// MARK: - Note Technique
-
-enum NoteTechnique {
-    case hammerOn
-    case pullOff
-    case slide
-    case bend
-    case vibrato
-    case letRing
-}
-
-// MARK: - Instrument Preset
-
-struct InstrumentPreset {
-    let name: String
-    let stringCount: Int
-    let tuning: Tuning
-
-    static let guitarStandard = InstrumentPreset(
-        name: "Guitar (Standard)",
-        stringCount: 6,
-        tuning: Tuning(name: "Standard", strings: [64, 59, 55, 50, 45, 40], capo: 0)
-    )
-
-    static let bassStandard = InstrumentPreset(
-        name: "Bass (Standard)",
-        stringCount: 4,
-        tuning: Tuning(name: "Bass Standard", strings: [43, 38, 33, 28], capo: 0)
-    )
-
-    static let dropD = InstrumentPreset(
-        name: "Guitar (Drop D)",
-        stringCount: 6,
-        tuning: Tuning(name: "Drop D", strings: [64, 59, 55, 50, 45, 38], capo: 0)
-    )
-
-    static let openD = InstrumentPreset(
-        name: "Guitar (Open D)",
-        stringCount: 6,
-        tuning: Tuning(name: "Open D", strings: [62, 57, 50, 45, 38, 38], capo: 0)
-    )
-
-    static let openG = InstrumentPreset(
-        name: "Guitar (Open G)",
-        stringCount: 6,
-        tuning: Tuning(name: "Open G", strings: [62, 59, 55, 50, 43, 38], capo: 0)
-    )
-
-    static let ukulele = InstrumentPreset(
-        name: "Ukulele",
-        stringCount: 4,
-        tuning: Tuning(name: "Ukulele", strings: [67, 60, 52, 43], capo: 0)
-    )
-
-    static let banjo = InstrumentPreset(
-        name: "Banjo (5-String)",
-        stringCount: 5,
-        tuning: Tuning(name: "Banjo Standard", strings: [59, 55, 50, 45, 38], capo: 0)
-    )
-
-    static let mandolin = InstrumentPreset(
-        name: "Mandolin",
-        stringCount: 4,
-        tuning: Tuning(name: "Mandolin", strings: [64, 59, 52, 45], capo: 0)
-    )
-
-    static let allCases: [InstrumentPreset] = [
-        guitarStandard, bassStandard, dropD, openD, openG,
-        ukulele, banjo, mandolin
-    ]
-}
-
-// MARK: - Tuning Model
-
-struct Tuning {
-    let name: String
-    let strings: [Int]  // MIDI pitch of each string (high to low)
-    let capo: Int
 }
 
 // MARK: - Previews

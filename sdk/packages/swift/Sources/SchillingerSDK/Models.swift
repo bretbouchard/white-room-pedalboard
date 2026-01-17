@@ -2,6 +2,9 @@ import Foundation
 
 // MARK: - Core Data Models
 
+// NOTE: TimeSignature is now canonical in SwiftFrontendShared/MusicalModels.swift
+// This SDK uses that definition to avoid duplication
+
 /// Represents a rhythm pattern with durations and metadata
 public struct RhythmPattern: Codable, Equatable, Hashable {
     public let id: String?
@@ -10,7 +13,7 @@ public struct RhythmPattern: Codable, Equatable, Hashable {
     public let tempo: Int?
     public let swing: Double?
     public let metadata: RhythmMetadata?
-    
+
     public init(
         id: String? = nil,
         durations: [Int],
@@ -25,22 +28,6 @@ public struct RhythmPattern: Codable, Equatable, Hashable {
         self.tempo = tempo
         self.swing = swing
         self.metadata = metadata
-    }
-}
-
-/// Time signature representation
-public struct TimeSignature: Codable, Equatable, Hashable {
-    public let numerator: Int
-    public let denominator: Int
-
-    public init(numerator: Int, denominator: Int) {
-        self.numerator = numerator
-        self.denominator = denominator
-    }
-
-    /// Tuple conversion for FFI compatibility
-    public var tuple: (Int, Int) {
-        (numerator, denominator)
     }
 }
 

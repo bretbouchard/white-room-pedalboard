@@ -7,6 +7,7 @@
 //
 
 import SwiftUI
+import Foundation
 
 // =============================================================================
 // MARK: - Touch Target Modifiers

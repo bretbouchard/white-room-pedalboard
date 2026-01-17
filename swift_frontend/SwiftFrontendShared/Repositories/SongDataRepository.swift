@@ -19,7 +19,7 @@ public actor SongDataRepository {
     // MARK: - CRUD Operations
 
     /// Create a new song
-    public func create(_ song: Song) async throws {
+    public func create(_ song: SharedSong) async throws {
         try await db.write { database in
             try database.execute(
                 sql: """
@@ -61,7 +61,7 @@ public actor SongDataRepository {
     }
 
     /// Update an existing song
-    public func update(_ song: Song) async throws {
+    public func update(_ song: SharedSong) async throws {
         try await db.write { database in
             try database.execute(
                 sql: """
@@ -100,7 +100,7 @@ public actor SongDataRepository {
     // MARK: - Query Operations
 
     /// Get all songs ordered by name
-    public func getAll() async throws -> [Song] {
+    public func getAll() async throws -> [SharedSong] {
         try await db.read { database in
             let rows = try Row.fetchAll(
                 database,
@@ -111,7 +111,7 @@ public actor SongDataRepository {
     }
 
     /// Get recently created songs
-    public func getRecentlyCreated(limit: Int = 20) async throws -> [Song] {
+    public func getRecentlyCreated(limit: Int = 20) async throws -> [SharedSong] {
         try await db.read { database in
             let rows = try Row.fetchAll(
                 database,
@@ -123,7 +123,7 @@ public actor SongDataRepository {
     }
 
     /// Get recently updated songs
-    public func getRecentlyUpdated(limit: Int = 20) async throws -> [Song] {
+    public func getRecentlyUpdated(limit: Int = 20) async throws -> [SharedSong] {
         try await db.read { database in
             let rows = try Row.fetchAll(
                 database,
@@ -135,7 +135,7 @@ public actor SongDataRepository {
     }
 
     /// Search songs by name or composer
-    public func search(query: String) async throws -> [Song] {
+    public func search(query: String) async throws -> [SharedSong] {
         try await db.read { database in
             let searchPattern = "%\(query)%"
             let rows = try Row.fetchAll(
@@ -165,8 +165,8 @@ public actor SongDataRepository {
     // MARK: - Helper Methods
 
     /// Map database row to Song model
-    private func mapRowToSong(_ row: Row) throws -> Song {
-        return Song(
+    private func mapRowToSong(_ row: Row) throws -> SharedSong {
+        return SharedSong(
             id: row["id"],
             name: row["name"],
             composer: row["composer"],
@@ -194,7 +194,7 @@ extension Dictionary where Key == String, Value == String {
 
 extension String {
     var jsonDictionary: [String: String]? {
-        guard let data = using: .utf8,
+        guard let data = data(using: .utf8),
               let dict = try? JSONDecoder().decode([String: String].self, from: data) else { return nil }
         return dict
     }

@@ -95,13 +95,13 @@ final class UndoRedoIntegrationTests: XCTestCase {
         var performances = createTestPerformances()
         let getters = performances.map { { $0 } }
         var mutablePerformances = performances
-        let setters = (0..<performances.count).map { { (index: Int) -> (Performance) -> Void in
+        let setters = (0..<performances.count).map { { (index: Int) -> (TestPerformance) -> Void in
             return { newPerformance in
                 mutablePerformances[index] = newPerformance
             }
         }
         let zipSetters = zip(0..<performances.count, setters).map { pair in
-            return { (perf: Performance) in
+            return { (perf: TestPerformance) in
                 let (index, setter) = pair
                 var newPerformances = mutablePerformances
                 newPerformances[index] = perf
@@ -321,9 +321,9 @@ final class UndoRedoIntegrationTests: XCTestCase {
         )
     }
 
-    private func createTestPerformances() -> [Performance] {
+    private func createTestPerformances() -> [TestPerformance] {
         [
-            Performance(
+            TestPerformance(
                 id: "perf-1",
                 songId: "song-1",
                 name: "Performance 1",
@@ -333,7 +333,7 @@ final class UndoRedoIntegrationTests: XCTestCase {
                 createdAt: Date(),
                 updatedAt: Date()
             ),
-            Performance(
+            TestPerformance(
                 id: "perf-2",
                 songId: "song-1",
                 name: "Performance 2",
@@ -351,7 +351,7 @@ final class UndoRedoIntegrationTests: XCTestCase {
 // MARK: - Test Performance Model
 // =============================================================================
 
-struct Performance: Equatable, Codable, Sendable, Identifiable {
+struct TestPerformance: Equatable, Codable, Sendable, Identifiable {
     var id: String
     var songId: String
     var name: String

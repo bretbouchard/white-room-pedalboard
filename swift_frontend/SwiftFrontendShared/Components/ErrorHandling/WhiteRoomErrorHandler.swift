@@ -10,234 +10,15 @@ import Foundation
 import SwiftUI
 import os.log
 
-/// Error severity levels
-enum ErrorSeverity: String, Codable {
-    case debug       // Information only
-    case info        // User notification
-    case warning     // Potential issue
-    case error       // Operation failed
-    case critical    // App may crash
-    case fatal       // App must terminate
-
-    var color: Color {
-        switch self {
-        case .debug: return .blue
-        case .info: return .cyan
-        case .warning: return .yellow
-        case .error: return .orange
-        case .critical: return .red
-        case .fatal: return .red.opacity(0.8)
-        }
-    }
-
-    var icon: String {
-        switch self {
-        case .debug: return "info.circle"
-        case .info: return "info.circle.fill"
-        case .warning: return "exclamationmark.triangle"
-        case .error: return "xmark.circle"
-        case .critical: return "exclamationmark.octagon.fill"
-        case .fatal: return "xmark.octagon.fill"
-        }
-    }
-}
-
-/// Error categories
-enum ErrorCategory: String, Codable {
-    case audioEngine = "audio_engine"
-    case audioDevice = "audio_device"
-    case audioBuffer = "audio_buffer"
-    case fileNotFound = "file_not_found"
-    case fileCorrupted = "file_corrupted"
-    case filePermission = "file_permission"
-    case networkError = "network_error"
-    case timeout = "timeout"
-    case validationError = "validation_error"
-    case invalidParameter = "invalid_parameter"
-    case invalidState = "invalid_state"
-    case notInitialized = "not_initialized"
-    case outOfMemory = "out_of_memory"
-    case diskFull = "disk_full"
-    case userCancelled = "user_cancelled"
-    case userError = "user_error"
-}
-
-/// Recovery action for error resolution
-struct RecoveryAction: Identifiable {
-    let id = UUID()
-    let title: String
-    let description: String?
-    let isAutomatic: Bool
-    let isRecommended: Bool
-    let action: () async -> Void
-
-    init(
-        title: String,
-        description: String? = nil,
-        isAutomatic: Bool = false,
-        isRecommended: Bool = false,
-        action: @escaping () async -> Void
-    ) {
-        self.title = title
-        self.description = description
-        self.isAutomatic = isAutomatic
-        self.isRecommended = isRecommended
-        self.action = action
-    }
-}
-
-/// White Room error base class
-struct WhiteRoomError: Error, Identifiable {
-    let id = UUID()
-    let category: ErrorCategory
-    let severity: ErrorSeverity
-    let code: String
-    let userMessage: String
-    let technicalDetails: String
-    let context: [String: Any]
-    let recoveryActions: [RecoveryAction]
-    let timestamp: Date
-
-    init(
-        category: ErrorCategory,
-        severity: ErrorSeverity,
-        code: String,
-        userMessage: String,
-        technicalDetails: String? = nil,
-        context: [String: Any] = [:],
-        recoveryActions: [RecoveryAction] = []
-    ) {
-        self.category = category
-        self.severity = severity
-        self.code = code
-        self.userMessage = userMessage
-        self.technicalDetails = technicalDetails ?? userMessage
-        self.context = context
-        self.recoveryActions = recoveryActions
-        self.timestamp = Date()
-    }
-
-    /// Get recommended recovery action
-    var recommendedRecovery: RecoveryAction? {
-        recoveryActions.first { $0.isRecommended }
-    }
-
-    /// Get automatic recovery actions
-    var automaticRecoveries: [RecoveryAction] {
-        recoveryActions.filter { $0.isAutomatic }
-    }
-}
-
-/// Specific error types
-struct AudioEngineError {
-    static func create(
-        code: String,
-        userMessage: String,
-        technicalDetails: String? = nil,
-        context: [String: Any] = [:]
-    ) -> WhiteRoomError {
-        WhiteRoomError(
-            category: .audioEngine,
-            severity: .critical,
-            code: "AUDIO_ENGINE_\(code)",
-            userMessage: userMessage,
-            technicalDetails: technicalDetails,
-            context: context,
-            recoveryActions: [
-                RecoveryAction(
-                    title: "Restart Audio Engine",
-                    description: "Attempt to restart the audio engine",
-                    isRecommended: true
-                ) {
-                    // Trigger engine restart
-                    await AudioManager.shared.restartEngine()
-                },
-                RecoveryAction(
-                    title: "Reset Audio Settings",
-                    description: "Reset audio settings to defaults"
-                ) {
-                    // Reset to defaults
-                    await AudioManager.shared.resetSettings()
-                }
-            ]
-        )
-    }
-}
-
-struct FileNotFoundError {
-    static func create(path: String, context: [String: Any] = [:]) -> WhiteRoomError {
-        WhiteRoomError(
-            category: .fileNotFound,
-            severity: .error,
-            code: "FILE_NOT_FOUND",
-            userMessage: "The file \"\(path)\" could not be found.",
-            technicalDetails: "File not found: \(path)",
-            context: ["path": path, merging: context],
-            recoveryActions: [
-                RecoveryAction(
-                    title: "Browse for File",
-                    description: "Locate the file manually",
-                    isRecommended: true
-                ) {
-                    // Open file browser
-                    await FileManager.shared.browseForFile()
-                },
-                RecoveryAction(
-                    title: "Create New File",
-                    description: "Create a new file with default settings"
-                ) {
-                    // Create new file
-                    await FileManager.shared.createNewFile()
-                }
-            ]
-        )
-    }
-}
-
-struct ValidationError {
-    static func create(
-        field: String,
-        value: Any,
-        reason: String,
-        context: [String: Any] = [:]
-    ) -> WhiteRoomError {
-        WhiteRoomError(
-            category: .validationError,
-            severity: .warning,
-            code: "VALIDATION_ERROR",
-            userMessage: "Invalid value for \(field): \(reason)",
-            technicalDetails: "Validation failed: \(field) = \(value) - \(reason)",
-            context: ["field": field, "value": value, "reason": reason, merging: context],
-            recoveryActions: [
-                RecoveryAction(
-                    title: "Fix Value",
-                    description: "Correct the invalid value",
-                    isRecommended: true
-                ) {
-                    // Open field editor
-                    await ValidationManager.shared.openFieldEditor(field)
-                },
-                RecoveryAction(
-                    title: "Reset to Default",
-                    description: "Reset to the default value"
-                ) {
-                    // Reset field
-                    await ValidationManager.shared.resetToDefault(field)
-                }
-            ]
-        )
-    }
-}
-
 /// Centralized error handler (MainActor)
 @MainActor
 class WhiteRoomErrorHandler: ObservableObject {
     static let shared = WhiteRoomErrorHandler()
 
-    @Published var currentError: WhiteRoomError?
+    @Published var currentError: SwiftFrontendShared.WhiteRoomError?
     @Published var showErrorSheet = false
     @Published var showErrorAlert = false
-    @Published var errorHistory: [WhiteRoomError] = []
+    @Published var errorHistory: [SwiftFrontendShared.WhiteRoomError] = []
 
     private let logger = Logger(subsystem: "com.whiteroom.audio", category: "ErrorHandler")
     private let maxHistorySize = 100
@@ -253,7 +34,7 @@ class WhiteRoomErrorHandler: ObservableObject {
 
     /// Handle an error asynchronously
     func handleAsync(_ error: Error) async {
-        let whiteRoomError = error as? WhiteRoomError ?? convertToWhiteRoomError(error)
+        let whiteRoomError = error as? SwiftFrontendShared.WhiteRoomError ?? convertToWhiteRoomError(error)
 
         // Log error
         logError(whiteRoomError)
@@ -267,19 +48,17 @@ class WhiteRoomErrorHandler: ObservableObject {
 
         // Take action based on severity
         switch whiteRoomError.severity {
-        case .fatal, .critical:
+        case .critical:
             await handleCritical(whiteRoomError)
         case .error:
             await handleError(whiteRoomError)
         case .warning, .info:
             showWarning(whiteRoomError)
-        case .debug:
-            break // Just log
         }
     }
 
     /// Convert standard Error to WhiteRoomError
-    private func convertToWhiteRoomError(_ error: Error) -> WhiteRoomError {
+    private func convertToWhiteRoomError(_ error: Error) -> SwiftFrontendShared.WhiteRoomError {
         let nsError = error as NSError
 
         // Analyze error domain and code
@@ -287,32 +66,21 @@ class WhiteRoomErrorHandler: ObservableObject {
             switch nsError.code {
             case NSFileNoSuchFileError:
                 let path = nsError.userInfo["NSPath"] as? String ?? "unknown"
-                return FileNotFoundError.create(path: path)
+                return .fileIO(.fileNotFound(path: path))
             case NSFileReadNoPermissionError:
                 let path = nsError.userInfo["NSPath"] as? String ?? "unknown"
-                return WhiteRoomError(
-                    category: .filePermission,
-                    severity: .error,
-                    code: "FILE_PERMISSION",
-                    userMessage: "Permission denied to access \"\(path)\""
-                )
+                return .fileIO(.permissionDenied(path: path))
             default:
                 break
             }
         }
 
         // Default to user error
-        return WhiteRoomError(
-            category: .userError,
-            severity: .error,
-            code: "UNKNOWN_ERROR",
-            userMessage: error.localizedDescription,
-            technicalDetails: error.localizedDescription
-        )
+        return .validation(.validationFailed(field: "unknown", reason: error.localizedDescription))
     }
 
     /// Log error to console and file
-    private func logError(_ error: WhiteRoomError) {
+    private func logError(_ error: SwiftFrontendShared.WhiteRoomError) {
         var logMessage = "[\(error.severity.rawValue.uppercased())] \(error.code)"
         logMessage += "\nMessage: \(error.userMessage)"
         logMessage += "\nDetails: \(error.technicalDetails)"
@@ -322,7 +90,7 @@ class WhiteRoomErrorHandler: ObservableObject {
         }
 
         switch error.severity {
-        case .fatal, .critical:
+        case .critical:
             logger.fault("%{public}@", logMessage)
         case .error:
             logger.error("%{public}@", logMessage)
@@ -330,13 +98,11 @@ class WhiteRoomErrorHandler: ObservableObject {
             logger.warning("%{public}@", logMessage)
         case .info:
             logger.info("%{public}@", logMessage)
-        case .debug:
-            logger.debug("%{public}@", logMessage)
         }
     }
 
     /// Add error to history
-    private func addToHistory(_ error: WhiteRoomError) {
+    private func addToHistory(_ error: SwiftFrontendShared.WhiteRoomError) {
         errorHistory.append(error)
 
         // Trim history if too large
@@ -346,14 +112,8 @@ class WhiteRoomErrorHandler: ObservableObject {
     }
 
     /// Handle critical errors
-    private func handleCritical(_ error: WhiteRoomError) async {
-        logger.error("CRITICAL ERROR - App may be unstable")
-
-        // Attempt automatic recovery if available
-        if let automaticRecovery = error.automaticRecoveries.first {
-            logger.info("Attempting automatic recovery: \(automaticRecovery.title)")
-            await automaticRecovery.action()
-        }
+    private func handleCritical(_ error: SwiftFrontendShared.WhiteRoomError) async {
+        logger.error("%{public}@", "CRITICAL ERROR - App may be unstable")
 
         // Show alert to user
         showErrorAlert = true
@@ -366,42 +126,20 @@ class WhiteRoomErrorHandler: ObservableObject {
     }
 
     /// Handle error severity
-    private func handleError(_ error: WhiteRoomError) async {
-        logger.error("ERROR - Operation failed")
-
-        // Attempt automatic recovery if available
-        if let automaticRecovery = error.automaticRecoveries.first {
-            logger.info("Attempting automatic recovery: \(automaticRecovery.title)")
-            await automaticRecovery.action()
-        }
+    private func handleError(_ error: SwiftFrontendShared.WhiteRoomError) async {
+        logger.error("%{public}@", "ERROR - Operation failed")
 
         // Show error to user
         showErrorSheet = true
     }
 
     /// Show warning
-    private func showWarning(_ error: WhiteRoomError) {
-        logger.warning("WARNING - Potential issue")
+    private func showWarning(_ error: SwiftFrontendShared.WhiteRoomError) {
+        logger.warning("%{public}@", "WARNING - Potential issue")
 
         // Show warning to user (less intrusive)
         // Could use a banner or toast notification
         showErrorSheet = true
-    }
-
-    /// Execute recovery action
-    func executeRecoveryAction(_ action: RecoveryAction) async {
-        logger.info("Executing recovery action: \(action.title)")
-
-        do {
-            await action.action()
-            logger.info("Recovery action completed: \(action.title)")
-
-            // Dismiss error sheet on successful recovery
-            showErrorSheet = false
-            currentError = nil
-        } catch {
-            logger.error("Recovery action failed: \(action.title) - \(error)")
-        }
     }
 
     /// Clear current error
@@ -464,8 +202,7 @@ class WhiteRoomErrorHandler: ObservableObject {
             },
             "recentErrors": statistics.recentErrors.map { error in
                 [
-                    "timestamp": ISO8601DateFormatter().string(from: error.timestamp),
-                    "category": error.category.rawValue,
+                    "category": error.category,
                     "severity": error.severity.rawValue,
                     "code": error.code,
                     "message": error.userMessage,
@@ -488,10 +225,10 @@ class WhiteRoomErrorHandler: ObservableObject {
 /// Error statistics
 struct ErrorStatistics {
     let totalErrors: Int
-    let errorsByCategory: [ErrorCategory: Int]
-    let errorsBySeverity: [ErrorSeverity: Int]
+    let errorsByCategory: [String: Int]
+    let errorsBySeverity: [SwiftFrontendShared.ErrorSeverity: Int]
     let mostFrequentErrors: [(code: String, count: Int)]
-    let recentErrors: [WhiteRoomError]
+    let recentErrors: [SwiftFrontendShared.WhiteRoomError]
 }
 
 // MARK: - SwiftUI Views
@@ -499,7 +236,7 @@ struct ErrorStatistics {
 /// Error sheet view
 struct ErrorSheetView: View {
     @ObservedObject var errorHandler = WhiteRoomErrorHandler.shared
-    @Environment(\.dismiss) private var dismiss
+    @Environment(\.dismiss) private var dismiss: DismissAction
 
     var body: some View {
         VStack(spacing: 20) {
@@ -507,12 +244,12 @@ struct ErrorSheetView: View {
                 // Icon
                 Image(systemName: error.severity.icon)
                     .font(.system(size: 60))
-                    .foregroundColor(error.severity.color)
+                    .foregroundColor(color(for: error.severity))
 
                 // Title
-                Text(error.severity.rawValue.uppercased())
+                Text(error.severity.displayName.uppercased())
                     .font(.headline)
-                    .foregroundColor(error.severity.color)
+                    .foregroundColor(color(for: error.severity))
 
                 // Message
                 Text(error.userMessage)
@@ -520,46 +257,16 @@ struct ErrorSheetView: View {
                     .multilineTextAlignment(.center)
                     .padding()
 
-                // Recovery actions
-                if !error.recoveryActions.isEmpty {
-                    VStack(alignment: .leading, spacing: 12) {
-                        Text("What would you like to do?")
-                            .font(.headline)
+                // Recovery suggestion
+                VStack(alignment: .leading, spacing: 12) {
+                    Text("Recovery Suggestion")
+                        .font(.headline)
 
-                        ForEach(error.recoveryActions) { action in
-                            Button(action: {
-                                Task {
-                                    await errorHandler.executeRecoveryAction(action)
-                                }
-                            }) {
-                                HStack {
-                                    Image(systemName: action.isRecommended ? "star.circle.fill" : "circle")
-                                        .foregroundColor(action.isRecommended ? .yellow : .gray)
-
-                                    VStack(alignment: .leading) {
-                                        Text(action.title)
-                                            .font(.body)
-
-                                        if let description = action.description {
-                                            Text(description)
-                                                .font(.caption)
-                                                .foregroundColor(.secondary)
-                                        }
-                                    }
-
-                                    Spacer()
-                                }
-                                .padding()
-                                .background(
-                                    RoundedRectangle(cornerRadius: 8)
-                                        .fill(action.isRecommended ? Color.yellow.opacity(0.2) : Color.gray.opacity(0.1))
-                                )
-                            }
-                            .buttonStyle(.plain)
-                        }
-                    }
-                    .padding()
+                    Text(error.recoverySuggestion)
+                        .font(.body)
+                        .foregroundColor(.secondary)
                 }
+                .padding()
 
                 // Technical details (expandable)
                 DisclosureGroup("Technical Details") {
@@ -577,7 +284,7 @@ struct ErrorSheetView: View {
                                 .font(.caption)
                                 .fontWeight(.semibold)
 
-                            ForEach(error.context.keys.sorted(), id: \.self) { key in
+                            ForEach(Array(error.context.keys.sorted()), id: \.self) { key in
                                 HStack {
                                     Text("\(key):")
                                         .font(.caption)
@@ -606,6 +313,15 @@ struct ErrorSheetView: View {
         .padding()
         .frame(width: 500, height: 600)
     }
+
+    private func color(for severity: SwiftFrontendShared.ErrorSeverity) -> Color {
+        switch severity {
+        case .info: return .cyan
+        case .warning: return .yellow
+        case .error: return .orange
+        case .critical: return .red
+        }
+    }
 }
 
 /// Error alert view
@@ -615,18 +331,15 @@ struct ErrorAlertView: View {
     var body: some View {
         if let error = errorHandler.currentError {
             Alert(
-                title: Text(error.severity.rawValue.uppercased()),
+                title: Text(error.severity.displayName.uppercased()),
                 message: Text(error.userMessage),
                 primaryButton: .default(Text("OK")) {
                     errorHandler.clearError()
                 },
-                secondaryButton: error.recommendedRecovery != nil ? .default(Text("Recover")) {
-                    if let action = error.recommendedRecovery {
-                        Task {
-                            await errorHandler.executeRecoveryAction(action)
-                        }
-                    }
-                } : nil
+                secondaryButton: .default(Text("More Info")) {
+                    // Show sheet with more info
+                    errorHandler.showErrorSheet = true
+                }
             )
         } else {
             Alert(title: Text("Error"))
@@ -653,16 +366,5 @@ extension View {
     /// Apply error handling to a view
     func withErrorHandling() -> some View {
         self.modifier(ErrorHandlingModifier())
-    }
-}
-
-// MARK: - Dictionary Merging Helper
-private extension Dictionary {
-    func merging(_ other: [Key: Value]) -> [Key: Value] {
-        var result = self
-        other.forEach { key, value in
-            result[key] = value
-        }
-        return result
     }
 }

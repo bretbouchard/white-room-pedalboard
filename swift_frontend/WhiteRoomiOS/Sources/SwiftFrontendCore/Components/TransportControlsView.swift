@@ -235,25 +235,6 @@ public class TransportManager: ObservableObject {
 }
 
 // =============================================================================
-// MARK: - Time Signature
-// =============================================================================
-
-/** Time signature representation */
-public struct TimeSignature: Equatable, Hashable {
-    public let numerator: Int
-    public let denominator: Int
-
-    public static let fourFour = TimeSignature(numerator: 4, denominator: 4)
-    public static let threeFour = TimeSignature(numerator: 3, denominator: 4)
-    public static let sixEight = TimeSignature(numerator: 6, denominator: 8)
-
-    public init(numerator: Int, denominator: Int) {
-        self.numerator = numerator
-        self.denominator = denominator
-    }
-}
-
-// =============================================================================
 // MARK: - Transport Controls View
 // ============================================================================
 
@@ -473,7 +454,7 @@ public extension View {
                 TransportManager.shared.stop()
                 return .handled
             }
-            .onKeyPress(Character("l")) {
+            .onKeyPress(keys: .init(Character("l"))) {
                 TransportManager.shared.toggleLoop()
                 return .handled
             }

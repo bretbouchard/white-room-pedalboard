@@ -369,9 +369,9 @@ public actor FailurePredictionEngine {
         changedFiles: Set<FilePath>
     ) -> Double {
         // Check if test directly touches changed files
-        let directlyAffected = fileTestMap.values.contains { tests in
+        let directlyAffected = fileTestMap.values.contains(where: { tests in
             tests.contains(testName)
-        }
+        })
 
         if directlyAffected {
             return complexityWeight
@@ -380,7 +380,7 @@ public actor FailurePredictionEngine {
         // Check if dependencies are affected
         if let dependencies = testDependencies[testName] {
             for dep in dependencies {
-                if fileTestMap.values.contains({ $0.contains(dep) }) {
+                if fileTestMap.values.contains(where: { $0.contains(dep) }) {
                     return complexityWeight * 0.5
                 }
             }
@@ -518,87 +518,3 @@ public actor FailurePredictionEngine {
     }
 }
 
-// MARK: - Supporting Types
-
-public struct TestResult: Codable, Sendable {
-    let name: String
-    let passed: Bool
-    let duration: TimeInterval
-    let timestamp: Date
-    let filePath: String?
-    let errorMessage: String?
-
-    public init(
-        name: String,
-        passed: Bool,
-        duration: TimeInterval,
-        timestamp: Date = Date(),
-        filePath: String? = nil,
-        errorMessage: String? = nil
-    ) {
-        self.name = name
-        self.passed = passed
-        self.duration = duration
-        self.timestamp = timestamp
-        self.filePath = filePath
-        self.errorMessage = errorMessage
-    }
-}
-
-public struct TestFailurePrediction: Codable, Sendable {
-    let testName: String
-    let failureProbability: Double
-    let confidence: Double
-    let reasons: [FailureReason]
-    let mitigation: String
-}
-
-public enum FailureReason: String, Codable {
-    case recentlyModified
-    case highFlakiness
-    case complexDependencies
-    case lowCoverage
-    case performanceSensitive
-
-    public var description: String {
-        switch self {
-        case .recentlyModified: return "Test or dependencies recently modified"
-        case .highFlakiness: return "Test has high flakiness score"
-        case .complexDependencies: return "Test has complex dependency chain"
-        case .lowCoverage: return "Low code coverage in tested area"
-        case .performanceSensitive: return "Test has performance/timing sensitivity"
-        }
-    }
-}
-
-public struct FailureAnalysis: Codable, Sendable {
-    let totalTests: Int
-    let passedTests: Int
-    let failedTests: Int
-    let flakyTests: Int
-    let passRate: Double
-    let failurePatterns: [FailurePattern]
-    let newFailures: [String]
-    let timestamp: Date
-}
-
-public struct FailurePattern: Codable, Sendable {
-    let type: FailurePatternType
-    let description: String
-    let affectedTests: [String]
-    let severity: PatternSeverity
-
-    public enum FailurePatternType: String, Codable {
-        case newFailures
-        case consistentFailures
-        case flakyTests
-        case performanceDegradation
-    }
-
-    public enum PatternSeverity: String, Codable {
-        case low
-        case medium
-        case high
-        case critical
-    }
-}

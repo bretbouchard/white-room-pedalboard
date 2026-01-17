@@ -8,6 +8,7 @@
 
 import XCTest
 @testable import SwiftFrontendShared
+import Foundation
 
 // =============================================================================
 // MARK: - White Room Error Tests
