@@ -27,9 +27,15 @@
 [submodule "juce_backend/effects/dynamics"]
 	path = juce_backend/effects/dynamics
 	url = https://github.com/bretbouchard/white-room-dynamics.git
-[submodule "juce_backend/instruments/kane_marco"]
-	path = juce_backend/instruments/kane_marco
+[submodule "juce_backend/instruments/kane_marco_va"]
+	path = juce_backend/instruments/kane_marco_va
+	url = https://github.com/bretbouchard/kane-marco-va.git
+[submodule "juce_backend/instruments/kane_marco_aether"]
+	path = juce_backend/instruments/kane_marco_aether
 	url = https://github.com/bretbouchard/kane-marco-aether.git
+[submodule "juce_backend/instruments/kane_marco_aether_string"]
+	path = juce_backend/instruments/kane_marco_aether_string
+	url = https://github.com/bretbouchard/kane-marco-aether-string.git
 [submodule "juce_backend/instruments/giant_instruments"]
 	path = juce_backend/instruments/giant_instruments
 	url = https://github.com/bretbouchard/aether-giant-instruments.git
