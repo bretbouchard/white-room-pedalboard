@@ -1,10 +1,10 @@
 /**
  * White Room Voice Manager
  *
- * Polyphony management with voice stealing and priority handling.
- * Ensures optimal voice allocation for ensemble playback.
+ * Real-time safe, single-threaded SIMD voice management with voice stealing
+ * and priority handling. Optimized for cache efficiency and deterministic timing.
  *
- * T018: Implement Voice Manager
+ * SPEC-005: Single-threaded SIMD implementation (no threading)
  */
 
 #pragma once
@@ -15,6 +15,19 @@
 #include <vector>
 #include <array>
 
+// SIMD intrinsics support
+#if defined(__x86_64__) || defined(_M_X64) || defined(__i386__) || defined(_M_IX86)
+    #define WHITE_ROOM_SIMD_SSE2
+    #include <emmintrin.h>  // SSE2
+    #define SIMD_ALIGNMENT 16
+#elif defined(__aarch64__) || defined(_M_ARM64)
+    #define WHITE_ROOM_SIMD_NEON
+    #include <arm_neon.h>
+    #define SIMD_ALIGNMENT 16
+#else
+    #define SIMD_ALIGNMENT 16
+#endif
+
 // Define non-copyable macro for C++11 compatibility
 #define WHITE_ROOM_DECLARE_NON_COPYABLE(Class) \
     Class(const Class&) = delete; \
@@ -22,6 +35,87 @@
 
 namespace white_room {
 namespace audio {
+
+// =============================================================================
+// LOCK-FREE RING BUFFER (Single Producer, Single Consumer)
+// =============================================================================
+
+/**
+ * Lock-free ring buffer for real-time safe audio I/O
+ * Uses atomic index arithmetic for wait-free operation
+ */
+template<typename T, size_t Capacity>
+class LockFreeRingBuffer {
+public:
+    LockFreeRingBuffer() : readIdx_(0), writeIdx_(0) {
+        static_assert((Capacity & (Capacity - 1)) == 0,
+                      "Capacity must be power of 2 for efficient masking");
+    }
+
+    /**
+     * Write data to buffer (producer)
+     * Returns true if successful, false if buffer full
+     */
+    bool write(const T* data, size_t count) {
+        const size_t readIdx = readIdx_.load(std::memory_order_acquire);
+        const size_t writeIdx = writeIdx_.load(std::memory_order_relaxed);
+
+        const size_t available = Capacity - (writeIdx - readIdx);
+        if (count > available) {
+            return false;  // Buffer full
+        }
+
+        for (size_t i = 0; i < count; ++i) {
+            buffer_[mask(writeIdx + i)] = data[i];
+        }
+
+        writeIdx_.store(writeIdx + count, std::memory_order_release);
+        return true;
+    }
+
+    /**
+     * Read data from buffer (consumer)
+     * Returns actual number of items read
+     */
+    size_t read(T* dest, size_t count) {
+        const size_t writeIdx = writeIdx_.load(std::memory_order_acquire);
+        const size_t readIdx = readIdx_.load(std::memory_order_relaxed);
+
+        const size_t available = writeIdx - readIdx;
+        const size_t toRead = std::min(count, available);
+
+        for (size_t i = 0; i < toRead; ++i) {
+            dest[i] = buffer_[mask(readIdx + i)];
+        }
+
+        readIdx_.store(readIdx + toRead, std::memory_order_release);
+        return toRead;
+    }
+
+    /**
+     * Get available items to read
+     */
+    size_t available() const {
+        return writeIdx_.load(std::memory_order_acquire) -
+               readIdx_.load(std::memory_order_relaxed);
+    }
+
+    /**
+     * Get free space for writing
+     */
+    size_t free() const {
+        return Capacity - available();
+    }
+
+private:
+    std::array<T, Capacity> buffer_;
+    std::atomic<size_t> readIdx_;
+    std::atomic<size_t> writeIdx_;
+
+    static constexpr size_t mask(size_t index) {
+        return index & (Capacity - 1);
+    }
+};
 
 // =============================================================================
 // VOICE STATE
@@ -47,6 +141,28 @@ enum class VoiceState {
 };
 
 /**
+ * Stereo pan position (-1.0 to 1.0)
+ */
+struct PanPosition {
+    float left;   // Left gain
+    float right;  // Right gain
+
+    /**
+     * Constant-power pan law: sqrt(0.5 * (1 ± pan))
+     * Ensures consistent perceived volume across stereo field
+     */
+    static PanPosition fromPan(float pan) {
+        // Clamp pan to [-1.0, 1.0]
+        pan = std::max(-1.0f, std::min(1.0f, pan));
+
+        PanPosition result;
+        result.left = std::sqrt(0.5f * (1.0f - pan));
+        result.right = std::sqrt(0.5f * (1.0f + pan));
+        return result;
+    }
+};
+
+/**
  * Voice information
  */
 struct VoiceInfo {
@@ -59,10 +175,13 @@ struct VoiceInfo {
     int64_t stopTime;             // Scheduled stop time (samples)
     double duration;              // Duration (seconds)
     int role;                     // Ensemble role index
+    float pan;                    // Pan position (-1.0 to 1.0)
+    PanPosition panGains;         // Computed stereo gains
 
     VoiceInfo()
         : index(-1), state(VoiceState::Idle), priority(VoicePriority::Tertiary),
-          pitch(0), velocity(0), startTime(0), stopTime(0), duration(0.0), role(-1) {}
+          pitch(0), velocity(0), startTime(0), stopTime(0), duration(0.0), role(-1),
+          pan(0.0f), panGains{0.707f, 0.707f} {}  // Default center pan
 };
 
 // =============================================================================
@@ -95,14 +214,46 @@ struct VoiceManagerConfig {
 };
 
 // =============================================================================
+// SIMD BATCH PROCESSING
+// =============================================================================
+
+/**
+ * SIMD batch of voices for cache-efficient processing
+ * Processes 4-8 voices simultaneously using SIMD instructions
+ */
+struct SIMDVoiceBatch {
+    static constexpr size_t BatchSize = 4;  // Process 4 voices at once
+
+    float pitches[BatchSize];          // MIDI pitches
+    float velocities[BatchSize];       // MIDI velocities
+    float leftGains[BatchSize];        // Left channel gains
+    float rightGains[BatchSize];       // Right channel gains
+    int indices[BatchSize];            // Voice indices
+    bool active[BatchSize];            // Active flags
+
+    SIMDVoiceBatch() {
+        for (size_t i = 0; i < BatchSize; ++i) {
+            pitches[i] = 0.0f;
+            velocities[i] = 0.0f;
+            leftGains[i] = 0.0f;
+            rightGains[i] = 0.0f;
+            indices[i] = -1;
+            active[i] = false;
+        }
+    }
+};
+
+// =============================================================================
 // VOICE MANAGER
 // =============================================================================
 
 /**
  * Voice Manager
  *
- * Manages polyphonic voice allocation with intelligent voice stealing.
- * Ensures fair distribution of voices across ensemble roles.
+ * Real-time safe, single-threaded polyphony management with SIMD batch
+ * processing. Ensures deterministic timing and cache efficiency.
+ *
+ * SPEC-005: No threading, all processing on audio thread
  */
 class VoiceManager {
 public:
@@ -231,6 +382,56 @@ public:
      * Clean up finished voices
      */
     void cleanupFinishedVoices();
+
+    // -------------------------------------------------------------------------
+    // SIMD BATCH PROCESSING (SPEC-005)
+    // -------------------------------------------------------------------------
+
+    /**
+     * Process voices using SIMD batch operations
+     * Improves cache efficiency and instruction-level parallelism
+     *
+     * @param batch SIMD voice batch to process
+     * @param outputLeft Left channel output buffer
+     * @param outputRight Right channel output buffer
+     * @param numSamples Number of samples to process
+     */
+    void processSIMD(SIMDVoiceBatch& batch,
+                     float* outputLeft,
+                     float* outputRight,
+                     int numSamples);
+
+    /**
+     * Get next SIMD batch of active voices
+     * Groups voices for cache-efficient processing
+     *
+     * @param batch Output batch to fill
+     * @param startIndex Starting voice index
+     * @return Number of voices in batch, or 0 if no more active voices
+     */
+    int getNextSIMDBatch(SIMDVoiceBatch& batch, int startIndex = 0);
+
+    /**
+     * Process stereo output with constant-power panning
+     * Applies SIMD horizontal mixing for efficiency
+     *
+     * @param batch Voice batch to mix
+     * @param outputLeft Left output buffer
+     * @param outputRight Right output buffer
+     * @param numSamples Number of samples to process
+     */
+    void mixStereoOutput(const SIMDVoiceBatch& batch,
+                        float* outputLeft,
+                        float* outputRight,
+                        int numSamples);
+
+    /**
+     * Set pan position for voice (constant-power law)
+     *
+     * @param voiceIndex Voice to pan
+     * @param pan Pan position (-1.0 left, 0.0 center, 1.0 right)
+     */
+    void setVoicePan(int voiceIndex, float pan);
 
 private:
     VoiceManagerConfig config_;

@@ -1,12 +1,14 @@
 /**
  * White Room Voice Manager Implementation
  *
- * T018: Implement Voice Manager
+ * SPEC-005: Real-time safe, single-threaded SIMD implementation
+ * No threading, all processing on audio thread with SIMD optimizations
  */
 
 #include "audio/VoiceManager.h"
 #include <algorithm>
 #include <cmath>
+#include <cstring>  // For memset
 
 namespace white_room {
 namespace audio {
@@ -59,6 +61,8 @@ int VoiceManager::allocateVoice(int pitch, int velocity, VoicePriority priority,
     voice.duration = duration;
     voice.stopTime = startTime + static_cast<int64_t>(duration * 48000.0); // TODO: Use actual sample rate
     voice.role = role;
+    voice.pan = 0.0f;  // Default center pan
+    voice.panGains = PanPosition::fromPan(0.0f);  // Center pan gains
 
     return voiceIndex;
 }
@@ -309,6 +313,184 @@ int VoiceManager::findFurthestVoice(int excludeRole) const {
     }
 
     return furthestIndex;
+}
+
+// -------------------------------------------------------------------------
+// SIMD BATCH PROCESSING (SPEC-005)
+// -------------------------------------------------------------------------
+
+void VoiceManager::processSIMD(SIMDVoiceBatch& batch,
+                               float* outputLeft,
+                               float* outputRight,
+                               int numSamples) {
+    // Clear output buffers
+    std::memset(outputLeft, 0, numSamples * sizeof(float));
+    std::memset(outputRight, 0, numSamples * sizeof(float));
+
+    // Process active voices in batch
+    for (size_t i = 0; i < SIMDVoiceBatch::BatchSize; ++i) {
+        if (!batch.active[i]) {
+            continue;  // Skip inactive voices
+        }
+
+        const float velocity = batch.velocities[i];
+        const float leftGain = batch.leftGains[i];
+        const float rightGain = batch.rightGains[i];
+
+        // TODO: Replace with actual DSP processing
+        // For now, generate silence as placeholder
+        // Real implementation would:
+        // 1. Get oscillator samples
+        // 2. Apply filter
+        // 3. Apply envelope
+        // 4. Mix to output with pan gains
+
+        // Placeholder: Just apply velocity scaling
+        const float scaledGain = velocity / 127.0f;
+
+#ifdef WHITE_ROOM_SIMD_SSE2
+        // SSE2 implementation for 4-sample processing
+        const int simdSamples = (numSamples / 4) * 4;
+        for (int s = 0; s < simdSamples; s += 4) {
+            __m128 left = _mm_load_ps(&outputLeft[s]);
+            __m128 right = _mm_load_ps(&outputRight[s]);
+
+            // Apply gains (placeholder, would use actual DSP output)
+            __m128 gainL = _mm_set1_ps(leftGain * scaledGain);
+            __m128 gainR = _mm_set1_ps(rightGain * scaledGain);
+
+            left = _mm_add_ps(left, gainL);
+            right = _mm_add_ps(right, gainR);
+
+            _mm_store_ps(&outputLeft[s], left);
+            _mm_store_ps(&outputRight[s], right);
+        }
+
+        // Process remaining samples scalar
+        for (int s = simdSamples; s < numSamples; ++s) {
+            outputLeft[s] += leftGain * scaledGain;
+            outputRight[s] += rightGain * scaledGain;
+        }
+#else
+        // Scalar fallback
+        for (int s = 0; s < numSamples; ++s) {
+            outputLeft[s] += leftGain * scaledGain;
+            outputRight[s] += rightGain * scaledGain;
+        }
+#endif
+    }
+}
+
+int VoiceManager::getNextSIMDBatch(SIMDVoiceBatch& batch, int startIndex) {
+    // Reset batch
+    for (size_t i = 0; i < SIMDVoiceBatch::BatchSize; ++i) {
+        batch.active[i] = false;
+        batch.indices[i] = -1;
+        batch.pitches[i] = 0.0f;
+        batch.velocities[i] = 0.0f;
+        batch.leftGains[i] = 0.0f;
+        batch.rightGains[i] = 0.0f;
+    }
+
+    // Fill batch with active voices starting from startIndex
+    size_t batchIndex = 0;
+    for (int i = startIndex; i < static_cast<int>(voices_.size()) &&
+                          batchIndex < SIMDVoiceBatch::BatchSize; ++i) {
+        const auto& voice = voices_[i];
+        if (voice.state == VoiceState::Active || voice.state == VoiceState::Releasing) {
+            batch.active[batchIndex] = true;
+            batch.indices[batchIndex] = voice.index;
+            batch.pitches[batchIndex] = static_cast<float>(voice.pitch);
+            batch.velocities[batchIndex] = static_cast<float>(voice.velocity);
+            batch.leftGains[batchIndex] = voice.panGains.left;
+            batch.rightGains[batchIndex] = voice.panGains.right;
+            ++batchIndex;
+        }
+    }
+
+    return static_cast<int>(batchIndex);
+}
+
+void VoiceManager::mixStereoOutput(const SIMDVoiceBatch& batch,
+                                  float* outputLeft,
+                                  float* outputRight,
+                                  int numSamples) {
+    // SIMD horizontal mixing for stereo output
+    // This combines all voices in batch to final stereo output
+
+#ifdef WHITE_ROOM_SIMD_SSE2
+    // Process 4 samples at once using SSE2
+    const int simdSamples = (numSamples / 4) * 4;
+
+    for (int s = 0; s < simdSamples; s += 4) {
+        __m128 mixL = _mm_setzero_ps();
+        __m128 mixR = _mm_setzero_ps();
+
+        // Accumulate all active voices
+        for (size_t i = 0; i < SIMDVoiceBatch::BatchSize; ++i) {
+            if (!batch.active[i]) continue;
+
+            // TODO: Get actual voice output samples
+            // For now, just use gains
+            __m128 gainL = _mm_set1_ps(batch.leftGains[i]);
+            __m128 gainR = _mm_set1_ps(batch.rightGains[i]);
+
+            mixL = _mm_add_ps(mixL, gainL);
+            mixR = _mm_add_ps(mixR, gainR);
+        }
+
+        // Load current output
+        __m128 outL = _mm_load_ps(&outputLeft[s]);
+        __m128 outR = _mm_load_ps(&outputRight[s]);
+
+        // Mix and store
+        outL = _mm_add_ps(outL, mixL);
+        outR = _mm_add_ps(outR, mixR);
+
+        _mm_store_ps(&outputLeft[s], outL);
+        _mm_store_ps(&outputRight[s], outR);
+    }
+
+    // Process remaining samples
+    for (int s = simdSamples; s < numSamples; ++s) {
+        float mixL = 0.0f;
+        float mixR = 0.0f;
+
+        for (size_t i = 0; i < SIMDVoiceBatch::BatchSize; ++i) {
+            if (!batch.active[i]) continue;
+            mixL += batch.leftGains[i];
+            mixR += batch.rightGains[i];
+        }
+
+        outputLeft[s] += mixL;
+        outputRight[s] += mixR;
+    }
+#else
+    // Scalar fallback
+    for (int s = 0; s < numSamples; ++s) {
+        float mixL = 0.0f;
+        float mixR = 0.0f;
+
+        for (size_t i = 0; i < SIMDVoiceBatch::BatchSize; ++i) {
+            if (!batch.active[i]) continue;
+            mixL += batch.leftGains[i];
+            mixR += batch.rightGains[i];
+        }
+
+        outputLeft[s] += mixL;
+        outputRight[s] += mixR;
+    }
+#endif
+}
+
+void VoiceManager::setVoicePan(int voiceIndex, float pan) {
+    if (voiceIndex < 0 || voiceIndex >= static_cast<int>(voices_.size())) {
+        return;  // Invalid voice index
+    }
+
+    auto& voice = voices_[voiceIndex];
+    voice.pan = pan;
+    voice.panGains = PanPosition::fromPan(pan);
 }
 
 } // namespace audio

@@ -1,0 +1,150 @@
+name: Monitor Hono Security Fix
+
+# Monitor npm registry for Hono 4.11.4 availability (JWT security fix)
+# This workflow runs daily and alerts when the security fix is available
+
+on:
+  schedule:
+    # Run daily at 9:00 AM UTC (4:00 AM EST / 1:00 AM PST)
+    - cron: '0 9 * * *'
+
+  # Allow manual triggering
+  workflow_dispatch:
+
+  # Also run on push to main (for testing)
+  push:
+    branches:
+      - main
+    paths:
+      - 'scripts/monitor-hono-updates.sh'
+      - '.github/workflows/monitor-hono-security-fix.yml'
+
+jobs:
+  monitor-hono:
+    name: Check for Hono 4.11.4
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install bd CLI
+        run: |
+          # Install bd (beads) CLI for task tracking
+          go install github.com/steveyegge/beads/cmd/bd@latest || {
+            echo "Warning: bd not available, continuing without task tracking"
+          }
+
+      - name: Run Hono monitoring script
+        id: monitor
+        run: |
+          ./scripts/monitor-hono-updates.sh
+        continue-on-error: true
+
+      - name: Check if version is available
+        id: check
+        run: |
+          if ./scripts/monitor-hono-updates.sh; then
+            echo "available=true" >> $GITHUB_OUTPUT
+            echo "✅ Hono 4.11.4 is available!"
+          else
+            echo "available=false" >> $GITHUB_OUTPUT
+            echo "⏳ Hono 4.11.4 not yet available"
+          fi
+
+      - name: Create GitHub Issue if available
+        if: steps.check.outputs.available == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const issue = await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: '🚨 Hono 4.11.4 Security Fix Available - Update Required',
+              body: `## 🔴 Security Fix Available
+
+            **Hono version 4.11.4 is now available on npm!**
+
+            ### Vulnerabilities Fixed:
+            - ✅ **GHSA-3vhc-576x-3qv4** (CVE-2026-22818) - JWT algorithm confusion
+            - ✅ **GHSA-f67f-6cw9-8mq4** - JWT middleware default algorithm bypass
+
+            ### Next Steps:
+            1. Run: \`npm update hono\`
+            2. Test MCP SDK functionality
+            3. Run full test suite: \`npm test\`
+            4. Close bd issue: \`white_room-419\`
+            5. Update risk acceptance document
+
+            ### Context:
+            - **Issue**: white_room-419 (HIGH-001)
+            - **Monitoring**: Automated via GitHub Actions
+            - **Script**: scripts/monitor-hono-updates.sh
+
+            ### Dependency Chain:
+            \`@genkit-ai/mcp → @modelcontextprotocol/sdk → @hono/node-server → hono\`
+
+            ### Risk Assessment:
+            - Current risk: **LOW** (we don't use Hono JWT auth)
+            - Action: **Update when convenient** (not urgent)
+            - Timeline: Before v1.1 release (post-February 1)
+
+            ---
+            🤖 *This issue was automatically created by the Hono monitoring workflow*`,
+              labels: ['security', 'dependencies', 'automated', 'high-priority'],
+              assignees: ['bretbouchard']
+            });
+
+            core.setOutput('issue_number', issue.data.number);
+
+      - name: Add comment to bd issue
+        if: steps.check.outputs.available == 'true'
+        run: |
+          if command -v bd &> /dev/null; then
+            bd comment white_room-419 "Hono 4.11.4 is now available on npm! 🎉
+
+            GitHub Issue created: #${{ steps.check.outputs.issue_number }}
+
+            Next steps:
+            1. Update: npm update hono
+            2. Test MCP SDK
+            3. Run tests
+            4. Close this issue
+
+            Detected by: automated monitoring workflow" || true
+          fi
+
+      - name: Send Slack notification (if configured)
+        if: steps.check.outputs.available == 'true'
+        run: |
+          # Add your Slack webhook here if desired
+          # curl -X POST ${{ secrets.SLACK_WEBHOOK_URL }} \
+          #   -H 'Content-Type: application/json' \
+          #   -d '{"text":"🚨 Hono 4.11.4 security fix is now available on npm!"}'
+          echo "Slack notification not configured"
+
+      - name: Upload monitoring logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: hono-monitor-logs
+          path: .beads/logs/hono-monitor.log
+          retention-days: 30
+
+      - name: Report status
+        run: |
+          if [[ "${{ steps.check.outputs.available }}" == "true" ]]; then
+            echo "✅ SUCCESS: Hono 4.11.4 is available!"
+            echo "Issue created: #${{ steps.check.outputs.issue_number }}"
+            exit 0
+          else
+            echo "⏳ PENDING: Hono 4.11.4 not yet available"
+            echo "Will check again tomorrow"
+            exit 0
+          fi

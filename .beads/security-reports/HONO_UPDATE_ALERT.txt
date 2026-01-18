@@ -1,0 +1,14 @@
+
+==============================================
+HONO SECURITY FIX AVAILABLE - Sat Jan 17 19:26:24 EST 2026
+==============================================
+Version: 4.11.4
+Action Required: Update immediately
+
+
+==============================================
+HONO SECURITY FIX AVAILABLE - Sat Jan 17 19:27:56 EST 2026
+==============================================
+Version: 4.11.4
+Action Required: Update immediately
+
