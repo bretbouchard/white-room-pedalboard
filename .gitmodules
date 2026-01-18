@@ -102,3 +102,6 @@
 [submodule "juce_backend/instruments/choral"]
 	path = juce_backend/instruments/choral
 	url = https://github.com/bretbouchard/choral_instrument.git
+[submodule "juce_backend/instruments/choral_v2"]
+	path = juce_backend/instruments/choral_v2
+	url = https://github.com/bretbouchard/choral-v2.git
