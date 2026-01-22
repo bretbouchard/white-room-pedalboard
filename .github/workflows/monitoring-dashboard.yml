@@ -5,9 +5,11 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
-  schedule:
-    # Run every 5 minutes
-    - cron: '*/5 * * * *'
+  # schedule:
+  #   # DISABLED: Missing Swift tools (HealthCheckCLI, MetricsCollector, SLAMonitor)
+  #   # Excessive frequency causing Actions overage costs
+  #   # TODO: Re-enable after building required tools or rewrite workflow
+  #   - cron: '*/5 * * * *'
   workflow_dispatch:
     inputs:
       check_type:
